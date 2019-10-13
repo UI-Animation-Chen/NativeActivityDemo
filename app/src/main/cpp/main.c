@@ -64,7 +64,7 @@ static int engine_init_display(struct engine *engine) {
     EGL_NONE
   };
   EGLint w, h, format;
-  EGLint numConfigs;
+  EGLint numConfigs = 0;
   EGLConfig config;
   EGLSurface surface;
   EGLContext context;
@@ -78,7 +78,6 @@ static int engine_init_display(struct engine *engine) {
    */
   eglChooseConfig(display, attribs, NULL, 0, &numConfigs);
   EGLConfig supportedConfigs[numConfigs];
-  assert(supportedConfigs);
   eglChooseConfig(display, attribs, supportedConfigs, numConfigs, &numConfigs);
   assert(numConfigs);
   int i = 0;
@@ -274,15 +273,14 @@ ASensorManager *AcquireASensorManagerInstance(struct android_app *app) {
   }
 
   typedef ASensorManager *(*PF_GETINSTANCE)();
-  PF_GETINSTANCE getInstanceFunc = (PF_GETINSTANCE)
-    dlsym(androidHandle, "ASensorManager_getInstance");
+  PF_GETINSTANCE getInstanceFunc = (PF_GETINSTANCE) dlsym(androidHandle,
+                                                          "ASensorManager_getInstance");
   // by all means at this point, ASensorManager_getInstance should be available
   assert(getInstanceFunc);
   dlclose(androidHandle);
 
   return getInstanceFunc();
 }
-
 
 /**
  * This is the main entry point of a native application that is using
@@ -300,13 +298,10 @@ void android_main(struct android_app *state) {
 
   // Prepare to monitor accelerometer
   engine.sensorManager = AcquireASensorManagerInstance(state);
-  engine.accelerometerSensor = ASensorManager_getDefaultSensor(
-    engine.sensorManager,
-    ASENSOR_TYPE_ACCELEROMETER);
-  engine.sensorEventQueue = ASensorManager_createEventQueue(
-    engine.sensorManager,
-    state->looper, LOOPER_ID_USER,
-    NULL, NULL);
+  engine.accelerometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
+                                                               ASENSOR_TYPE_ACCELEROMETER);
+  engine.sensorEventQueue = ASensorManager_createEventQueue(engine.sensorManager, state->looper,
+                                                            LOOPER_ID_USER, NULL, NULL);
 
   if (state->savedState != NULL) {
     // We are starting with a previous saved state; restore from it.
@@ -337,8 +332,8 @@ void android_main(struct android_app *state) {
         if (engine.accelerometerSensor != NULL) {
           ASensorEvent event;
           while (ASensorEventQueue_getEvents(engine.sensorEventQueue, &event, 1) > 0) {
-            app_log("accelerometer: x=%f y=%f z=%f",
-                    event.acceleration.x, event.acceleration.y, event.acceleration.z);
+            app_log("accelerometer: x=%f y=%f z=%f", event.acceleration.x,
+                    event.acceleration.y, event.acceleration.z);
           }
         }
       }
