@@ -107,7 +107,7 @@ static int engine_init_display(struct engine *engine) {
   context = eglCreateContext(display, config, NULL, NULL);
 
   if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
-    app_log("Unable to eglMakeCurrent");
+    app_log("Unable to eglMakeCurrent\n");
     return -1;
   }
 
@@ -125,7 +125,7 @@ static int engine_init_display(struct engine *engine) {
   GLenum opengl_info[] = {GL_VENDOR, GL_RENDERER, GL_VERSION, GL_EXTENSIONS};
   for (int j = 0; j < 4; j++) {
     const GLubyte *info = glGetString(opengl_info[j]);
-    app_log("OpenGL Info: %s", info);
+    app_log("OpenGL Info: %s\n", info);
   }
   // Initialize GL state.
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
@@ -287,25 +287,25 @@ ASensorManager *AcquireASensorManagerInstance(struct android_app *app) {
  * android_native_app_glue.  It runs in its own thread, with its own
  * event loop for receiving input events and doing other things.
  */
-void android_main(struct android_app *state) {
+void android_main(struct android_app *app) {
   struct engine engine;
 
   memset(&engine, 0, sizeof(engine));
-  state->userData = &engine;
-  state->onAppCmd = engine_handle_cmd;
-  state->onInputEvent = engine_handle_input;
-  engine.app = state;
+  app->userData = &engine;
+  app->onAppCmd = engine_handle_cmd;
+  app->onInputEvent = engine_handle_input;
+  engine.app = app;
 
   // Prepare to monitor accelerometer
-  engine.sensorManager = AcquireASensorManagerInstance(state);
+  engine.sensorManager = AcquireASensorManagerInstance(app);
   engine.accelerometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
                                                                ASENSOR_TYPE_ACCELEROMETER);
-  engine.sensorEventQueue = ASensorManager_createEventQueue(engine.sensorManager, state->looper,
+  engine.sensorEventQueue = ASensorManager_createEventQueue(engine.sensorManager, app->looper,
                                                             LOOPER_ID_USER, NULL, NULL);
 
-  if (state->savedState != NULL) {
+  if (app->savedState != NULL) {
     // We are starting with a previous saved state; restore from it.
-    engine.state = *(struct saved_state *) state->savedState;
+    engine.state = *(struct saved_state *) app->savedState;
   }
 
   // loop waiting for stuff to do.
@@ -324,7 +324,8 @@ void android_main(struct android_app *state) {
 
       // Process this event.
       if (source != NULL) {
-        source->process(state, source);
+        app_log("source->process\n");
+        source->process(app, source);
       }
 
       // If a sensor has data, process it now.
@@ -332,14 +333,14 @@ void android_main(struct android_app *state) {
         if (engine.accelerometerSensor != NULL) {
           ASensorEvent event;
           while (ASensorEventQueue_getEvents(engine.sensorEventQueue, &event, 1) > 0) {
-            app_log("accelerometer: x=%f y=%f z=%f", event.acceleration.x,
+            app_log("accelerometer: x=%f y=%f z=%f\n", event.acceleration.x,
                     event.acceleration.y, event.acceleration.z);
           }
         }
       }
 
       // Check if we are exiting.
-      if (state->destroyRequested != 0) {
+      if (app->destroyRequested != 0) {
         engine_term_display(&engine);
         return;
       }
