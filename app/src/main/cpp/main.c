@@ -182,6 +182,7 @@ static int32_t engine_handle_input(struct android_app *app, AInputEvent *event) 
     engine->animating = 1;
     engine->state.x = AMotionEvent_getX(event, 0);
     engine->state.y = AMotionEvent_getY(event, 0);
+    app_log("x: %f, y: %f\n", engine->state.x, engine->state.y);
     return 1;
   }
   return 0;
@@ -326,7 +327,6 @@ void android_main(struct android_app *app) {
 
       // Process this event.
       if (source != NULL) {
-        app_log("source->process\n");
         source->process(app, source);
       }
 
@@ -335,8 +335,8 @@ void android_main(struct android_app *app) {
         if (engine.accelerometerSensor != NULL) {
           ASensorEvent event;
           while (ASensorEventQueue_getEvents(engine.sensorEventQueue, &event, 1) > 0) {
-            app_log("accelerometer: x=%f y=%f z=%f\n", event.acceleration.x,
-                    event.acceleration.y, event.acceleration.z);
+            //app_log("accelerometer: x=%f y=%f z=%f\n", event.acceleration.x,
+            //       event.acceleration.y, event.acceleration.z);
           }
         }
       }
