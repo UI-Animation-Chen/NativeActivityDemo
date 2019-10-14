@@ -22,8 +22,8 @@
  */
 struct saved_state {
   float angle;
-  int32_t x;
-  int32_t y;
+  float x;
+  float y;
 };
 
 /**
@@ -57,15 +57,15 @@ static int engine_init_display(struct engine *engine) {
    * component compatible with on-screen windows
    */
   const EGLint attribs[] = {
-    EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-    EGL_BLUE_SIZE, 8,
-    EGL_GREEN_SIZE, 8,
-    EGL_RED_SIZE, 8,
-    EGL_NONE
+      EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+      EGL_BLUE_SIZE, 8,
+      EGL_GREEN_SIZE, 8,
+      EGL_RED_SIZE, 8,
+      EGL_NONE
   };
   EGLint w, h, format;
   EGLint numConfigs = 0;
-  EGLConfig config;
+  EGLConfig config = NULL;
   EGLSurface surface;
   EGLContext context;
 
@@ -146,8 +146,8 @@ static void engine_draw_frame(struct engine *engine) {
   }
 
   // Just fill the screen with a color.
-  glClearColor(((float) engine->state.x) / engine->width, engine->state.angle,
-               ((float) engine->state.y) / engine->height, 1);
+  glClearColor((engine->state.x) / engine->width, engine->state.angle,
+               (engine->state.y) / engine->height, 1);
   glClear(GL_COLOR_BUFFER_BIT);
 
   eglSwapBuffers(engine->display, engine->surface);
@@ -232,6 +232,8 @@ static void engine_handle_cmd(struct android_app *app, int32_t cmd) {
       engine->animating = 0;
       engine_draw_frame(engine);
       break;
+    default:
+      break;
   }
 }
 
@@ -247,10 +249,10 @@ ASensorManager *AcquireASensorManagerInstance(struct android_app *app) {
   if (!app)
     return NULL;
 
-  typedef ASensorManager *(*PF_GETINSTANCEFORPACKAGE)(const char *name);
+  typedef ASensorManager *(*PF_GETINSTANCEFORPACKAGE)(const char *);
   void *androidHandle = dlopen("libandroid.so", RTLD_NOW);
-  PF_GETINSTANCEFORPACKAGE getInstanceForPackageFunc = (PF_GETINSTANCEFORPACKAGE)
-    dlsym(androidHandle, "ASensorManager_getInstanceForPackage");
+  PF_GETINSTANCEFORPACKAGE getInstanceForPackageFunc =
+      (PF_GETINSTANCEFORPACKAGE) dlsym(androidHandle, "ASensorManager_getInstanceForPackage");
   if (getInstanceForPackageFunc) {
     JNIEnv *env = NULL;
     (*(app->activity->vm))->AttachCurrentThread(app->activity->vm, &env, NULL);
@@ -348,7 +350,7 @@ void android_main(struct android_app *app) {
 
     if (engine.animating) {
       // Done with events; draw next animation frame.
-      engine.state.angle += .01f;
+      engine.state.angle += .01F;
       if (engine.state.angle > 1) {
         engine.state.angle = 0;
       }
