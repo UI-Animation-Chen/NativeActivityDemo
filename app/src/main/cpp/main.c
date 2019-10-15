@@ -51,6 +51,9 @@ struct engine {
 static int engine_init_display(struct engine *engine) {
   // initialize OpenGL ES and EGL
 
+  EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+  eglInitialize(display, 0, 0);
+
   /*
    * Here specify the attributes of the desired configuration.
    * Below, we select an EGLConfig with at least 8 bits per color
@@ -63,15 +66,8 @@ static int engine_init_display(struct engine *engine) {
       EGL_RED_SIZE, 8,
       EGL_NONE
   };
-  EGLint w, h, format;
   EGLint numConfigs = 0;
   EGLConfig config = NULL;
-  EGLSurface surface;
-  EGLContext context;
-
-  EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-
-  eglInitialize(display, 0, 0);
 
   /* Here, the application chooses the configuration it desires.
    * find the best match if possible, otherwise use the very first one
@@ -102,15 +98,18 @@ static int engine_init_display(struct engine *engine) {
    * guaranteed to be accepted by ANativeWindow_setBuffersGeometry().
    * As soon as we picked a EGLConfig, we can safely reconfigure the
    * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
+  EGLint format;
   eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format);
-  surface = eglCreateWindowSurface(display, config, engine->app->window, NULL);
-  context = eglCreateContext(display, config, NULL, NULL);
+
+  EGLSurface surface = eglCreateWindowSurface(display, config, engine->app->window, NULL);
+  EGLContext context = eglCreateContext(display, config, NULL, NULL);
 
   if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
     app_log("Unable to eglMakeCurrent\n");
     return -1;
   }
 
+  EGLint w, h;
   eglQuerySurface(display, surface, EGL_WIDTH, &w);
   eglQuerySurface(display, surface, EGL_HEIGHT, &h);
 
@@ -125,7 +124,7 @@ static int engine_init_display(struct engine *engine) {
   GLenum opengl_info[] = {GL_VENDOR, GL_RENDERER, GL_VERSION, GL_EXTENSIONS};
   for (int j = 0; j < 4; j++) {
     const GLubyte *info = glGetString(opengl_info[j]);
-    app_log("OpenGL Info: %s\n", info);
+    app_log("OpenGL Info[%d]: %s\n", j, info);
   }
   // Initialize GL state.
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
