@@ -110,14 +110,14 @@ int GLESEngine_init(ANativeWindow *window) {
 /**
  * Just the current frame in the display.
  */
-void GLESEngine_draw_frame() {
+void GLESEngine_draw_frame(GLfloat *color) {
   if (engine.display == NULL) {
     // No display.
     return;
   }
 
   // Just fill the screen with a color.
-  glClearColor(0, 1, 0, 0);
+  glClearColor(color[0], color[1], color[2], color[3]);
   glClear(GL_COLOR_BUFFER_BIT);
 
   eglSwapBuffers(engine.display, engine.surface);
@@ -140,4 +140,12 @@ void GLESEngine_destroy() {
   engine.display = EGL_NO_DISPLAY;
   engine.context = EGL_NO_CONTEXT;
   engine.surface = EGL_NO_SURFACE;
+}
+
+int32_t GLESEngine_get_width() {
+  return engine.width;
+}
+
+int32_t GLESEngine_get_height() {
+  return engine.height;
 }

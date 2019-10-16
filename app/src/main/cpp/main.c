@@ -11,6 +11,7 @@
 
 #include <android/sensor.h>
 #include <android_native_app_glue.h>
+#include <GLES/gl.h>
 
 #include "app_log.h"
 
@@ -30,6 +31,9 @@ struct saved_state {
  */
 struct context {
   struct android_app *app;
+
+  int32_t width;
+  int32_t height;
 
   ASensorManager *sensorManager;
   const ASensor *accelerometerSensor;
@@ -93,9 +97,13 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
       // The window is being shown, get it ready.
       if (context->app->window != NULL) {
         GLESEngine_init(context->app->window);
-        GLESEngine_draw_frame();
+        GLfloat color[4] = {1, 1, 1, 1};
+        GLESEngine_draw_frame(color);
 
-//          renderByANativeWindowAPI(app->window);
+        context->width = GLESEngine_get_width();
+        context->height = GLESEngine_get_height();
+
+//        renderByANativeWindowAPI(app->window);
       }
       break;
     case APP_CMD_TERM_WINDOW:
@@ -239,9 +247,14 @@ void android_main(struct android_app *app) {
         return;
       }
 
-//      if (app->window != NULL) {
+      if (app->window != NULL) {
 //        renderByANativeWindowAPI(app->window);
-//      }
+
+        GLfloat factor = context.state.y / context.height;
+        GLfloat color[4] = {0, factor, 0, 1};
+        app_log("y/h: %f\n", factor);
+        GLESEngine_draw_frame(color);
+      }
     }
 
 //    if (context.animating) {

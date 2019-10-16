@@ -9,8 +9,12 @@
 
 int GLESEngine_init(ANativeWindow *);
 
-void GLESEngine_draw_frame();
+void GLESEngine_draw_frame(GLfloat *);
 
 void GLESEngine_destroy();
+
+int32_t GLESEngine_get_width();
+
+int32_t GLESEngine_get_height();
 
 #endif //NATIVEACTIVITYDEMO_GLESENGINE_H
