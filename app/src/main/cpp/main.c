@@ -187,6 +187,29 @@ static int32_t engine_handle_input(struct android_app *app, AInputEvent *event) 
   return 0;
 }
 
+static void renderByANativeWindowAPI(ANativeWindow *window) {
+  ANativeWindow_Buffer buf;
+  int result = ANativeWindow_lock(window, &buf, NULL);
+  if (result == 0) {
+    struct timespec ts;
+    memset(&ts, 0, sizeof(ts));
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    app_log("ts.tv_sec: %ld, tv_nsec: %ld\n", ts.tv_sec, ts.tv_nsec);
+    memset(buf.bits, 255, buf.stride * buf.height * sizeof(uint32_t));
+    memset(&ts, 0, sizeof(ts));
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    app_log("ts.tv_sec: %ld, tv_nsec: %ld\n", ts.tv_sec, ts.tv_nsec);
+
+    for (int i = 0; i < 500000; i++) {
+      *((int32_t *)buf.bits + i + 400000) = 255;
+    }
+
+    ANativeWindow_unlockAndPost(window);
+  } else {
+    app_log("lock fail: %s\n", strerror(errno));
+  }
+}
+
 /**
  * Process the next main command.
  */
@@ -205,21 +228,7 @@ static void engine_handle_cmd(struct android_app *app, int32_t cmd) {
 //        engine_init_display(engine);
 //        engine_draw_frame(engine);
 
-        ANativeWindow_Buffer buf;
-        int result = ANativeWindow_lock(app->window, &buf, NULL);
-        if (result == 0) {
-          struct timespec ts;
-          memset(&ts, 0, sizeof(ts));
-          clock_gettime(CLOCK_MONOTONIC, &ts);
-          app_log("ts.tv_sec: %ld, tv_nsec: %ld\n", ts.tv_sec, ts.tv_nsec);
-          memset(buf.bits, 255, buf.stride * buf.height * sizeof(uint32_t));
-          memset(&ts, 0, sizeof(ts));
-          clock_gettime(CLOCK_MONOTONIC, &ts);
-          app_log("ts.tv_sec: %ld, tv_nsec: %ld\n", ts.tv_sec, ts.tv_nsec);
-          ANativeWindow_unlockAndPost(app->window);
-        } else {
-          app_log("lock fail: %s\n", strerror(errno));
-        }
+          renderByANativeWindowAPI(app->window);
       }
       break;
     case APP_CMD_TERM_WINDOW:
@@ -360,6 +369,10 @@ void android_main(struct android_app *app) {
       if (app->destroyRequested != 0) {
         //engine_term_display(&engine);
         return;
+      }
+
+      if (app->window != NULL) {
+        renderByANativeWindowAPI(app->window);
       }
     }
 
