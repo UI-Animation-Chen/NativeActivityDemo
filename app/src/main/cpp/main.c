@@ -202,13 +202,20 @@ static void engine_handle_cmd(struct android_app *app, int32_t cmd) {
     case APP_CMD_INIT_WINDOW:
       // The window is being shown, get it ready.
       if (engine->app->window != NULL) {
-        //engine_init_display(engine);
-        //engine_draw_frame(engine);
+//        engine_init_display(engine);
+//        engine_draw_frame(engine);
 
         ANativeWindow_Buffer buf;
         int result = ANativeWindow_lock(app->window, &buf, NULL);
         if (result == 0) {
+          struct timespec ts;
+          memset(&ts, 0, sizeof(ts));
+          clock_gettime(CLOCK_MONOTONIC, &ts);
+          app_log("ts.tv_sec: %ld, tv_nsec: %ld\n", ts.tv_sec, ts.tv_nsec);
           memset(buf.bits, 255, buf.stride * buf.height * sizeof(uint32_t));
+          memset(&ts, 0, sizeof(ts));
+          clock_gettime(CLOCK_MONOTONIC, &ts);
+          app_log("ts.tv_sec: %ld, tv_nsec: %ld\n", ts.tv_sec, ts.tv_nsec);
           ANativeWindow_unlockAndPost(app->window);
         } else {
           app_log("lock fail: %s\n", strerror(errno));
