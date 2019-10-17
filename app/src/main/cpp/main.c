@@ -89,12 +89,14 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
   switch (cmd) {
     case APP_CMD_SAVE_STATE:
       // The system has asked us to save our current state.  Do so.
+      app_log("cmd -- save state\n");
       context->app->savedState = malloc(sizeof(struct saved_state));
       *((struct saved_state *) context->app->savedState) = context->state;
       context->app->savedStateSize = sizeof(struct saved_state);
       break;
     case APP_CMD_INIT_WINDOW:
       // The window is being shown, get it ready.
+      app_log("cmd -- init window\n");
       if (context->app->window != NULL) {
         GLESEngine_init(context->app->window);
         GLfloat color[4] = {1, 1, 1, 1};
@@ -108,10 +110,12 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
       break;
     case APP_CMD_TERM_WINDOW:
       // The window is being hidden or closed, clean it up.
+      app_log("cmd -- destroy window\n");
       GLESEngine_destroy();
       break;
     case APP_CMD_GAINED_FOCUS:
       // When our app gains focus, we start monitoring the accelerometer.
+      app_log("cmd -- gained focus\n");
 //      if (context->accelerometerSensor != NULL) {
 //        ASensorEventQueue_enableSensor(context->sensorEventQueue,
 //                                       context->accelerometerSensor);
@@ -123,6 +127,7 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
       break;
     case APP_CMD_LOST_FOCUS:
       // When our app loses focus, we stop monitoring the accelerometer.
+      app_log("cmd -- lost focus\n");
       // This is to avoid consuming battery while not being used.
 //      if (context->accelerometerSensor != NULL) {
 //        ASensorEventQueue_disableSensor(context->sensorEventQueue,
@@ -130,8 +135,6 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
 //      }
       // Also stop animating.
 //      context->animating = 0;
-
-      GLESEngine_destroy();
       break;
     default:
       break;
