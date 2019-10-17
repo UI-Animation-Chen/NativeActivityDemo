@@ -188,6 +188,24 @@ ASensorManager *AcquireASensorManagerInstance(struct android_app *app) {
   return getInstanceFunc();
 }
 
+#include <GLES/glext.h>
+
+GLuint vaos[1]; // vertex array objects
+GLuint buffers[1];
+
+GLfloat triangles[6][2] = {
+    {0, 0.7F}, {-.5F, 0}, {.5F, 0},
+    {-.5F, 0}, {0, -.7F}, {.5F, 0}
+};
+
+void gl_render_triangle() {
+  glGenBuffers(1, buffers);
+  glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(triangles), triangles, GL_STATIC_DRAW);
+  glVertexPointer(2, GL_FLOAT, 0, triangles);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
 /**
  * This is the main entry point of a native application that is using
  * android_native_app_glue.  It runs in its own thread, with its own
@@ -257,6 +275,8 @@ void android_main(struct android_app *app) {
         GLfloat color[4] = {0, factor, 0, 1};
         app_log("y/h: %f\n", factor);
         GLESEngine_draw_frame(color);
+
+        gl_render_triangle();
       }
     }
 
