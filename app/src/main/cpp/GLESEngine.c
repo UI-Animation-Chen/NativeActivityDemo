@@ -2,6 +2,12 @@
 // Created by czf on 2019-10-16.
 //
 
+/**
+ * OpenGL is designed to translate function calls into graphics commands that
+ * can be sent to underlying graphics hardware. Because this underlying hardware
+ * is dedicated to processing graphics commands, OpenGL drawing is typically very fast.
+ */
+
 #include <EGL/egl.h>
 #include <GLES/egl.h>
 
