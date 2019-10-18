@@ -11,11 +11,11 @@
 
 #include <android/sensor.h>
 #include <android_native_app_glue.h>
-#include <GLES/gl.h>
+#include <GLES3/gl32.h>
 
 #include "app_log.h"
-
 #include "GLESEngine.h"
+#include "ShaderUtils.h"
 
 /**
  * Our saved state data.
@@ -81,6 +81,8 @@ static void renderByANativeWindowAPI(ANativeWindow *window) {
   }
 }
 
+void gl_init();
+
 /**
  * Process the next main command.
  */
@@ -105,6 +107,7 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         context->width = GLESEngine_get_width();
         context->height = GLESEngine_get_height();
 
+        gl_init();
 //        renderByANativeWindowAPI(app->window);
       }
       break;
@@ -188,7 +191,20 @@ ASensorManager *AcquireASensorManagerInstance(struct android_app *app) {
   return getInstanceFunc();
 }
 
-#include <GLES/glext.h>
+/** ------------------------- */
+
+static char *triangleVert = "#version 320 es\n"
+                            "layout(location = 0) in vec4 vPosition;\n"
+                            "void main() {\n"
+                            "  gl_Position = vPosition;\n"
+                            "}\n";
+
+static char *triangleFrag = "#version 320 es\n"
+                            "precision mediump float;\n"
+                            "out vec4 fColor;\n"
+                            "void main() {\n"
+                            "  fColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
+                            "}\n";
 
 GLuint vaos[1]; // vertex array objects
 GLuint buffers[1];
@@ -198,12 +214,30 @@ GLfloat triangles[6][2] = {
     {-.5F, 0}, {0, -.7F}, {.5F, 0}
 };
 
+GLuint program;
+
+void gl_init() {
+//  glGenVertexArrays(1, vaos);
+//  glBindVertexArray(vaos[0]);
+
+//  glGenBuffers(1, buffers);
+//  glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+//  glBufferData(GL_ARRAY_BUFFER, sizeof(triangles), triangles, GL_STATIC_DRAW);
+
+  program = linkShader(get_compiled_shader_vert(triangleVert),
+                              get_compiled_shader_frag(triangleFrag));
+}
+
 void gl_render_triangle() {
-  glGenBuffers(1, buffers);
-  glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(triangles), triangles, GL_STATIC_DRAW);
-  glVertexPointer(2, GL_FLOAT, 0, triangles);
+//  glGenVertexArrays(1, vaos);
+//  glBindVertexArray(vaos[0]);
+  glUseProgram(program);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, triangles);
+  glEnableVertexAttribArray(0);
+
   glDrawArrays(GL_TRIANGLES, 0, 6);
+  glFlush();
 }
 
 /**

@@ -4,7 +4,7 @@
 # Sets the minimum version of CMake required to build the native library.
 cmake_minimum_required(VERSION 3.4.1)
 
-add_library(native-activity SHARED main.c GLESEngine.c)
+add_library(native-activity SHARED main.c GLESEngine.c ShaderUtils.c)
 
 # Export ANativeActivity_onCreate(),
 # Refer to: https://github.com/android-ndk/ndk/issues/381.
@@ -17,4 +17,4 @@ target_include_directories(native-activity PRIVATE
         ${ANDROID_NDK}/sources/android/native_app_glue)
 
 target_link_libraries(native-activity
-        log native_app_glue android EGL GLESv1_CM)
+        log native_app_glue android EGL GLESv3)

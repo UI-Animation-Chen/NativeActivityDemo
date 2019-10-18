@@ -9,7 +9,7 @@
  */
 
 #include <EGL/egl.h>
-#include <GLES/egl.h>
+#include <GLES3/gl32.h> // sdk18以上才支持GLESv3版本
 
 #include <assert.h>
 
@@ -81,7 +81,12 @@ int GLESEngine_init(ANativeWindow *window) {
   eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format);
 
   EGLSurface surface = eglCreateWindowSurface(display, config, window, NULL);
-  EGLContext context = eglCreateContext(display, config, NULL, NULL);
+
+  EGLint contextAttribs[] = {
+      EGL_CONTEXT_CLIENT_VERSION, 3,
+      EGL_NONE
+  };
+  EGLContext context = eglCreateContext(display, config, NULL, contextAttribs);
 
   if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
     app_log("Unable to eglMakeCurrent\n");
@@ -105,9 +110,9 @@ int GLESEngine_init(ANativeWindow *window) {
     app_log("OpenGL Info[%d]: %s\n", j, info);
   }
   // Initialize GL state.
-  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+//  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
   glEnable(GL_CULL_FACE);
-  glShadeModel(GL_SMOOTH);
+//  glShadeModel(GL_SMOOTH);
   glDisable(GL_DEPTH_TEST);
 
   return 0;
