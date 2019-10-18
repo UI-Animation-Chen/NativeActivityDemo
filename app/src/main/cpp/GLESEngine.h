@@ -9,7 +9,7 @@
 
 int GLESEngine_init(ANativeWindow *);
 
-void GLESEngine_draw_frame(GLfloat *);
+void GLESEngine_draw_frame(GLfloat *, void *);
 
 void GLESEngine_destroy();
 
