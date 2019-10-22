@@ -19,14 +19,21 @@ static char *triangleFrag = "#version 320 es\n"
                             "  fColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
                             "}\n";
 
-GLuint vaos[2]; // vertex array objects
-GLuint buffers[2];
-
 GLuint program;
 GLuint vertShader;
 GLuint fragShader;
 
-void gl_bind_buf0() {
+void triangles_init_shaders() {
+  vertShader = get_compiled_shader_vert(triangleVert);
+  fragShader = get_compiled_shader_frag(triangleFrag);
+  program = linkShader(vertShader, fragShader);
+  glUseProgram(program);
+}
+
+GLuint vaos[2]; // vertex array objects
+GLuint buffers[2];
+
+void bind_buf0() {
   glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
   GLfloat triangles[] = {
       0.0f,  0.75f, 0.0f,
@@ -37,7 +44,7 @@ void gl_bind_buf0() {
   glBufferData(GL_ARRAY_BUFFER, sizeof(triangles), triangles, GL_STATIC_DRAW);
 }
 
-void gl_bind_buf1() {
+void bind_buf1() {
   glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
   GLfloat triangles[] = {
       0.0f,  0.5f, 0.0f,
@@ -49,24 +56,21 @@ void gl_bind_buf1() {
 }
 
 void triangles_init() {
+  triangles_init_shaders();
+
   glGenVertexArrays(2, vaos);
   glGenBuffers(2, buffers);
 
   glBindVertexArray(vaos[0]); // 记录所有的状态数据，包括attrib的开启与否。
-  gl_bind_buf0();
+  bind_buf0();
   // glVertexAttribPointer操作的是[当前绑定]到GL_ARRAY_BUFFER上的VBO
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(0);
 
   glBindVertexArray(vaos[1]);
-  gl_bind_buf1();
+  bind_buf1();
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(0);
-
-  vertShader = get_compiled_shader_vert(triangleVert);
-  fragShader = get_compiled_shader_frag(triangleFrag);
-  program = linkShader(vertShader, fragShader);
-  glUseProgram(program);
 }
 
 int state = 0;
