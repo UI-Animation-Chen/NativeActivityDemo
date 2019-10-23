@@ -30,8 +30,10 @@ struct GLESEngine {
 int GLESEngine_init(ANativeWindow *window) {
   // initialize OpenGL ES and EGL
 
+  GLint major, minor;
   EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-  eglInitialize(display, 0, 0);
+  eglInitialize(display, &major, &minor);
+  app_log("egl, major: %d, minor: %d\n", major, minor);
 
   /*
    * Here specify the attributes of the desired configuration.
@@ -43,6 +45,8 @@ int GLESEngine_init(ANativeWindow *window) {
       EGL_BLUE_SIZE, 8,
       EGL_GREEN_SIZE, 8,
       EGL_RED_SIZE, 8,
+      EGL_ALPHA_SIZE, 8,
+      EGL_DEPTH_SIZE, 24,
       EGL_NONE
   };
   EGLint numConfigs = 0;
@@ -58,14 +62,16 @@ int GLESEngine_init(ANativeWindow *window) {
   int i = 0;
   for (; i < numConfigs; i++) {
     EGLConfig cfg = supportedConfigs[i];
-    EGLint r, g, b, d;
+    EGLint r, g, b, a, d;
     if (eglGetConfigAttrib(display, cfg, EGL_RED_SIZE, &r) &&
         eglGetConfigAttrib(display, cfg, EGL_GREEN_SIZE, &g) &&
         eglGetConfigAttrib(display, cfg, EGL_BLUE_SIZE, &b) &&
+        eglGetConfigAttrib(display, cfg, EGL_ALPHA_SIZE, &a) &&
         eglGetConfigAttrib(display, cfg, EGL_DEPTH_SIZE, &d) &&
-        r == 8 && g == 8 && b == 8 && d == 0) {
+        r == 8 && g == 8 && b == 8 && a == 8 && d == 24) {
 
       config = supportedConfigs[i];
+      app_log("r: %d, g: %d, b: %d, a: %d, d: %d\n", r, g, b, a, d);
       break;
     }
   }
@@ -113,7 +119,8 @@ int GLESEngine_init(ANativeWindow *window) {
 //  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
   glEnable(GL_CULL_FACE);
 //  glShadeModel(GL_SMOOTH);
-  glDisable(GL_DEPTH_TEST);
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
 
   return 0;
 }
@@ -130,7 +137,8 @@ void GLESEngine_draw_frame(GLfloat *color, void *func) {
 
   // Just fill the screen with a color.
   glClearColor(color[0], color[1], color[2], color[3]);
-  glClear(GL_COLOR_BUFFER_BIT);
+  glClearDepthf(1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if (func) {
     ((func_t)func)();

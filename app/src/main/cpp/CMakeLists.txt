@@ -4,7 +4,8 @@
 # Sets the minimum version of CMake required to build the native library.
 cmake_minimum_required(VERSION 3.4.1)
 
-add_library(native-activity SHARED main.c GLESEngine.c ShaderUtils.c TrianglesRender.c)
+add_library(native-activity SHARED
+    main.c GLESEngine.c ShaderUtils.c TrianglesRender.c CubeRender.c Shape.cpp)
 
 # Export ANativeActivity_onCreate(),
 # Refer to: https://github.com/android-ndk/ndk/issues/381.
