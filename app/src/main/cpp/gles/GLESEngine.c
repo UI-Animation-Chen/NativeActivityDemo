@@ -14,7 +14,7 @@
 #include <assert.h>
 
 #include "GLESEngine.h"
-#include "app_log.h"
+#include "../app_log.h"
 
 struct GLESEngine {
   EGLDisplay display;
@@ -125,25 +125,14 @@ int GLESEngine_init(ANativeWindow *window) {
   return 0;
 }
 
-typedef void (*func_t)(void);
 /**
  * Just the current frame in the display.
  */
-void GLESEngine_draw_frame(GLfloat *color, void *func) {
+void GLESEngine_refresh() {
   if (engine.display == NULL) {
     // No display.
     return;
   }
-
-  // Just fill the screen with a color.
-  glClearColor(color[0], color[1], color[2], color[3]);
-  glClearDepthf(1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  if (func) {
-    ((func_t)func)();
-  }
-
   eglSwapBuffers(engine.display, engine.surface);
 }
 

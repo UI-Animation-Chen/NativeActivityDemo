@@ -5,7 +5,7 @@
 #include <GLES3/gl32.h>
 #include <stdlib.h>
 
-#include "app_log.h"
+#include "../app_log.h"
 #include "ShaderUtils.h"
 
 GLuint loadAndCompileShader(GLenum shaderType, const char *sourceCode) {

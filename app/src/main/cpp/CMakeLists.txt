@@ -5,7 +5,9 @@
 cmake_minimum_required(VERSION 3.4.1)
 
 add_library(native-activity SHARED
-    main.c GLESEngine.c ShaderUtils.c TrianglesRender.c CubeRender.c Shape.cpp)
+    main.cpp
+    gles/GLESEngine.c gles/ShaderUtils.c
+    view/Triangles.cpp view/Cube.cpp view/Shape.cpp)
 
 # Export ANativeActivity_onCreate(),
 # Refer to: https://github.com/android-ndk/ndk/issues/381.

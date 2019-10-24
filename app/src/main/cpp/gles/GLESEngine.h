@@ -7,14 +7,22 @@
 
 #include <android/native_window.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int GLESEngine_init(ANativeWindow *);
 
-void GLESEngine_draw_frame(GLfloat *, void *);
+void GLESEngine_refresh();
 
 void GLESEngine_destroy();
 
 int32_t GLESEngine_get_width();
 
 int32_t GLESEngine_get_height();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //NATIVEACTIVITYDEMO_GLESENGINE_H

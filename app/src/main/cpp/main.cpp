@@ -14,8 +14,11 @@
 #include <GLES3/gl32.h>
 
 #include "app_log.h"
-#include "GLESEngine.h"
-#include "TrianglesRender.h"
+#include "gles/GLESEngine.h"
+#include "view/Triangles.h"
+#include "view/Shape.h"
+
+static Shape *pTriangles;
 
 /**
  * Our saved state data.
@@ -98,21 +101,27 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
       // The window is being shown, get it ready.
       app_log("cmd -- init window\n");
       if (context->app->window != NULL) {
-        GLESEngine_init(context->app->window);
-        GLfloat color[4] = {1, 1, 1, 1};
-        GLESEngine_draw_frame(color, NULL);
-
         context->width = GLESEngine_get_width();
         context->height = GLESEngine_get_height();
 
-        triangles_init();
+        GLESEngine_init(context->app->window);
+        GLfloat color[4] = {1, 1, 1, 1};
+        glClearColor(color[0], color[1], color[2], color[3]);
+        glClearDepthf(1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        pTriangles = new Triangles();
+        pTriangles->draw();
+
 //        renderByANativeWindowAPI(app->window);
+
+        GLESEngine_refresh();
       }
       break;
     case APP_CMD_TERM_WINDOW:
       // The window is being hidden or closed, clean it up.
       app_log("cmd -- destroy window\n");
-      triangles_destroy();
+      delete pTriangles;
       GLESEngine_destroy();
       break;
     case APP_CMD_GAINED_FOCUS:
@@ -149,6 +158,7 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
  *    for Android-N and before, when compiling with NDK-r15
  */
 #include <dlfcn.h>
+#include <EGL/egl.h>
 
 ASensorManager *AcquireASensorManagerInstance(struct android_app *app) {
 
@@ -161,19 +171,17 @@ ASensorManager *AcquireASensorManagerInstance(struct android_app *app) {
       (PF_GETINSTANCEFORPACKAGE) dlsym(androidHandle, "ASensorManager_getInstanceForPackage");
   if (getInstanceForPackageFunc) {
     JNIEnv *env = NULL;
-    (*(app->activity->vm))->AttachCurrentThread(app->activity->vm, &env, NULL);
+    app->activity->vm->AttachCurrentThread(&env, NULL);
 
-    jclass android_content_Context = (*env)->GetObjectClass(env, app->activity->clazz);
-    jmethodID midGetPackageName = (*env)->GetMethodID(env, android_content_Context,
-                                                      "getPackageName",
-                                                      "()Ljava/lang/String;");
-    jstring packageName = (jstring) (*env)->CallObjectMethod(env, app->activity->clazz,
-                                                             midGetPackageName);
+    jclass android_content_Context = env->GetObjectClass(app->activity->clazz);
+    jmethodID midGetPackageName = env->GetMethodID(android_content_Context, "getPackageName",
+                                                   "()Ljava/lang/String;");
+    jstring packageName = (jstring) env->CallObjectMethod(app->activity->clazz, midGetPackageName);
 
-    const char *nativePackageName = (*env)->GetStringUTFChars(env, packageName, 0);
+    const char *nativePackageName = env->GetStringUTFChars(packageName, 0);
     ASensorManager *mgr = getInstanceForPackageFunc(nativePackageName);
-    (*env)->ReleaseStringUTFChars(env, packageName, nativePackageName);
-    (*(app->activity->vm))->DetachCurrentThread(app->activity->vm);
+    env->ReleaseStringUTFChars(packageName, nativePackageName);
+    app->activity->vm->DetachCurrentThread();
     if (mgr) {
       dlclose(androidHandle);
       return mgr;
@@ -257,8 +265,14 @@ void android_main(struct android_app *app) {
 
         GLfloat factor = context.state.y / context.height;
         GLfloat color[4] = {0, factor, 0, 1};
+        glClearColor(color[0], color[1], color[2], color[3]);
+        glClearDepthf(1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        pTriangles->draw();
+
         app_log("y/h: %f\n", factor);
-        GLESEngine_draw_frame(color, triangles_draw_frame);
+        GLESEngine_refresh();
       }
     }
 
@@ -271,7 +285,7 @@ void android_main(struct android_app *app) {
 //
 //      // Drawing is throttled to the screen update rate, so there
 //      // is no need to do timing here.
-//        GLESEngine_draw_frame();
+//        GLESEngine_refresh();
 //    }
   }
 }

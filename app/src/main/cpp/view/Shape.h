@@ -5,10 +5,16 @@
 #ifndef NATIVEACTIVITYDEMO_SHAPE_H
 #define NATIVEACTIVITYDEMO_SHAPE_H
 
+#include "../app_log.h"
+
 class Shape {
 public:
-  Shape() {}
-  virtual ~Shape() {}
+  Shape() {
+    app_log("Shape constructor");
+  }
+  virtual ~Shape() {
+    app_log("Shape destructor");
+  }
   virtual void draw() = 0;
 };
 
