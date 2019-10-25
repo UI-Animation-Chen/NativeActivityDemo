@@ -105,8 +105,7 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         context->height = GLESEngine_get_height();
 
         GLESEngine_init(context->app->window);
-        GLfloat color[4] = {1, 1, 1, 1};
-        glClearColor(color[0], color[1], color[2], color[3]);
+        glClearColor(0, 0, 0, 0);
         glClearDepthf(1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -256,7 +255,7 @@ void android_main(struct android_app *app) {
 
       // Check if we are exiting.
       if (app->destroyRequested != 0) {
-        GLESEngine_destroy();
+        app_log("destroy requested\n");
         return;
       }
 
@@ -264,8 +263,7 @@ void android_main(struct android_app *app) {
 //        renderByANativeWindowAPI(app->window);
 
         GLfloat factor = context.state.y / context.height;
-        GLfloat color[4] = {0, factor, 0, 1};
-        glClearColor(color[0], color[1], color[2], color[3]);
+        glClearColor(0, factor, 0, 1);
         glClearDepthf(1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
