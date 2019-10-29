@@ -7,13 +7,13 @@
 #include "../gles/ShaderUtils.h"
 #include "Cube.h"
 
-static const char *cubeVert = "#version 320 es\n"
+static const char *cubeVert = "#version 300 es\n"
                               "layout(location = 1) in vec4 vPositionCube;\n"
                               "void main() {\n"
                               "  gl_Position = vPositionCube;\n"
                               "}\n";
 
-static const char *cubeFrag = "#version 320 es\n"
+static const char *cubeFrag = "#version 300 es\n"
                               "precision mediump float;\n"
                               "out vec4 fColorCube;\n"
                               "void main() {\n"

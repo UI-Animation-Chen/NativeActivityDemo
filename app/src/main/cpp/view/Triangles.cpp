@@ -6,13 +6,13 @@
 #include "Triangles.h"
 #include "../gles/ShaderUtils.h"
 
-static const char *triangleVert = "#version 320 es\n"
+static const char *triangleVert = "#version 300 es\n"
                                   "layout(location = 0) in vec4 vPositionTriangle;\n"
                                   "void main() {\n"
                                   "  gl_Position = vPositionTriangle;\n"
                                   "}\n";
 
-static const char *triangleFrag = "#version 320 es\n"
+static const char *triangleFrag = "#version 300 es\n"
                                   "precision mediump float;\n"
                                   "out vec4 fColorTriangle;\n"
                                   "void main() {\n"
