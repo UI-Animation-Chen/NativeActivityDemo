@@ -18,6 +18,7 @@
 #include "view/Triangles.h"
 #include "view/Shape.h"
 #include "view/Cube.h"
+#include "utils/CoordinatesUtils.h"
 
 static const int shape_len = 2;
 static Shape *pShape[shape_len] = {0};
@@ -106,6 +107,9 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         GLESEngine_init(context->app->window);
         context->width = GLESEngine_get_width();
         context->height = GLESEngine_get_height();
+
+        CoordinatesUtils::screenW = context->width;
+        CoordinatesUtils::screenH = context->height;
 
         glClearColor(0, 0, 0, 0);
         glClearDepthf(1.0f);
@@ -282,7 +286,10 @@ void android_main(struct android_app *app) {
             pShape[i]->draw();
         }
 
-        app_log("y/h: %f\n", factor);
+        app_log("android: x=%f, y=%f; gles: x=%f, y=%f\n",
+                context.state.x, context.state.y,
+                CoordinatesUtils::android2gles_x(context.state.x),
+                CoordinatesUtils::android2gles_y(context.state.y));
         GLESEngine_refresh();
       }
     }
