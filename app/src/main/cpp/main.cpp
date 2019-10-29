@@ -19,7 +19,8 @@
 #include "view/Shape.h"
 #include "view/Cube.h"
 
-static Shape *pShape;
+static const int shape_len = 2;
+static Shape *pShape[shape_len] = {0};
 
 /**
  * Our saved state data.
@@ -110,8 +111,12 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         glClearDepthf(1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        pShape = new Cube();
-        pShape->draw();
+//        pShape[0] = new Triangles();
+        pShape[1] = new Cube();
+        for (int i = 0; i < shape_len; i++) {
+          if (pShape[i])
+            pShape[i]->draw();
+        }
 
 //        renderByANativeWindowAPI(app->window);
 
@@ -121,7 +126,11 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
     case APP_CMD_TERM_WINDOW:
       // The window is being hidden or closed, clean it up.
       app_log("cmd -- destroy window\n");
-      delete pShape;
+      for (int i = 0; i < shape_len; i++) {
+        if (pShape[i]) {
+          delete pShape[i];
+        }
+      }
       GLESEngine_destroy();
       break;
     case APP_CMD_GAINED_FOCUS:
@@ -268,7 +277,10 @@ void android_main(struct android_app *app) {
         glClearDepthf(1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        pShape->draw();
+        for (int i = 0; i < shape_len; i++) {
+          if (pShape[i])
+            pShape[i]->draw();
+        }
 
         app_log("y/h: %f\n", factor);
         GLESEngine_refresh();

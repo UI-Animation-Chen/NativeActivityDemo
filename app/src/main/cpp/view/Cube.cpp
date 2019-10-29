@@ -8,16 +8,16 @@
 #include "Cube.h"
 
 static const char *cubeVert = "#version 320 es\n"
-                              "layout(location = 0) in vec4 vPosition;\n"
+                              "layout(location = 1) in vec4 vPositionCube;\n"
                               "void main() {\n"
-                              "  gl_Position = vPosition;\n"
+                              "  gl_Position = vPositionCube;\n"
                               "}\n";
 
 static const char *cubeFrag = "#version 320 es\n"
                               "precision mediump float;\n"
-                              "out vec4 fColor;\n"
+                              "out vec4 fColorCube;\n"
                               "void main() {\n"
-                              "  fColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
+                              "  fColorCube = vec4(1.0, 1.0, 1.0, 1.0);\n"
                               "}\n";
 
 Cube::Cube() {
@@ -35,8 +35,8 @@ Cube::Cube() {
       0.5f, 0.5f, 0.0f
   };
   glBufferData(GL_ARRAY_BUFFER, sizeof(cubePoints), cubePoints, GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(1);
 }
 
 Cube::~Cube() {
