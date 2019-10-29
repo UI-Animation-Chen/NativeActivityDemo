@@ -14,7 +14,7 @@ private:
   GLuint fragShader;
 
   GLuint vao; // vertex array object
-  GLuint buffer;
+  GLuint buffers[2];
 
   void init_shaders();
 
