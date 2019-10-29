@@ -7,17 +7,17 @@
 #include "../gles/ShaderUtils.h"
 
 static const char *triangleVert = "#version 320 es\n"
-                            "layout(location = 0) in vec4 vPosition;\n"
-                            "void main() {\n"
-                            "  gl_Position = vPosition;\n"
-                            "}\n";
+                                  "layout(location = 0) in vec4 vPosition;\n"
+                                  "void main() {\n"
+                                  "  gl_Position = vPosition;\n"
+                                  "}\n";
 
 static const char *triangleFrag = "#version 320 es\n"
-                            "precision mediump float;\n"
-                            "out vec4 fColor;\n"
-                            "void main() {\n"
-                            "  fColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
-                            "}\n";
+                                  "precision mediump float;\n"
+                                  "out vec4 fColor;\n"
+                                  "void main() {\n"
+                                  "  fColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
+                                  "}\n";
 
 Triangles::Triangles(): Shape() {
   init_shaders();
