@@ -87,3 +87,7 @@ void Triangles::draw() {
   }
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
+
+void Triangles::move(float offsetX, float offsetY, float offsetZ) {
+
+}

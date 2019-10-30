@@ -16,12 +16,15 @@ private:
   GLuint vao; // vertex array object
   GLuint buffers[2];
 
+  GLint offsetLocation;
+
   void init_shaders();
 
 public:
   Cube();
   virtual ~Cube();
   virtual void draw();
+  virtual void move(float offsetX, float offsetY, float offsetZ);
 
 };
 

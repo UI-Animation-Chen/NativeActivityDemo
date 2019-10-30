@@ -25,6 +25,7 @@ public:
   Triangles();
   virtual ~Triangles();
   virtual void draw();
+  virtual void move(float offsetX, float offsetY, float offsetZ);
 
 };
 

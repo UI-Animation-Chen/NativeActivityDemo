@@ -6,11 +6,13 @@
 
 #include "../gles/ShaderUtils.h"
 #include "Cube.h"
+#include "../utils/CoordinatesUtils.h"
 
 static const char *cubeVert = "#version 300 es\n"
                               "layout(location = 1) in vec4 vPositionCube;\n"
+                              "uniform vec4 positionOffset;\n"
                               "void main() {\n"
-                              "  gl_Position = vPositionCube;\n"
+                              "  gl_Position = vPositionCube + positionOffset;\n"
                               "}\n";
 
 static const char *cubeFrag = "#version 300 es\n"
@@ -63,6 +65,16 @@ Cube::~Cube() {
   glDeleteProgram(program);
 }
 
+void Cube::move(float offsetX, float offsetY, float offsetZ) {
+  GLfloat offsets[4] = {0};
+  offsets[0] = CoordinatesUtils::android2gles_x(offsetX);
+  offsets[0] = 0.1f;
+  offsets[1] = CoordinatesUtils::android2gles_x(offsetY);
+  offsets[1] = 0.1f;
+  offsets[2] = CoordinatesUtils::android2gles_x(offsetZ);
+  glUniform4fv(offsetLocation, 4, offsets);
+}
+
 void Cube::draw() {
   // 1->2->3, 2->3->4，先逆时针，后顺时针。
 //  glDrawArrays(GL_TRIANGLE_STRIP, 0, 5);
@@ -74,4 +86,5 @@ void Cube::init_shaders() {
   fragShader = get_compiled_shader_frag(cubeFrag);
   program = linkShader(vertShader, fragShader);
   glUseProgram(program);
+  offsetLocation = glGetUniformLocation(program, "positionOffset");
 }

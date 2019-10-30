@@ -115,7 +115,9 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         glClearDepthf(1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-//        pShape[0] = new Triangles();
+        pShape[0] = new Triangles();
+        delete pShape[0];
+        pShape[0] = 0;
         pShape[1] = new Cube();
         for (int i = 0; i < shape_len; i++) {
           if (pShape[i])
@@ -282,8 +284,10 @@ void android_main(struct android_app *app) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         for (int i = 0; i < shape_len; i++) {
-          if (pShape[i])
+          if (pShape[i]) {
+            pShape[i]->move(10.0f, 10.0f, 0);
             pShape[i]->draw();
+          }
         }
 
         app_log("android: x=%f, y=%f; gles: x=%f, y=%f\n",
