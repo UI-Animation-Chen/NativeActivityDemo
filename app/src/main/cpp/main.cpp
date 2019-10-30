@@ -58,7 +58,6 @@ static int32_t on_handle_input(struct android_app *app, AInputEvent *event) {
 //    context->animating = 1;
     context->state.x = AMotionEvent_getX(event, 0);
     context->state.y = AMotionEvent_getY(event, 0);
-    app_log("x: %f, y: %f\n", context->state.x, context->state.y);
     return 1;
   }
   return 0;
@@ -285,15 +284,11 @@ void android_main(struct android_app *app) {
 
         for (int i = 0; i < shape_len; i++) {
           if (pShape[i]) {
-            pShape[i]->move(10.0f, 10.0f, 0);
+            pShape[i]->move(context.state.x, context.state.y, 0);
             pShape[i]->draw();
           }
         }
 
-        app_log("android: x=%f, y=%f; gles: x=%f, y=%f\n",
-                context.state.x, context.state.y,
-                CoordinatesUtils::android2gles_x(context.state.x),
-                CoordinatesUtils::android2gles_y(context.state.y));
         GLESEngine_refresh();
       }
     }

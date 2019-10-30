@@ -9,10 +9,13 @@
 #include "../utils/CoordinatesUtils.h"
 
 static const char *cubeVert = "#version 300 es\n"
-                              "layout(location = 1) in vec4 vPositionCube;\n"
-                              "uniform vec4 positionOffset;\n"
+                              "layout(location = 0) in vec4 vPositionCube;\n"
+                              "uniform float dx;\n"
+                              "uniform float dy;\n"
                               "void main() {\n"
-                              "  gl_Position = vPositionCube + positionOffset;\n"
+                              "  gl_Position = vPositionCube;\n"
+                              "  gl_Position[0] += dx;\n"
+                              "  gl_Position[1] += dy;\n"
                               "}\n";
 
 static const char *cubeFrag = "#version 300 es\n"
@@ -52,8 +55,8 @@ Cube::Cube() {
   };
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
 
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(0);
 }
 
 Cube::~Cube() {
@@ -68,11 +71,9 @@ Cube::~Cube() {
 void Cube::move(float offsetX, float offsetY, float offsetZ) {
   GLfloat offsets[4] = {0};
   offsets[0] = CoordinatesUtils::android2gles_x(offsetX);
-  offsets[0] = 0.1f;
-  offsets[1] = CoordinatesUtils::android2gles_x(offsetY);
-  offsets[1] = 0.1f;
-  offsets[2] = CoordinatesUtils::android2gles_x(offsetZ);
-  glUniform4fv(offsetLocation, 4, offsets);
+  offsets[1] = CoordinatesUtils::android2gles_y(offsetY);
+  glUniform1f(dxLocation, offsets[0]);
+  glUniform1f(dyLocation, offsets[1]);
 }
 
 void Cube::draw() {
@@ -85,6 +86,7 @@ void Cube::init_shaders() {
   vertShader = get_compiled_shader_vert(cubeVert);
   fragShader = get_compiled_shader_frag(cubeFrag);
   program = linkShader(vertShader, fragShader);
+  dxLocation = glGetUniformLocation(program, "dx");
+  dyLocation = glGetUniformLocation(program, "dy");
   glUseProgram(program);
-  offsetLocation = glGetUniformLocation(program, "positionOffset");
 }
