@@ -4,7 +4,7 @@
 
 #include <GLES3/gl32.h>
 #include "Triangles.h"
-#include "../gles/ShaderUtils.h"
+#include "../utils/ShaderUtils.h"
 
 static const char *triangleVert = "#version 300 es\n"
                                   "layout(location = 0) in vec4 vPositionTriangle;\n"
