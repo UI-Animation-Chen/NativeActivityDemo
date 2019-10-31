@@ -79,11 +79,14 @@ void Cube::move(float offsetX, float offsetY, float offsetZ) {
   GLfloat offsets[4] = {0};
   offsets[0] = CoordinatesUtils::android2gles_x(offsetX);
   offsets[1] = CoordinatesUtils::android2gles_y(offsetY);
+  glUseProgram(program);
   glUniform1f(dxLocation, offsets[0]);
   glUniform1f(dyLocation, offsets[1]);
 }
 
 void Cube::draw() {
+  glUseProgram(program);
+  glBindVertexArray(vao);
   // 1->2->3, 2->3->4，先逆时针，后顺时针。
 //  glDrawArrays(GL_TRIANGLE_STRIP, 0, 5);
   glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_SHORT, 0);
@@ -95,5 +98,4 @@ void Cube::init_shaders() {
   program = linkShader(vertShader, fragShader);
   dxLocation = glGetUniformLocation(program, "dx");
   dyLocation = glGetUniformLocation(program, "dy");
-  glUseProgram(program);
 }

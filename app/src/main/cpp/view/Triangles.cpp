@@ -50,7 +50,6 @@ void Triangles::init_shaders() {
   vertShader = get_compiled_shader_vert(triangleVert);
   fragShader = get_compiled_shader_frag(triangleFrag);
   program = linkShader(vertShader, fragShader);
-  glUseProgram(program);
 }
 
 void Triangles::bind_buf0() {
@@ -78,6 +77,7 @@ void Triangles::bind_buf1() {
 int state = 0;
 
 void Triangles::draw() {
+  glUseProgram(program);
   if (state == 0) {
     glBindVertexArray(vaos[1]);
     state = 1;

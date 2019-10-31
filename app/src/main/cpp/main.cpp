@@ -115,12 +115,9 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         pShape[0] = new Triangles();
-        delete pShape[0];
-        pShape[0] = 0;
         pShape[1] = new Cube();
         for (int i = 0; i < shape_len; i++) {
-          if (pShape[i])
-            pShape[i]->draw();
+          if (pShape[i]) pShape[i]->draw();
         }
 
 //        renderByANativeWindowAPI(app->window);
