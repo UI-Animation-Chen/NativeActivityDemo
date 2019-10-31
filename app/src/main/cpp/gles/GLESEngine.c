@@ -118,7 +118,6 @@ int GLESEngine_init(ANativeWindow *window) {
   // Initialize GL state.
 //  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
   glEnable(GL_CULL_FACE);
-//  glShadeModel(GL_SMOOTH);
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
 

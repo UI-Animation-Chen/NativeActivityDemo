@@ -20,7 +20,10 @@ static const char *cubeVert = "#version 300 es\n"
                               "  gl_Position = vPositionCube;\n"
                               "  gl_Position[0] += dx;\n"
                               "  gl_Position[1] += dy;\n"
-                              "  myColor = vec4(dx, dx - dy, dy, 1.0);\n"
+                              "  float z = gl_Position[2];\n"
+                              "  float c = 0.4;\n"
+                              "  if (z == -0.5) c = 1.0;\n"
+                              "  myColor = vec4(c, c, c, 1.0);\n"
                               "}\n";
 
 // for fragment shader, Specifying the precision is compulsory.
@@ -48,17 +51,25 @@ Cube::Cube() {
 //      0.5f, 0.5f, 0.0f
 //  };
   GLfloat cubePoints[] = {
-    0.0f, 0.0f, 0.0f,
-    -0.5f, 0.5f, 0.0f,
-    -0.5f, -0.5f, 0.0f,
-    0.5f,  -0.5f, 0.0f,
-    0.5f, 0.5f, 0.0f
+    -0.2f, 0.2f, 0.5f, // z轴正向为屏幕向里
+    -0.2f, -0.2f, 0.5f,
+    0.2f,  -0.2f, 0.5f,
+    0.2f, 0.2f, 0.5f,
+    -0.5f, 0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,
+    0.5f,  -0.5f, -0.5f,
+    0.5f, 0.5f, -0.5f
   };
   glBufferData(GL_ARRAY_BUFFER, sizeof(cubePoints), cubePoints, GL_STATIC_DRAW);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
   GLushort cubeIndices[] = {
-    0, 1, 2, 0, 2, 3, 0, 3, 4
+    0, 1, 2, 0, 2, 3, // 里， 逆时针
+    0, 3, 4, 4, 3, 7, // 上， 逆时针
+    0, 4, 5, 0, 5, 1, // 左， 逆时针
+    5, 6, 1, 1, 6, 2, // 下， 逆时针
+    3, 2, 6, 3, 6, 7, // 右， 逆时针
+    4, 6, 5, 7, 6, 4 // 外，顺时针，cull face，被剔除了
   };
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
 
@@ -89,7 +100,7 @@ void Cube::draw() {
   glBindVertexArray(vao);
   // 1->2->3, 2->3->4，先逆时针，后顺时针。
 //  glDrawArrays(GL_TRIANGLE_STRIP, 0, 5);
-  glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_SHORT, 0);
+  glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
 }
 
 void Cube::init_shaders() {
