@@ -8,21 +8,28 @@
 #include "Cube.h"
 #include "../utils/CoordinatesUtils.h"
 
+// three types of the precision: lowp, mediump and highp.
+
+// for vertex, if the precision is not specified, it is consider to be highest (highp).
 static const char *cubeVert = "#version 300 es\n"
                               "layout(location = 0) in vec4 vPositionCube;\n"
                               "uniform float dx;\n"
                               "uniform float dy;\n"
+                              "out vec4 myColor;\n" // send to next stage(frag shader)
                               "void main() {\n"
                               "  gl_Position = vPositionCube;\n"
                               "  gl_Position[0] += dx;\n"
                               "  gl_Position[1] += dy;\n"
+                              "  myColor = vec4(dx, dx - dy, dy, 1.0);\n"
                               "}\n";
 
+// for fragment shader, Specifying the precision is compulsory.
 static const char *cubeFrag = "#version 300 es\n"
                               "precision mediump float;\n"
+                              "in vec4 myColor;\n" // receive from previous stage(vert shader)
                               "out vec4 fColorCube;\n"
                               "void main() {\n"
-                              "  fColorCube = vec4(1.0, 1.0, 1.0, 1.0);\n"
+                              "  fColorCube = myColor;\n"
                               "}\n";
 
 Cube::Cube() {
