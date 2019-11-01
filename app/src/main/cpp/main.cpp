@@ -110,8 +110,11 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         CoordinatesUtils::screenW = context->width;
         CoordinatesUtils::screenH = context->height;
 
+        // 深度测试的基准,注意1.0代表从近裁剪面到远裁剪面 这一段范围！！并不是指Z轴的1个单位
+        // 深度，是一个Normolized的值，范围是 0-1，对应Z轴是从近裁剪面到远裁剪面。
+        // 所以这里的 1.0f 指的是 ，深度缓冲区中默认值是远裁剪面。
+        glClearDepthf(1.0f);
         glClearColor(0, 0, 0, 0);
-        glClearDepthf(1.0f); // 1.0表示z轴最大值，屏幕向里。
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         pShape[0] = new Triangles();
@@ -276,7 +279,7 @@ void android_main(struct android_app *app) {
 
         GLfloat factor = context.state.y / context.height;
         glClearColor(0, factor, 0, 1);
-        glClearDepthf(1.0f); // 1.0表示z轴最大值，屏幕向里。
+        glClearDepthf(1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         for (int i = 0; i < shape_len; i++) {

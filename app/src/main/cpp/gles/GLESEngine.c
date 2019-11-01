@@ -46,7 +46,7 @@ int GLESEngine_init(ANativeWindow *window) {
       EGL_GREEN_SIZE, 8,
       EGL_RED_SIZE, 8,
       EGL_ALPHA_SIZE, 8,
-      EGL_DEPTH_SIZE, 24,
+      EGL_DEPTH_SIZE, 16,
       EGL_NONE
   };
   EGLint numConfigs = 0;
@@ -68,7 +68,7 @@ int GLESEngine_init(ANativeWindow *window) {
         eglGetConfigAttrib(display, cfg, EGL_BLUE_SIZE, &b) &&
         eglGetConfigAttrib(display, cfg, EGL_ALPHA_SIZE, &a) &&
         eglGetConfigAttrib(display, cfg, EGL_DEPTH_SIZE, &d) &&
-        r == 8 && g == 8 && b == 8 && a == 8 && d == 24) {
+        r == 8 && g == 8 && b == 8 && a == 8 && d == 16) {
 
       config = supportedConfigs[i];
       app_log("r: %d, g: %d, b: %d, a: %d, d: %d\n", r, g, b, a, d);
