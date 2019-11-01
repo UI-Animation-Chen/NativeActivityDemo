@@ -8,15 +8,21 @@
 
 static const char *triangleVert = "#version 300 es\n"
                                   "layout(location = 0) in vec4 vPositionTriangle;\n"
+                                  "out vec4 myColor;\n"
                                   "void main() {\n"
                                   "  gl_Position = vPositionTriangle;\n"
+                                  "  float z = gl_Position[2];\n"
+                                  "  float c = 0.6;\n"
+                                  "  if (z == -0.2) c = 1.0;\n"
+                                  "  myColor = vec4(c, c, c, 1.0);\n"
                                   "}\n";
 
 static const char *triangleFrag = "#version 300 es\n"
                                   "precision mediump float;\n"
+                                  "in vec4 myColor;\n"
                                   "out vec4 fColorTriangle;\n"
                                   "void main() {\n"
-                                  "  fColorTriangle = vec4(1.0, 1.0, 1.0, 1.0);\n"
+                                  "  fColorTriangle = myColor;\n"
                                   "}\n";
 
 Triangles::Triangles(): Shape() {
@@ -55,10 +61,10 @@ void Triangles::init_shaders() {
 void Triangles::bind_buf0() {
   glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
   GLfloat triangles[] = {
-      0.0f,  0.75f, 0.0f,
-      -0.25f, -0.0f, 0.0f,
-      0.0f, -0.75f, 0.0f,
-      0.25f, 0.0f, 0.0f
+      0.0f,  0.75f, -0.2f,
+      -0.25f, -0.0f, 0.2f,
+      0.0f, -0.75f, 0.2f,
+      0.25f, 0.0f, 0.2f
   };
   glBufferData(GL_ARRAY_BUFFER, sizeof(triangles), triangles, GL_STATIC_DRAW);
 }
@@ -66,10 +72,10 @@ void Triangles::bind_buf0() {
 void Triangles::bind_buf1() {
   glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
   GLfloat triangles[] = {
-      0.0f,  0.5f, 0.0f,
-      -0.5f, 0.0f, 0.0f,
-      0.0f, -0.5f, 0.0f,
-      0.5f, 0.0f, 0.0f
+      0.0f,  0.5f, -0.2f,
+      -0.5f, 0.0f, 0.2f,
+      0.0f, -0.5f, 0.2f,
+      0.5f, 0.0f, 0.2f
   };
   glBufferData(GL_ARRAY_BUFFER, sizeof(triangles), triangles, GL_STATIC_DRAW);
 }
