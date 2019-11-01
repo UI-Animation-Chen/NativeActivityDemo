@@ -111,7 +111,7 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         CoordinatesUtils::screenH = context->height;
 
         glClearColor(0, 0, 0, 0);
-        glClearDepthf(1.0f);
+        glClearDepthf(1.0f); // 1.0表示z轴最大值，屏幕向里。
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         pShape[0] = new Triangles();
@@ -276,7 +276,7 @@ void android_main(struct android_app *app) {
 
         GLfloat factor = context.state.y / context.height;
         glClearColor(0, factor, 0, 1);
-        glClearDepthf(1.0f);
+        glClearDepthf(1.0f); // 1.0表示z轴最大值，屏幕向里。
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         for (int i = 0; i < shape_len; i++) {
