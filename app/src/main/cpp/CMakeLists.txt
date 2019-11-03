@@ -8,7 +8,8 @@ add_library(native-activity SHARED
     main.cpp
     gles/GLESEngine.c
     utils/ShaderUtils.c utils/CoordinatesUtils.cpp
-    view/Triangles.cpp view/Cube.cpp view/Shape.cpp)
+    view/Triangles.cpp view/Cube.cpp view/Shape.cpp
+    utils/cjson/cJSON.c utils/cjson/cJSON_Utils.c)
 
 # Export ANativeActivity_onCreate(),
 # Refer to: https://github.com/android-ndk/ndk/issues/381.
