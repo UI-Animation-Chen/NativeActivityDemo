@@ -17,6 +17,7 @@ public:
   }
   virtual void draw() = 0;
   virtual void move(float offsetX, float offsetY, float offsetZ) = 0;
+  virtual void rotate(float xDeg, float yDeg, float zDeg) = 0;
 };
 
 #endif //NATIVEACTIVITYDEMO_SHAPE_H

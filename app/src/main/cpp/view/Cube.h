@@ -18,6 +18,7 @@ private:
 
   GLint dxLocation;
   GLint dyLocation;
+  GLint dzLocation;
 
   void init_shaders();
 
@@ -26,6 +27,7 @@ public:
   virtual ~Cube();
   virtual void draw();
   virtual void move(float offsetX, float offsetY, float offsetZ);
+  virtual void rotate(float xDeg, float yDeg, float zDeg);
 
 };
 

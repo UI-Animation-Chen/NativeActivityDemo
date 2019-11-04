@@ -120,7 +120,10 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         pShape[0] = new Triangles();
         pShape[1] = new Cube();
         for (int i = 0; i < shape_len; i++) {
-          if (pShape[i]) pShape[i]->draw();
+          if (pShape[i]) {
+            pShape[i]->move(context->width/2, context->height/2, context->height/2);
+            pShape[i]->draw();
+          }
         }
 
 //        renderByANativeWindowAPI(app->window);
@@ -278,13 +281,13 @@ void android_main(struct android_app *app) {
 //        renderByANativeWindowAPI(app->window);
 
         GLfloat factor = context.state.y / context.height;
-        glClearColor(0, factor, 0, 1);
+        glClearColor(0, 1, 0, 1);
         glClearDepthf(1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         for (int i = 0; i < shape_len; i++) {
           if (pShape[i]) {
-            pShape[i]->move(context.state.x, context.state.y, 0);
+            pShape[i]->move(context.state.x, context.state.y, context.state.y);
             pShape[i]->draw();
           }
         }

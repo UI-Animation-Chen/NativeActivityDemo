@@ -15,14 +15,16 @@ static const char *cubeVert = "#version 300 es\n"
                               "layout(location = 0) in vec4 vPositionCube;\n"
                               "uniform float dx;\n"
                               "uniform float dy;\n"
+                              "uniform float dz;\n"
                               "out vec4 myColor;\n" // send to next stage(frag shader)
                               "void main() {\n"
                               "  gl_Position = vPositionCube;\n"
                               "  gl_Position[0] += dx;\n"
                               "  gl_Position[1] += dy;\n"
+                              "  gl_Position[2] += dz;\n"
                               "  float z = gl_Position[2];\n"
                               "  float c = 0.4;\n"
-                              "  if (z == -0.5) c = 1.0;\n"
+                              "  if (z == (-0.5 + dz)) c = 1.0;\n"
                               "  myColor = vec4(c, c, c, 1.0);\n"
                               "}\n";
 
@@ -90,9 +92,15 @@ void Cube::move(float offsetX, float offsetY, float offsetZ) {
   GLfloat offsets[4] = {0};
   offsets[0] = CoordinatesUtils::android2gles_x(offsetX);
   offsets[1] = CoordinatesUtils::android2gles_y(offsetY);
+  offsets[2] = CoordinatesUtils::android2gles_y(offsetZ);
   glUseProgram(program);
   glUniform1f(dxLocation, offsets[0]);
   glUniform1f(dyLocation, offsets[1]);
+  glUniform1f(dzLocation, -offsets[2]);
+}
+
+void Cube::rotate(float xDeg, float yDeg, float zDeg) {
+  
 }
 
 void Cube::draw() {
@@ -109,4 +117,5 @@ void Cube::init_shaders() {
   program = linkShader(vertShader, fragShader);
   dxLocation = glGetUniformLocation(program, "dx");
   dyLocation = glGetUniformLocation(program, "dy");
+  dzLocation = glGetUniformLocation(program, "dz");
 }

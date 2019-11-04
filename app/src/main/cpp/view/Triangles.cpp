@@ -89,11 +89,15 @@ void Triangles::draw() {
     state = 1;
   } else {
     glBindVertexArray(vaos[0]);
-    state = 0;
+    state = 1;
   }
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 void Triangles::move(float offsetX, float offsetY, float offsetZ) {
+
+}
+
+void Triangles::rotate(float xDeg, float yDeg, float zDeg) {
 
 }
