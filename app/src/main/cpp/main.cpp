@@ -19,9 +19,12 @@
 #include "view/Shape.h"
 #include "view/Cube.h"
 #include "utils/CoordinatesUtils.h"
+#include "utils/TouchEventHandler.h"
 
 static const int shape_len = 2;
 static Shape *pShape[shape_len] = {0};
+
+static TouchEventHandler *touchEventHandler = NULL;
 
 /**
  * Our saved state data.
@@ -58,6 +61,8 @@ static int32_t on_handle_input(struct android_app *app, AInputEvent *event) {
 //    context->animating = 1;
     context->state.x = AMotionEvent_getX(event, 0);
     context->state.y = AMotionEvent_getY(event, 0);
+
+    if (touchEventHandler != NULL) touchEventHandler->onTouchEvent(event);
     return 1;
   }
   return 0;
@@ -215,6 +220,28 @@ ASensorManager *AcquireASensorManagerInstance(struct android_app *app) {
   return getInstanceFunc();
 }
 
+void initTouchEventHandlerCallbacks() {
+  touchEventHandler->setOnTouchDown([](float downX, float downY, float downMills) {
+    pShape[0]->draw();
+  });
+  touchEventHandler->setOnTouchMove([](float deltaX, float deltaY, float currX, float currY,
+                                              float currMills) {
+
+  });
+  touchEventHandler->setOnTouchCancel([](float cancelX, float cancelY, float cancelMillis) {
+
+  });
+  touchEventHandler->setOnTouchUp([](float upX, float upY, float upMillis) {
+
+  });
+  touchEventHandler->setOnScale([](float scaleX, float scaleY, float currMillis) {
+
+  });
+  touchEventHandler->setOnRotate([](float rotateDeg, float currMillis) {
+
+  });
+}
+
 /**
  * This is the main entry point of a native application that is using
  * android_native_app_glue.  It runs in its own thread, with its own
@@ -228,6 +255,9 @@ void android_main(struct android_app *app) {
   app->onAppCmd = on_handle_cmd;
   app->onInputEvent = on_handle_input;
   context.app = app;
+
+  touchEventHandler = new TouchEventHandler();
+  initTouchEventHandlerCallbacks();
 
   // Prepare to monitor accelerometer
 //  context.sensorManager = AcquireASensorManagerInstance(app);
