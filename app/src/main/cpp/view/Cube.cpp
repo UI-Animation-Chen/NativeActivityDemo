@@ -89,18 +89,18 @@ Cube::~Cube() {
 }
 
 void Cube::move(float offsetX, float offsetY, float offsetZ) {
-  GLfloat offsets[4] = {0};
+  GLfloat offsets[3] = {0};
   offsets[0] = CoordinatesUtils::android2gles_x(offsetX);
   offsets[1] = CoordinatesUtils::android2gles_y(offsetY);
-  offsets[2] = CoordinatesUtils::android2gles_y(offsetZ);
+  offsets[2] = offsetZ;
   glUseProgram(program);
   glUniform1f(dxLocation, offsets[0]);
   glUniform1f(dyLocation, offsets[1]);
-  glUniform1f(dzLocation, -offsets[2]);
+  glUniform1f(dzLocation, offsets[2]);
 }
 
 void Cube::rotate(float xDeg, float yDeg, float zDeg) {
-  
+
 }
 
 void Cube::draw() {

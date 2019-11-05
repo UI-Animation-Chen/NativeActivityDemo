@@ -10,34 +10,55 @@
 
 class TouchEventHandler {
 public:
-  TouchEventHandler(): downX(-1), downY(-1) {}
+  TouchEventHandler() : oldX(-1), oldY(-1), moreThan2Fingers(false), oldTanDeg(0),
+                        oldScaledX(0), oldScaledY(0), old2FingersDistance(0) {}
+
   virtual ~TouchEventHandler() {}
 
   void onTouchEvent(AInputEvent *event);
 
   void setOnTouchDown(std::function<void(float downX, float downY,
-    float downMills)> onTouchDownFunc);
+                                         float downMills)> onTouchDownFunc);
+
   void setOnTouchMove(std::function<void(float deltaX, float deltaY, float currX, float currY,
-    float currMills)> onTouchMoveFunc);
+                                         float currMills)> onTouchMoveFunc);
+
   void setOnTouchCancel(std::function<void(float cancelX, float cancelY,
-    float cancelMills)> onTouchCancelFunc);
+                                           float cancelMills)> onTouchCancelFunc);
+
   void setOnTouchUp(std::function<void(float upX, float upY, float upMillis)> onTouchUpFunc);
-  void setOnScale(std::function<void(float scaleX, float scaleY,
-    float currMillis)> onTouchScaleFunc);
+
+  void setOnScale(std::function<void(float scaledX, float scaledY, float scaledDinstance,
+                                     float currMillis)> onTouchScaleFunc);
+
   void setOnRotate(std::function<void(float rotateDeg, float currMillis)> onTouchRotateFunc);
 
 private:
   // callback functions
   std::function<void(float downX, float downY, float downMills)> onTouchDownFunc;
   std::function<void(float deltaX, float deltaY, float currX, float currY,
-    float currMills)> onTouchMoveFunc;
+                     float currMills)> onTouchMoveFunc;
   std::function<void(float cancelX, float cancelY, float cancelMills)> onTouchCancelFunc;
   std::function<void(float upX, float upY, float upMillis)> onTouchUpFunc;
-  std::function<void(float scaleX, float scaleY, float currMillis)> onTouchScaleFunc;
+  std::function<void(float scaledX, float scaledY, float scaledDistance,
+                     float currMillis)> onTouchScaleFunc;
   std::function<void(float rotateDeg, float currMillis)> onTouchRotateFunc;
 
   // private vars
-  float downX, downY;
+  float oldX, oldY;
+  bool moreThan2Fingers;
+
+  float oldTanDeg;
+
+  float oldScaledX, oldScaledY, old2FingersDistance;
+
+  float getRotatedDegBetween2Events(AInputEvent *event);
+
+  float getDeltaScaledXBetween2Events(AInputEvent *event);
+
+  float getDeltaScaledYBetween2Events(AInputEvent *event);
+
+  float getScaledDistanceBetween2Events(AInputEvent *event);
 };
 
 #endif //NATIVEACTIVITYDEMO_TOUCHEVENTHANDLER_H

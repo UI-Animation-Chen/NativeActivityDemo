@@ -26,6 +26,8 @@ static Shape *pShape[shape_len] = {0};
 
 static TouchEventHandler *touchEventHandler = NULL;
 
+static float transX = 0, transY = 0, transZ = 0;
+
 /**
  * Our saved state data.
  */
@@ -122,11 +124,14 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        transX = context->width/2;
+        transY = context->height/2;
+
         pShape[0] = new Triangles();
         pShape[1] = new Cube();
         for (int i = 0; i < shape_len; i++) {
           if (pShape[i]) {
-            pShape[i]->move(context->width/2, context->height/2, context->height/2);
+            pShape[i]->move(transX, transY, transZ);
             pShape[i]->draw();
           }
         }
@@ -222,23 +227,31 @@ ASensorManager *AcquireASensorManagerInstance(struct android_app *app) {
 
 void initTouchEventHandlerCallbacks() {
   touchEventHandler->setOnTouchDown([](float downX, float downY, float downMills) {
-    pShape[0]->draw();
   });
   touchEventHandler->setOnTouchMove([](float deltaX, float deltaY, float currX, float currY,
                                               float currMills) {
-
+    transX += deltaX;
+    transY += deltaY;
+    for (int i = 0; i < shape_len; i++) {
+      if (pShape[i]) {
+        pShape[i]->move(transX, transY, transZ);
+      }
+    }
   });
   touchEventHandler->setOnTouchCancel([](float cancelX, float cancelY, float cancelMillis) {
-
+    app_log("cancel\n");
   });
   touchEventHandler->setOnTouchUp([](float upX, float upY, float upMillis) {
-
   });
-  touchEventHandler->setOnScale([](float scaleX, float scaleY, float currMillis) {
-
+  touchEventHandler->setOnScale([](float scaleX, float scaleY, float scaleDistance, float currMillis) {
+    transZ += (scaleDistance / CoordinatesUtils::screenW);
+    for (int i = 0; i < shape_len; i++) {
+      if (pShape[i]) {
+        pShape[i]->move(transX, transY, transZ);
+      }
+    }
   });
   touchEventHandler->setOnRotate([](float rotateDeg, float currMillis) {
-
   });
 }
 
@@ -317,7 +330,6 @@ void android_main(struct android_app *app) {
 
         for (int i = 0; i < shape_len; i++) {
           if (pShape[i]) {
-            pShape[i]->move(context.state.x, context.state.y, context.state.y);
             pShape[i]->draw();
           }
         }
