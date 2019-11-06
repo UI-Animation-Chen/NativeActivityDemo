@@ -124,8 +124,8 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        transX = context->width/2;
-        transY = context->height/2;
+        if (transX == 0) transX = context->width/2;
+        if (transY == 0) transY = context->height/2;
 
         pShape[0] = new Triangles();
         pShape[1] = new Cube();
@@ -226,10 +226,10 @@ ASensorManager *AcquireASensorManagerInstance(struct android_app *app) {
 }
 
 void initTouchEventHandlerCallbacks() {
-  touchEventHandler->setOnTouchDown([](float downX, float downY, float downMills) {
+  touchEventHandler->setOnTouchDown([](float downX, float downY, float downMillis) {
   });
   touchEventHandler->setOnTouchMove([](float deltaX, float deltaY, float currX, float currY,
-                                              float currMills) {
+                                              float currMillis) {
     transX += deltaX;
     transY += deltaY;
     for (int i = 0; i < shape_len; i++) {
@@ -244,7 +244,7 @@ void initTouchEventHandlerCallbacks() {
   touchEventHandler->setOnTouchUp([](float upX, float upY, float upMillis) {
   });
   touchEventHandler->setOnScale([](float scaleX, float scaleY, float scaleDistance, float currMillis) {
-    transZ += (scaleDistance / CoordinatesUtils::screenW);
+    transZ += (scaleDistance / CoordinatesUtils::screenH);
     for (int i = 0; i < shape_len; i++) {
       if (pShape[i]) {
         pShape[i]->move(transX, transY, transZ);

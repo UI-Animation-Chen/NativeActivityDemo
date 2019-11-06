@@ -18,13 +18,13 @@ public:
   void onTouchEvent(AInputEvent *event);
 
   void setOnTouchDown(std::function<void(float downX, float downY,
-                                         float downMills)> onTouchDownFunc);
+                                         float downMillis)> onTouchDownFunc);
 
   void setOnTouchMove(std::function<void(float deltaX, float deltaY, float currX, float currY,
-                                         float currMills)> onTouchMoveFunc);
+                                         float currMillis)> onTouchMoveFunc);
 
   void setOnTouchCancel(std::function<void(float cancelX, float cancelY,
-                                           float cancelMills)> onTouchCancelFunc);
+                                           float cancelMillis)> onTouchCancelFunc);
 
   void setOnTouchUp(std::function<void(float upX, float upY, float upMillis)> onTouchUpFunc);
 
@@ -35,10 +35,10 @@ public:
 
 private:
   // callback functions
-  std::function<void(float downX, float downY, float downMills)> onTouchDownFunc;
+  std::function<void(float downX, float downY, float downMillis)> onTouchDownFunc;
   std::function<void(float deltaX, float deltaY, float currX, float currY,
-                     float currMills)> onTouchMoveFunc;
-  std::function<void(float cancelX, float cancelY, float cancelMills)> onTouchCancelFunc;
+                     float currMillis)> onTouchMoveFunc;
+  std::function<void(float cancelX, float cancelY, float cancelMillis)> onTouchCancelFunc;
   std::function<void(float upX, float upY, float upMillis)> onTouchUpFunc;
   std::function<void(float scaledX, float scaledY, float scaledDistance,
                      float currMillis)> onTouchScaleFunc;

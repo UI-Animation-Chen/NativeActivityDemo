@@ -4,7 +4,6 @@
 //
 
 #include "TouchEventHandler.h"
-#include "../app_log.h"
 #include <math.h>
 
 #define MAX_DEGREES_IN_TWO_MOVE_EVENTS 180.0f
@@ -170,18 +169,18 @@ void TouchEventHandler::onTouchEvent(AInputEvent *event) {
 }
 
 void TouchEventHandler::setOnTouchDown(std::function<void(float downX, float downY,
-                                                          float downMills)> onTouchDownFunc) {
+                                                          float downMillis)> onTouchDownFunc) {
   this->onTouchDownFunc = onTouchDownFunc;
 }
 
 void TouchEventHandler::setOnTouchMove(std::function<void(float deltaX, float deltaY, float currX,
                                                           float currY,
-                                                          float currMills)> onTouchMoveFunc) {
+                                                          float currMillis)> onTouchMoveFunc) {
   this->onTouchMoveFunc = onTouchMoveFunc;
 }
 
 void TouchEventHandler::setOnTouchCancel(std::function<void(float cancelX, float cancelY,
-                                                            float cancelMills)> onTouchCancelFunc) {
+                                                            float cancelMillis)> onTouchCancelFunc) {
   this->onTouchCancelFunc = onTouchCancelFunc;
 }
 
