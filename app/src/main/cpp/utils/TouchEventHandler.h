@@ -21,7 +21,7 @@ public:
                                          float downMillis)> onTouchDownFunc);
 
   void setOnTouchMove(std::function<void(float deltaX, float deltaY, float currX, float currY,
-                                         float currMillis)> onTouchMoveFunc);
+                                         float currMillis, int fingers)> onTouchMoveFunc);
 
   void setOnTouchCancel(std::function<void(float cancelX, float cancelY,
                                            float cancelMillis)> onTouchCancelFunc);
@@ -37,7 +37,7 @@ private:
   // callback functions
   std::function<void(float downX, float downY, float downMillis)> onTouchDownFunc;
   std::function<void(float deltaX, float deltaY, float currX, float currY,
-                     float currMillis)> onTouchMoveFunc;
+                     float currMillis, int fingers)> onTouchMoveFunc;
   std::function<void(float cancelX, float cancelY, float cancelMillis)> onTouchCancelFunc;
   std::function<void(float upX, float upY, float upMillis)> onTouchUpFunc;
   std::function<void(float scaledX, float scaledY, float scaledDistance,

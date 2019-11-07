@@ -114,7 +114,8 @@ void TouchEventHandler::onTouchEvent(AInputEvent *event) {
       if (moreThan2Fingers) return;
 
       float newX, newY;
-      if (AMotionEvent_getPointerCount(event) == 2) {
+      int fingers;
+      if ((fingers = AMotionEvent_getPointerCount(event)) == 2) {
         // handle rotate
         float currDeltaRotatedDeg = getRotatedDegBetween2Events(event);
         if (onTouchRotateFunc) onTouchRotateFunc(currDeltaRotatedDeg, 0);
@@ -136,7 +137,7 @@ void TouchEventHandler::onTouchEvent(AInputEvent *event) {
       oldX = newX;
       oldY = newY;
 
-      if (onTouchMoveFunc) onTouchMoveFunc(currDeltaMovedX, currDeltaMovedY, newX, newY, 0);
+      if (onTouchMoveFunc) onTouchMoveFunc(currDeltaMovedX, currDeltaMovedY, newX, newY, 0, fingers);
       break;
     }
     case AMOTION_EVENT_ACTION_POINTER_UP: {
@@ -174,8 +175,8 @@ void TouchEventHandler::setOnTouchDown(std::function<void(float downX, float dow
 }
 
 void TouchEventHandler::setOnTouchMove(std::function<void(float deltaX, float deltaY, float currX,
-                                                          float currY,
-                                                          float currMillis)> onTouchMoveFunc) {
+                                                          float currY, float currMillis,
+                                                          int fingers)> onTouchMoveFunc) {
   this->onTouchMoveFunc = onTouchMoveFunc;
 }
 

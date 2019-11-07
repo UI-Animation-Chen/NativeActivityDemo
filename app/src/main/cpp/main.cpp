@@ -229,7 +229,7 @@ void initTouchEventHandlerCallbacks() {
   touchEventHandler->setOnTouchDown([](float downX, float downY, float downMillis) {
   });
   touchEventHandler->setOnTouchMove([](float deltaX, float deltaY, float currX, float currY,
-                                              float currMillis) {
+                                       float currMillis, int fingers) {
     transX += deltaX;
     transY += deltaY;
     for (int i = 0; i < shape_len; i++) {
@@ -275,9 +275,9 @@ void android_main(struct android_app *app) {
   // Prepare to monitor accelerometer
 //  context.sensorManager = AcquireASensorManagerInstance(app);
 //  context.accelerometerSensor = ASensorManager_getDefaultSensor(context.sensorManager,
-//                                                               ASENSOR_TYPE_ACCELEROMETER);
+//                                                                ASENSOR_TYPE_ACCELEROMETER);
 //  context.sensorEventQueue = ASensorManager_createEventQueue(context.sensorManager, app->looper,
-//                                                            LOOPER_ID_USER, NULL, NULL);
+//                                                             LOOPER_ID_USER, NULL, NULL);
 
   if (app->savedState != NULL) {
     // We are starting with a previous saved state; restore from it.
