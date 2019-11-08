@@ -134,7 +134,7 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         for (int i = 0; i < shape_len; i++) {
           if (pShape[i]) {
             pShape[i]->scale(scaleX, scaleY, scaleZ);
-            pShape[i]->rotate(rotateX, rotateY, rotateZ);
+            pShape[i]->rotate(-rotateX, rotateY, -rotateZ/180.0f);
             pShape[i]->move(transX, transY, transZ);
             pShape[i]->draw();
           }
@@ -234,11 +234,20 @@ void initTouchEventHandlerCallbacks() {
   });
   touchEventHandler->setOnTouchMove([](float deltaX, float deltaY, float currX, float currY,
                                        float currMillis, int fingers) {
-    transX += deltaX;
-    transY += deltaY;
+    if (fingers == 1) {
+      rotateX += (deltaY*M_PI/CoordinatesUtils::screenH);
+      rotateY += (deltaX*M_PI/CoordinatesUtils::screenH);
+    } else {
+      transX += deltaX;
+      transY += deltaY;
+    }
     for (int i = 0; i < shape_len; i++) {
       if (pShape[i]) {
-        pShape[i]->move(transX, transY, transZ);
+        if (fingers == 1) {
+          pShape[i]->rotate(rotateX, rotateY, -rotateZ/180.0f);
+        } else {
+          pShape[i]->move(transX, transY, transZ);
+        }
       }
     }
   });
