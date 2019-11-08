@@ -86,7 +86,7 @@ static void renderByANativeWindowAPI(ANativeWindow *window) {
     app_log("ts.tv_sec: %ld, tv_nsec: %ld\n", ts.tv_sec, ts.tv_nsec);
 
     for (int i = 0; i < 500000; i++) {
-      *((int32_t *)buf.bits + i + 400000) = 255;
+      *((int32_t *) buf.bits + i + 400000) = 255;
     }
 
     ANativeWindow_unlockAndPost(window);
@@ -126,15 +126,15 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (transX == 0) transX = context->width/2;
-        if (transY == 0) transY = context->height/2;
+        if (transX == 0) transX = context->width / 2;
+        if (transY == 0) transY = context->height / 2;
 
         pShape[0] = new Triangles();
         pShape[1] = new Cube();
         for (int i = 0; i < shape_len; i++) {
           if (pShape[i]) {
             pShape[i]->scale(scaleX, scaleY, scaleZ);
-            pShape[i]->rotate(-rotateX, rotateY, -rotateZ/180.0f);
+            pShape[i]->rotate(rotateX, rotateY, -rotateZ / 180.0f);
             pShape[i]->move(transX, transY, transZ);
             pShape[i]->draw();
           }
@@ -199,7 +199,7 @@ ASensorManager *AcquireASensorManagerInstance(struct android_app *app) {
   typedef ASensorManager *(*PF_GETINSTANCEFORPACKAGE)(const char *);
   void *androidHandle = dlopen("libandroid.so", RTLD_NOW);
   PF_GETINSTANCEFORPACKAGE getInstanceForPackageFunc =
-      (PF_GETINSTANCEFORPACKAGE) dlsym(androidHandle, "ASensorManager_getInstanceForPackage");
+    (PF_GETINSTANCEFORPACKAGE) dlsym(androidHandle, "ASensorManager_getInstanceForPackage");
   if (getInstanceForPackageFunc) {
     JNIEnv *env = NULL;
     app->activity->vm->AttachCurrentThread(&env, NULL);
@@ -235,8 +235,8 @@ void initTouchEventHandlerCallbacks() {
   touchEventHandler->setOnTouchMove([](float deltaX, float deltaY, float currX, float currY,
                                        float currMillis, int fingers) {
     if (fingers == 1) {
-      rotateX += (deltaY*M_PI/CoordinatesUtils::screenH);
-      rotateY += (deltaX*M_PI/CoordinatesUtils::screenH);
+      rotateX += (deltaY * M_PI / CoordinatesUtils::screenH);
+      rotateY += (deltaX * M_PI / CoordinatesUtils::screenH);
     } else {
       transX += deltaX;
       transY += deltaY;
@@ -244,7 +244,7 @@ void initTouchEventHandlerCallbacks() {
     for (int i = 0; i < shape_len; i++) {
       if (pShape[i]) {
         if (fingers == 1) {
-          pShape[i]->rotate(rotateX, rotateY, -rotateZ/180.0f);
+          pShape[i]->rotate(rotateX, rotateY, -rotateZ / 180.0f);
         } else {
           pShape[i]->move(transX, transY, transZ);
         }
@@ -256,19 +256,20 @@ void initTouchEventHandlerCallbacks() {
   });
   touchEventHandler->setOnTouchUp([](float upX, float upY, float upMillis) {
   });
-  touchEventHandler->setOnScale([](float scaleX1, float scaleY1, float scaleDistance, float currMillis) {
+  touchEventHandler->setOnScale(
+    [](float scaleX1, float scaleY1, float scaleDistance, float currMillis) {
 //    transZ += (scaleDistance / CoordinatesUtils::screenH);
-    float scale = scaleDistance / CoordinatesUtils::screenH;
-    for (int i = 0; i < shape_len; i++) {
-      if (pShape[i]) {
-        pShape[i]->scale(scaleX+=scale, scaleY+=scale, scaleZ+=scale);
+      float scale = scaleDistance / CoordinatesUtils::screenH;
+      for (int i = 0; i < shape_len; i++) {
+        if (pShape[i]) {
+          pShape[i]->scale(scaleX += scale, scaleY += scale, scaleZ += scale);
+        }
       }
-    }
-  });
+    });
   touchEventHandler->setOnRotate([](float rotateDeg, float currMillis) {
     for (int i = 0; i < shape_len; i++) {
       if (pShape[i]) {
-        pShape[i]->rotate(rotateX, rotateY, -(rotateZ+=rotateDeg)/180.0f);
+        pShape[i]->rotate(rotateX, rotateY, -(rotateZ += rotateDeg) / 180.0f);
       }
     }
   });
@@ -315,7 +316,7 @@ void android_main(struct android_app *app) {
     // If animating, we loop until all events are read, then continue
     // to draw the next frame of animation.
     while ((ident = ALooper_pollAll(/*context.animating ? 0 : */-1, NULL, &events,
-                                    (void **) &source)) >= 0) {
+                                                                (void **) &source)) >= 0) {
 
       // Process this event.
       if (source != NULL) {

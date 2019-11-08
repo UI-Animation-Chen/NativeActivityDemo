@@ -88,11 +88,11 @@ Cube::Cube() {
   GLfloat cubePoints[] = {
     -0.2f, 0.2f, 0.5f, // z轴正向为屏幕向里
     -0.2f, -0.2f, 0.5f,
-    0.2f,  -0.2f, 0.5f,
+    0.2f, -0.2f, 0.5f,
     0.2f, 0.2f, 0.5f,
     -0.5f, 0.5f, -0.5f,
     -0.5f, -0.5f, -0.5f,
-    0.5f,  -0.5f, -0.5f,
+    0.5f, -0.5f, -0.5f,
     0.5f, 0.5f, -0.5f
   };
   glBufferData(GL_ARRAY_BUFFER, sizeof(cubePoints), cubePoints, GL_STATIC_DRAW);
