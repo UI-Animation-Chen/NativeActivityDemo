@@ -16,6 +16,7 @@ static const char *cubeVert = "#version 300 es\n"
 
                               "uniform vec3 translate;\n" // vec is not array
                               "uniform vec3 scale;\n" // vec is not array
+                              "uniform vec3 rotate;\n" // vec is not array
 
                               "out vec4 myColor;\n" // send to next stage(frag shader)
 
@@ -25,6 +26,13 @@ static const char *cubeVert = "#version 300 es\n"
                               "  gl_Position[0] *= scale[0];\n"
                               "  gl_Position[1] *= scale[1];\n"
                               "  gl_Position[2] *= scale[2];\n"
+
+                              "  // 绕z轴旋转\n"
+                              "  float zDeg = rotate[2];\n"
+                              "  float x = gl_Position[0];\n"
+                              "  float y = gl_Position[1];\n"
+                              "  gl_Position[0] = x*cos(zDeg) - y*sin(zDeg);\n"
+                              "  gl_Position[1] = x*sin(zDeg) + y*cos(zDeg);\n"
 
                               "  gl_Position[0] += translate[0];\n"
                               "  gl_Position[1] += translate[1];\n"
@@ -106,7 +114,11 @@ void Cube::move(float offsetX, float offsetY, float offsetZ) {
 }
 
 void Cube::rotate(float xDeg, float yDeg, float zDeg) {
-
+  rotateXYZ[0] = xDeg;
+  rotateXYZ[1] = yDeg;
+  rotateXYZ[2] = zDeg;
+  glUseProgram(program);
+  glUniform3fv(rotateLocation, 1, rotateXYZ);
 }
 
 void Cube::scale(float x, float y, float z) {
@@ -131,4 +143,5 @@ void Cube::init_shaders() {
   program = linkShader(vertShader, fragShader);
   transLocation = glGetUniformLocation(program, "translate");
   scaleLocation = glGetUniformLocation(program, "scale");
+  rotateLocation = glGetUniformLocation(program, "rotate");
 }

@@ -22,6 +22,9 @@ private:
   GLfloat scaleXYZ[3];
   GLint scaleLocation;
 
+  GLfloat rotateXYZ[3];
+  GLint rotateLocation;
+
   void init_shaders();
 
 public:

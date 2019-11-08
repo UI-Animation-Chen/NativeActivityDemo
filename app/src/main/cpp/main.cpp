@@ -28,6 +28,7 @@ static TouchEventHandler *touchEventHandler = NULL;
 
 static float transX = 0, transY = 0, transZ = 0;
 static float scaleX = 1.0f, scaleY = 1.0f, scaleZ = 1.0f;
+static float rotateX = 0, rotateY = 0, rotateZ = 0;
 
 /**
  * Our saved state data.
@@ -133,6 +134,7 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         for (int i = 0; i < shape_len; i++) {
           if (pShape[i]) {
             pShape[i]->scale(scaleX, scaleY, scaleZ);
+            pShape[i]->rotate(rotateX, rotateY, rotateZ);
             pShape[i]->move(transX, transY, transZ);
             pShape[i]->draw();
           }
@@ -255,6 +257,11 @@ void initTouchEventHandlerCallbacks() {
     }
   });
   touchEventHandler->setOnRotate([](float rotateDeg, float currMillis) {
+    for (int i = 0; i < shape_len; i++) {
+      if (pShape[i]) {
+        pShape[i]->rotate(rotateX, rotateY, -(rotateZ+=rotateDeg)/180.0f);
+      }
+    }
   });
 }
 
