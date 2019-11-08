@@ -16,9 +16,8 @@ private:
   GLuint vao; // vertex array object
   GLuint buffers[2];
 
-  GLint dxLocation;
-  GLint dyLocation;
-  GLint dzLocation;
+  GLfloat translate[3];
+  GLint transLocation;
 
   void init_shaders();
 
