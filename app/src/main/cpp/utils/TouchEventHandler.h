@@ -52,6 +52,8 @@ private:
 
   float oldScaledX, oldScaledY, old2FingersDistance;
 
+  void resetOldValues();
+
   float getRotatedDegBetween2Events(AInputEvent *event);
 
   float getDeltaScaledXBetween2Events(AInputEvent *event);

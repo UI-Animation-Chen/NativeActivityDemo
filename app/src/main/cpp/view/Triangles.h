@@ -27,7 +27,7 @@ public:
   virtual void draw();
   virtual void move(float offsetX, float offsetY, float offsetZ);
   virtual void rotate(float xDeg, float yDeg, float zDeg);
-
+  virtual void scale(float x, float y, float z);
 };
 
 #endif //NATIVEACTIVITYDEMO_TRIANGLES_H

@@ -27,6 +27,7 @@ static Shape *pShape[shape_len] = {0};
 static TouchEventHandler *touchEventHandler = NULL;
 
 static float transX = 0, transY = 0, transZ = 0;
+static float scaleX = 1.0f, scaleY = 1.0f, scaleZ = 1.0f;
 
 /**
  * Our saved state data.
@@ -131,6 +132,7 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         pShape[1] = new Cube();
         for (int i = 0; i < shape_len; i++) {
           if (pShape[i]) {
+            pShape[i]->scale(scaleX, scaleY, scaleZ);
             pShape[i]->move(transX, transY, transZ);
             pShape[i]->draw();
           }
@@ -243,11 +245,12 @@ void initTouchEventHandlerCallbacks() {
   });
   touchEventHandler->setOnTouchUp([](float upX, float upY, float upMillis) {
   });
-  touchEventHandler->setOnScale([](float scaleX, float scaleY, float scaleDistance, float currMillis) {
-    transZ += (scaleDistance / CoordinatesUtils::screenH);
+  touchEventHandler->setOnScale([](float scaleX1, float scaleY1, float scaleDistance, float currMillis) {
+//    transZ += (scaleDistance / CoordinatesUtils::screenH);
+    float scale = scaleDistance / CoordinatesUtils::screenH;
     for (int i = 0; i < shape_len; i++) {
       if (pShape[i]) {
-        pShape[i]->move(transX, transY, transZ);
+        pShape[i]->scale(scaleX+=scale, scaleY+=scale, scaleZ+=scale);
       }
     }
   });

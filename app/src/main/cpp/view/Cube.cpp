@@ -13,16 +13,27 @@
 // for vertex, if the precision is not specified, it is consider to be highest (highp).
 static const char *cubeVert = "#version 300 es\n"
                               "layout(location = 0) in vec4 vPositionCube;\n"
+
                               "uniform vec3 translate;\n" // vec is not array
+                              "uniform vec3 scale;\n" // vec is not array
+
                               "out vec4 myColor;\n" // send to next stage(frag shader)
+
                               "void main() {\n"
                               "  gl_Position = vPositionCube;\n"
+
+                              "  gl_Position[0] *= scale[0];\n"
+                              "  gl_Position[1] *= scale[1];\n"
+                              "  gl_Position[2] *= scale[2];\n"
+
                               "  gl_Position[0] += translate[0];\n"
                               "  gl_Position[1] += translate[1];\n"
                               "  gl_Position[2] += translate[2];\n"
+
+                              "  float originZ = -0.5;\n"
                               "  float z = gl_Position[2];\n"
                               "  float c = 0.4;\n"
-                              "  if (z == (-0.5 + translate[2])) c = 1.0;\n"
+                              "  if (z == (originZ*scale[2] + translate[2])) c = 1.0;\n"
                               "  myColor = vec4(c, c, c, 1.0);\n"
                               "}\n";
 
@@ -87,15 +98,23 @@ Cube::~Cube() {
 }
 
 void Cube::move(float offsetX, float offsetY, float offsetZ) {
-  translate[0] = CoordinatesUtils::android2gles_x(offsetX);
-  translate[1] = CoordinatesUtils::android2gles_y(offsetY);
-  translate[2] = offsetZ;
+  translateXYZ[0] = CoordinatesUtils::android2gles_x(offsetX);
+  translateXYZ[1] = CoordinatesUtils::android2gles_y(offsetY);
+  translateXYZ[2] = offsetZ;
   glUseProgram(program);
-  glUniform3fv(transLocation, 1, translate); // vec is not array, so the count is 1.
+  glUniform3fv(transLocation, 1, translateXYZ); // vec is not array, so the count is 1.
 }
 
 void Cube::rotate(float xDeg, float yDeg, float zDeg) {
 
+}
+
+void Cube::scale(float x, float y, float z) {
+  scaleXYZ[0] = x;
+  scaleXYZ[1] = y;
+  scaleXYZ[2] = z;
+  glUseProgram(program);
+  glUniform3fv(scaleLocation, 1, scaleXYZ);
 }
 
 void Cube::draw() {
@@ -111,4 +130,5 @@ void Cube::init_shaders() {
   fragShader = get_compiled_shader_frag(cubeFrag);
   program = linkShader(vertShader, fragShader);
   transLocation = glGetUniformLocation(program, "translate");
+  scaleLocation = glGetUniformLocation(program, "scale");
 }

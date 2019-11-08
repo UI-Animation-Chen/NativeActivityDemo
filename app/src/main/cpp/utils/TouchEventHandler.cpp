@@ -82,14 +82,18 @@ inline float TouchEventHandler::getScaledDistanceBetween2Events(AInputEvent *eve
   }
 }
 
+void TouchEventHandler::resetOldValues() {
+  oldScaledX = 0;
+  oldScaledY = 0;
+  oldTanDeg = 0;
+  old2FingersDistance = 0;
+}
+
 void TouchEventHandler::onTouchEvent(AInputEvent *event) {
   int action = AMotionEvent_getAction(event);
   switch (action & AMOTION_EVENT_ACTION_MASK) {
     case AMOTION_EVENT_ACTION_DOWN: {
-      oldScaledX = 0;
-      oldScaledY = 0;
-      oldTanDeg = 0;
-      old2FingersDistance = 0;
+      resetOldValues();
       oldX = AMotionEvent_getX(event, 0);
       oldY = AMotionEvent_getY(event, 0);
       if (onTouchDownFunc) onTouchDownFunc(oldX, oldX, 0);
@@ -105,6 +109,7 @@ void TouchEventHandler::onTouchEvent(AInputEvent *event) {
         moreThan2Fingers = true;
         return;
       } else {
+        resetOldValues(); // 防止双指触控时，一指抬起再按下导致跳动。
         oldX = (AMotionEvent_getX(event, 0) + AMotionEvent_getX(event, 1)) / 2.0f;
         oldY = (AMotionEvent_getY(event, 0) + AMotionEvent_getY(event, 1)) / 2.0f;
       }

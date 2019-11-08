@@ -101,3 +101,7 @@ void Triangles::move(float offsetX, float offsetY, float offsetZ) {
 void Triangles::rotate(float xDeg, float yDeg, float zDeg) {
 
 }
+
+void Triangles::scale(float x, float y, float z) {
+
+}
