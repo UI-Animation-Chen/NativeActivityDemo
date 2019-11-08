@@ -54,9 +54,9 @@ static const char *cubeVert = "#version 300 es\n"
 
                               "  float c;\n"
                               "  if (gl_Position[2] < 0.0) {\n"
-                              "    c = 0.5 - gl_Position[2]/1.5;\n"
+                              "    c = 0.5 - gl_Position[2]/1.3;\n"
                               "  } else {\n"
-                              "    c = 0.5 - gl_Position[2]/4.5;\n"
+                              "    c = 0.5 - gl_Position[2]/4.0;\n"
                               "  }\n"
                               "  myColor = vec4(c, c, c, 1.0);\n"
                               "}\n";
@@ -103,8 +103,8 @@ Cube::Cube() {
     0, 3, 4, 4, 3, 7, // 上， 逆时针
     0, 4, 5, 0, 5, 1, // 左， 逆时针
     5, 6, 1, 1, 6, 2, // 下， 逆时针
-    3, 2, 6, 3, 6, 7, // 右， 逆时针
-    4, 6, 5, 7, 6, 4 // 外，顺时针，cull face，被剔除了
+    3, 2, 6, 3, 6, 7 // 右， 逆时针
+//    4, 6, 5, 7, 6, 4 // 外，顺时针，cull face，被剔除了
   };
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
 
@@ -150,7 +150,7 @@ void Cube::draw() {
   glBindVertexArray(vao);
   // 1->2->3, 2->3->4，先逆时针，后顺时针。
 //  glDrawArrays(GL_TRIANGLE_STRIP, 0, 5);
-  glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
+  glDrawElements(GL_TRIANGLES, 30, GL_UNSIGNED_SHORT, 0);
 }
 
 void Cube::init_shaders() {

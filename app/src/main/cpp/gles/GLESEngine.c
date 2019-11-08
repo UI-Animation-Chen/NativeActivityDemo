@@ -116,7 +116,7 @@ int GLESEngine_init(ANativeWindow *window) {
     app_log("OpenGL Info[%d]: %s\n", j, info);
   }
   // Initialize GL state.
-  glEnable(GL_CULL_FACE); // 不渲染背面（顺时针方向的triangle）。
+//  glEnable(GL_CULL_FACE); // 不渲染背面（顺时针方向的triangle）。
   glEnable(GL_DEPTH_TEST); // 开启深度测试，让z轴起作用。
   glDepthFunc(GL_LESS); // z轴正向是屏幕向里，所以值小表示离用户更近。
 
