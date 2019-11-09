@@ -9,14 +9,8 @@
 
 class Triangles: public Shape {
 private:
-  GLuint program;
-  GLuint vertShader;
-  GLuint fragShader;
-
   GLuint vaos[2]; // vertex array objects
   GLuint buffers[2];
-
-  void init_shaders();
 
   void bind_buf0();
   void bind_buf1();
@@ -25,9 +19,6 @@ public:
   Triangles();
   virtual ~Triangles();
   virtual void draw();
-  virtual void move(float offsetX, float offsetY, float offsetZ);
-  virtual void rotate(float xDeg, float yDeg, float zDeg);
-  virtual void scale(float x, float y, float z);
 };
 
 #endif //NATIVEACTIVITYDEMO_TRIANGLES_H
