@@ -66,11 +66,26 @@ static const char *frag = "#version 300 es\n"
                           "  fColor = myColor;\n"
                           "}\n";
 
+GLuint BaseShader::vertShader = 0;
+GLuint BaseShader::fragShader = 0;
 GLuint BaseShader::program = 0;
 
 GLuint BaseShader::getSingletonProgram() {
   if (program == 0) {
-    program = linkShader(get_compiled_shader_vert(vert), get_compiled_shader_frag(frag));
+    vertShader = get_compiled_shader_vert(vert);
+    fragShader = get_compiled_shader_frag(frag);
+    program = linkShader(vertShader, fragShader);
   }
   return program;
+}
+
+void BaseShader::deleteSingletonProgram() {
+  if (program != 0) {
+    glDeleteShader(vertShader);
+    glDeleteShader(fragShader);
+    glDeleteProgram(program);
+    vertShader = 0;
+    fragShader = 0;
+    program = 0;
+  }
 }

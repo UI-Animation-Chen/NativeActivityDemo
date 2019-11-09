@@ -153,6 +153,7 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
           delete pShape[i];
         }
       }
+      BaseShader::deleteSingletonProgram();
       GLESEngine_destroy();
       break;
     case APP_CMD_GAINED_FOCUS:

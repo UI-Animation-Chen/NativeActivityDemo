@@ -10,8 +10,11 @@
 class BaseShader {
 public:
   static GLuint getSingletonProgram();
+  static void deleteSingletonProgram();
 private:
   static GLuint program;
+  static GLuint vertShader;
+  static GLuint fragShader;
 };
 
 #endif //NATIVEACTIVITYDEMO_BASESHADER_H
