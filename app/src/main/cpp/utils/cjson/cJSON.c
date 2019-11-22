@@ -1329,8 +1329,8 @@ static cJSON_bool parse_object(cJSON *const item, parse_buffer *const input_buff
     goto fail; /* not an object */
   }
 
-  input_buffer->offset++;
-  buffer_skip_whitespace(input_buffer);
+  input_buffer->offset++; // skip the '{'.
+  buffer_skip_whitespace(input_buffer); // skip whitespace after '{' until first printable char(").
   if (can_access_at_index(input_buffer, 0) && (buffer_at_offset(input_buffer)[0] == '}')) {
     goto success; /* empty object */
   }
