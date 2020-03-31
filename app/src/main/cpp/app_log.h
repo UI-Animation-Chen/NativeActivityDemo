@@ -7,7 +7,7 @@
 #include "config.h"
 
 #ifdef APP_DEBUG
-  #define app_log(...) __android_log_print(ANDROID_LOG_DEBUG, "--==--", __VA_ARGS__)
+    #define app_log(...) __android_log_print(ANDROID_LOG_DEBUG, "--==--", __VA_ARGS__)
 #else
-  #define app_log(...)
+    #define app_log(...)
 #endif

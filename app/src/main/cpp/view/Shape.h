@@ -11,38 +11,38 @@
 
 class Shape {
 public:
-  Shape() {
-    program = BaseShader::getSingletonProgram();
-    glUseProgram(program);
-    transLocation = glGetUniformLocation(program, "translate");
-    scaleLocation = glGetUniformLocation(program, "scale");
-    rotateLocation = glGetUniformLocation(program, "rotate");
-    app_log("Shape constructor");
-  }
+    Shape() {
+        program = BaseShader::getSingletonProgram();
+        glUseProgram(program);
+        transLocation = glGetUniformLocation(program, "translate");
+        scaleLocation = glGetUniformLocation(program, "scale");
+        rotateLocation = glGetUniformLocation(program, "rotate");
+        app_log("Shape constructor");
+    }
 
-  virtual ~Shape() {
-    app_log("Shape destructor");
-  }
+    virtual ~Shape() {
+        app_log("Shape destructor");
+    }
 
-  virtual void draw() = 0;
+    virtual void draw() = 0;
 
-  virtual void move(float offsetX, float offsetY, float offsetZ);
+    virtual void move(float offsetX, float offsetY, float offsetZ);
 
-  virtual void rotate(float xDeg, float yDeg, float zDeg);
+    virtual void rotate(float xDeg, float yDeg, float zDeg);
 
-  virtual void scale(float x, float y, float z);
+    virtual void scale(float x, float y, float z);
 
 private:
-  GLuint program;
+    GLuint program;
 
-  GLfloat translateXYZ[3];
-  GLint transLocation;
+    GLfloat translateXYZ[3];
+    GLint transLocation;
 
-  GLfloat scaleXYZ[3];
-  GLint scaleLocation;
+    GLfloat scaleXYZ[3];
+    GLint scaleLocation;
 
-  GLfloat rotateXYZ[3];
-  GLint rotateLocation;
+    GLfloat rotateXYZ[3];
+    GLint rotateLocation;
 };
 
 #endif //NATIVEACTIVITYDEMO_SHAPE_H

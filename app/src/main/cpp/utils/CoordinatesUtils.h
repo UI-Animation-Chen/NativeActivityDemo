@@ -8,13 +8,13 @@
 
 class CoordinatesUtils {
 public:
-  static float android2gles_x(float x);
-  static float android2gles_y(float y);
-  static float gles2android_x(float x);
-  static float gles2android_y(float y);
+    static float android2gles_x(float x);
+    static float android2gles_y(float y);
+    static float gles2android_x(float x);
+    static float gles2android_y(float y);
 
-  static float screenW;
-  static float screenH;
+    static float screenW;
+    static float screenH;
 };
 
 

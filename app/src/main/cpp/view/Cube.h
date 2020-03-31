@@ -9,13 +9,13 @@
 
 class Cube: public Shape {
 private:
-  GLuint vao; // vertex array object
-  GLuint buffers[2];
+    GLuint vao; // vertex array object
+    GLuint buffers[2];
 
 public:
-  Cube();
-  virtual ~Cube();
-  virtual void draw();
+    Cube();
+    virtual ~Cube();
+    virtual void draw();
 };
 
 #endif //NATIVEACTIVITYDEMO_CUBE_H
