@@ -100,8 +100,8 @@ void TouchEventHandler::onTouchEvent(AInputEvent *event) {
             break;
         }
         case AMOTION_EVENT_ACTION_POINTER_DOWN: {
-//      int pointerIndex = action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK;
-//      app_log("pointer down -- %d\n", pointerIndex >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
+//            int pointerIndex = action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK;
+//            app_log("pointer down -- %d\n", pointerIndex >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
 
             // 在pointer_down事件之后，手指数。
             if (!moreThan2Fingers && AMotionEvent_getPointerCount(event) > 2) {

@@ -183,8 +183,8 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
             break;
     }
 }
-/*
 
+/*
  * AcquireASensorManagerInstance(void)
  * Workaround ASensorManager_getInstance() deprecation false alarm
  * for Android-N and before, when compiling with NDK-r15
@@ -343,7 +343,7 @@ void android_main(struct android_app *app) {
             }
 
             if (app->window != NULL) {
-//            renderByANativeWindowAPI(app->window);
+//                renderByANativeWindowAPI(app->window);
 
                 GLfloat factor = context.state.y / context.height;
                 glClearColor(0, 1, 0, 1);

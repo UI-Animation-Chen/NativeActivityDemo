@@ -32,7 +32,7 @@ Cube::Cube() : Shape() {
             0, 4, 5, 0, 5, 1, // 左， 逆时针
             5, 6, 1, 1, 6, 2, // 下， 逆时针
             3, 2, 6, 3, 6, 7 // 右， 逆时针
-//    4, 6, 5, 7, 6, 4 // 外，顺时针，cull face，被剔除了
+//            4, 6, 5, 7, 6, 4 // 外，顺时针，cull face，被剔除了
     };
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
 
