@@ -10,9 +10,9 @@ Cube::Cube() : Shape() {
     glGenVertexArrays(1, &vao);
     glGenBuffers(2, buffers);
 
-    glBindVertexArray(vao);
+    glBindVertexArray(vao); // 以下的操作都会记录在这个vao上，绑定成功后，会自动接触之前的绑定。
 
-    glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[0]); // 绑定成功后，会自动接触之前的绑定。
     GLfloat cubePoints[] = {
             -0.2f,  0.2f,  0.5f, // z轴正向为屏幕向里
             -0.2f, -0.2f,  0.5f,

@@ -9,16 +9,16 @@
 
 class Triangles: public Shape {
 private:
-  GLuint vaos[2]; // vertex array objects
-  GLuint buffers[2];
+    GLuint vaos[2]; // vertex array objects
+    GLuint buffers[2];
 
-  void bind_buf0();
-  void bind_buf1();
+    void bind_buf0();
+    void bind_buf1();
 
 public:
-  Triangles();
-  virtual ~Triangles();
-  virtual void draw();
+    Triangles();
+    virtual ~Triangles();
+    virtual void draw();
 };
 
 #endif //NATIVEACTIVITYDEMO_TRIANGLES_H
