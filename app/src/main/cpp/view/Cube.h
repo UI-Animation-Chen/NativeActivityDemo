@@ -10,7 +10,7 @@
 class Cube: public Shape {
 private:
     GLuint vao; // vertex array object
-    GLuint buffers[2];
+    GLuint buffers[3];
 
 public:
     Cube();

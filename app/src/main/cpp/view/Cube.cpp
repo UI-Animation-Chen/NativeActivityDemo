@@ -8,40 +8,77 @@
 
 Cube::Cube() : Shape() {
     glGenVertexArrays(1, &vao);
-    glGenBuffers(2, buffers);
+    glGenBuffers(3, buffers);
 
     glBindVertexArray(vao); // 以下的操作都会记录在这个vao上，绑定成功后，会自动接触之前的绑定。
 
     glBindBuffer(GL_ARRAY_BUFFER, buffers[0]); // 绑定成功后，会自动接触之前的绑定。
     GLfloat cubePoints[] = {
-            -0.2f,  0.2f,  0.5f, // z轴正向为屏幕向里
+            -0.2f,  0.2f,  0.5f, // 里 z轴正向为屏幕向里
             -0.2f, -0.2f,  0.5f,
              0.2f, -0.2f,  0.5f,
              0.2f,  0.2f,  0.5f,
+            -0.5f,  0.5f, -0.5f, // 上
+            -0.2f,  0.2f,  0.5f,
+             0.2f,  0.2f,  0.5f,
+             0.5f,  0.5f, -0.5f,
+            -0.5f, -0.5f, -0.5f, // 左
+            -0.2f, -0.2f,  0.5f,
+            -0.2f,  0.2f,  0.5f,
             -0.5f,  0.5f, -0.5f,
+             0.5f, -0.5f, -0.5f, // 下
+             0.2f, -0.2f,  0.5f,
+            -0.2f, -0.2f,  0.5f,
             -0.5f, -0.5f, -0.5f,
-             0.5f, -0.5f, -0.5f,
-             0.5f,  0.5f, -0.5f
+             0.5f,  0.5f, -0.5f, // 右
+             0.2f,  0.2f,  0.5f,
+             0.2f, -0.2f,  0.5f,
+             0.5f, -0.5f, -0.5f
     };
     glBufferData(GL_ARRAY_BUFFER, sizeof(cubePoints), cubePoints, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
     GLushort cubeIndices[] = {
-            0, 1, 2, 0, 2, 3, // 里， 逆时针
-            0, 3, 4, 4, 3, 7, // 上， 逆时针
-            0, 4, 5, 0, 5, 1, // 左， 逆时针
-            5, 6, 1, 1, 6, 2, // 下， 逆时针
-            3, 2, 6, 3, 6, 7 // 右， 逆时针
-//            4, 6, 5, 7, 6, 4 // 外，顺时针，cull face，被剔除了
+            0,  1,  2,  0,  2,  3,  // 里， 逆时针
+            4,  5,  6,  4,  6,  7,  // 上， 逆时针
+            8,  9,  10, 8,  10, 11, // 左， 逆时针
+            12, 13, 14, 12, 14, 15, // 下， 逆时针
+            16, 17, 18, 16, 18, 19  // 右， 逆时针
     };
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
-
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
+
+    GLfloat texCoords[] = {
+            0.0f, 1.0f, // 里
+            0.0f, 0.0f,
+            1.0f, 0.0f,
+            1.0f, 1.0f,
+            0.0f, 1.0f, // 上
+            0.0f, 0.0f,
+            1.0f, 0.0f,
+            1.0f, 1.0f,
+            0.0f, 1.0f, // 左
+            0.0f, 0.0f,
+            1.0f, 0.0f,
+            1.0f, 1.0f,
+            0.0f, 1.0f, // 下
+            0.0f, 0.0f,
+            1.0f, 0.0f,
+            1.0f, 1.0f,
+            0.0f, 1.0f, // 右
+            0.0f, 0.0f,
+            1.0f, 0.0f,
+            1.0f, 1.0f,
+    };
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texCoords), texCoords, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(1);
 }
 
 Cube::~Cube() {
-    glDeleteBuffers(2, buffers);
+    glDeleteBuffers(3, buffers);
     glDeleteVertexArrays(1, &vao);
 }
 

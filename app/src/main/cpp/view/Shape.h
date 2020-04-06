@@ -8,15 +8,17 @@
 #include <GLES3/gl32.h>
 #include "../app_log.h"
 #include "../gles/BaseShader.h"
+#include "../texture/TextureUtils.h"
 
 class Shape {
 public:
     Shape() {
-        program = BaseShader::getSingletonProgram();
-        glUseProgram(program);
-        transLocation = glGetUniformLocation(program, "translate");
-        scaleLocation = glGetUniformLocation(program, "scale");
-        rotateLocation = glGetUniformLocation(program, "rotate");
+        transLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "translate");
+        scaleLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "scale");
+        rotateLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "rotate");
+        textureLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "texture");
+        glUniform1i(textureLocation, 0);
+        glUseProgram(BaseShader::getSingletonProgram());
         app_log("Shape constructor");
     }
 
@@ -33,8 +35,6 @@ public:
     virtual void scale(float x, float y, float z);
 
 private:
-    GLuint program;
-
     GLfloat translateXYZ[3];
     GLint transLocation;
 
@@ -43,6 +43,8 @@ private:
 
     GLfloat rotateXYZ[3];
     GLint rotateLocation;
+
+    GLint textureLocation;
 };
 
 #endif //NATIVEACTIVITYDEMO_SHAPE_H

@@ -9,11 +9,8 @@
 
 class Triangles: public Shape {
 private:
-    GLuint vaos[2]; // vertex array objects
+    GLuint vao; // vertex array objects
     GLuint buffers[2];
-
-    void bind_buf0();
-    void bind_buf1();
 
 public:
     Triangles();

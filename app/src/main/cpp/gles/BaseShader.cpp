@@ -9,12 +9,13 @@
 // for vertex, if the precision is not specified, it is consider to be highest (highp).
 static const char *vert = "#version 300 es\n"
                           "layout(location = 0) in vec4 vPosition;\n"
+                          "layout(location = 1) in vec2 vTexCoord;\n"
 
                           "uniform vec3 translate;\n" // vec is not array
                           "uniform vec3 scale;\n" // vec is not array
                           "uniform vec3 rotate;\n" // vec is not array
 
-                          "out vec4 myColor;\n" // send to next stage(frag shader)
+                          "out vec2 texCoord;\n" // send to next stage(frag shader)
 
                           "void main() {\n"
                           "    gl_Position = vPosition;\n"
@@ -48,22 +49,21 @@ static const char *vert = "#version 300 es\n"
                           "    gl_Position[1] += translate[1];\n"
                           "    gl_Position[2] += translate[2];\n"
 
-                          "    float c;\n"
-                          "    if (gl_Position[2] < 0.0) {\n"
-                          "        c = 0.5 - gl_Position[2]/1.3;\n"
-                          "    } else {\n"
-                          "        c = 0.5 - gl_Position[2]/4.0;\n"
-                          "    }\n"
-                          "    myColor = vec4(c, c, c, 1.0);\n"
+                          "    texCoord = vTexCoord;\n"
                           "}\n";
 
 // for fragment shader, Specifying the precision is compulsory.
 static const char *frag = "#version 300 es\n"
                           "precision mediump float;\n"
-                          "in vec4 myColor;\n" // receive from previous stage(vert shader)
+
+                          "in vec2 texCoord;\n" // receive from previous stage(vert shader)
+
+                          "uniform sampler2D texture;\n"
+
                           "out vec4 fColor;\n"
+
                           "void main() {\n"
-                          "    fColor = myColor;\n"
+                          "    fColor = texture(texture, texCoord);\n"
                           "}\n";
 
 GLuint BaseShader::vertShader = 0;
