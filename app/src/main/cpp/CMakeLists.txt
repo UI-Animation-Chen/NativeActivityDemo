@@ -23,5 +23,8 @@ add_library(native_app_glue STATIC
 target_include_directories(native-activity PRIVATE
         ${ANDROID_NDK}/sources/android/native_app_glue)
 
+# libpng
+add_subdirectory(./utils/libpng1_6_29)
+
 target_link_libraries(native-activity
-        log native_app_glue android EGL GLESv3)
+        log native_app_glue android EGL GLESv3 png)
