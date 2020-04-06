@@ -6,9 +6,15 @@ cmake_minimum_required(VERSION 3.4.1)
 
 add_library(native-activity SHARED
     main.cpp
-    gles/GLESEngine.c gles/BaseShader.cpp
-    view/Triangles.cpp view/Cube.cpp view/Shape.cpp
+
+    gles/GLESEngine.c
+
+    shader/BaseShader.cpp
+
     texture/TextureUtils.cpp
+
+    view/Triangles.cpp view/Cube.cpp view/Shape.cpp
+
     utils/ShaderUtils.c utils/CoordinatesUtils.cpp
     utils/cjson/cJSON.c utils/cjson/cJSON_Utils.c
     utils/TouchEventHandler.cpp)

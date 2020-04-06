@@ -38,6 +38,8 @@ Triangles::Triangles(): Shape() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(texCoords), texCoords, GL_STATIC_DRAW);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(1);
+
+    ambientV4[3] = 0.75f;
 }
 
 Triangles::~Triangles() {
@@ -47,5 +49,6 @@ Triangles::~Triangles() {
 
 void Triangles::draw() {
     glBindVertexArray(vao);
+    glUniform4fv(ambientLocation, 1, ambientV4);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }

@@ -7,7 +7,7 @@
 
 #include <GLES3/gl32.h>
 #include "../app_log.h"
-#include "../gles/BaseShader.h"
+#include "../shader/BaseShader.h"
 #include "../texture/TextureUtils.h"
 
 class Shape {
@@ -17,8 +17,9 @@ public:
         scaleLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "scale");
         rotateLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "rotate");
         textureLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "texture");
-        glUniform1i(textureLocation, 0);
+        ambientLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "ambient");
         glUseProgram(BaseShader::getSingletonProgram());
+        glUniform1i(textureLocation, 0);
         app_log("Shape constructor");
     }
 
@@ -33,6 +34,10 @@ public:
     virtual void rotate(float xDeg, float yDeg, float zDeg);
 
     virtual void scale(float x, float y, float z);
+
+protected:
+    GLint ambientLocation;
+    GLfloat ambientV4[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
 private:
     GLfloat translateXYZ[3];

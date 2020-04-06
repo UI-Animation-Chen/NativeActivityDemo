@@ -60,10 +60,12 @@ static const char *frag = "#version 300 es\n"
 
                           "uniform sampler2D texture;\n"
 
+                          "uniform vec4 ambient;\n"
+
                           "out vec4 fColor;\n"
 
                           "void main() {\n"
-                          "    fColor = texture(texture, texCoord);\n"
+                          "    fColor = texture(texture, texCoord) * ambient;\n"
                           "}\n";
 
 GLuint BaseShader::vertShader = 0;

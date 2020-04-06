@@ -84,5 +84,6 @@ Cube::~Cube() {
 
 void Cube::draw() {
     glBindVertexArray(vao);
+    glUniform4fv(ambientLocation, 1, ambientV4);
     glDrawElements(GL_TRIANGLES, 30, GL_UNSIGNED_SHORT, 0);
 }

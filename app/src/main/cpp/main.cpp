@@ -132,8 +132,9 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 if (transX == 0) transX = context->width / 2;
                 if (transY == 0) transY = context->height / 2;
 
-                pShape[0] = new Triangles();
-                pShape[1] = new Cube();
+                // blend跟物体渲染顺序有关，需要后渲染半透明物体
+                pShape[0] = new Cube();
+                pShape[1] = new Triangles();
                 for (int i = 0; i < shape_len; i++) {
                     if (pShape[i]) {
                         pShape[i]->scale(scaleX, scaleY, scaleZ);
