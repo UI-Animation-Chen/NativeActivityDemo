@@ -118,8 +118,12 @@ int GLESEngine_init(ANativeWindow *window) {
 
     // Initialize GL state.
 //    glEnable(GL_CULL_FACE); // 不渲染背面（顺时针方向的triangle）。
+
+    // 当不透明度物体和透明物体一起绘制的时候，通常要遵循以下原则：
+    // 先绘制所有不透明物体。为所有透明物体排序，按顺序绘制透明物体。
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     glEnable(GL_DEPTH_TEST); // 开启深度测试，让z轴起作用。
     glDepthFunc(GL_LESS); // z轴正向是屏幕向里，所以值小表示离用户更近。
 
