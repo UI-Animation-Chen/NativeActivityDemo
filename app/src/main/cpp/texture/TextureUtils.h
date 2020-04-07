@@ -6,10 +6,11 @@
 #define NATIVEACTIVITYDEMO_TEXTUREUTILS_H
 
 #include <GLES3/gl32.h>
+#include <android/asset_manager.h>
 
 class TextureUtils {
 public:
-    static GLuint loadSimpleTexture();
+    static GLuint loadSimpleTexture(AAssetManager *assetMgr);
     static void deleteSimpleTexture();
 private:
     static GLuint textureId;

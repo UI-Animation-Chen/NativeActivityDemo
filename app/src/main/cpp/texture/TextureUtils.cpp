@@ -9,22 +9,45 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
-static void loadPng(uint32_t *w, uint32_t *h, void **image) {
-    FILE *file = fopen("/sdcard/mt.png", "r");
+static int openFdFromAsset(AAssetManager *assetMgr, const char *fileName) {
+    AAsset *asset = AAssetManager_open(assetMgr, fileName, AASSET_MODE_BUFFER);
+
+    off_t start = 0, len = 0;
+    int fd = AAsset_openFileDescriptor(asset, &start, &len);
+
+    AAsset_close(asset);
+
+    if (fd > 0) {
+        lseek(fd, start, SEEK_CUR);// 通过asset方式打开的文件，流里的[start, start+len)区间属于该文件。
+    }
+
+    return fd;
+}
+
+static void loadPng(uint32_t *w, uint32_t *h, void **image, AAssetManager *assetMgr) {
+    int fd = openFdFromAsset(assetMgr, "mt.png");
+    if (fd <= 0) {
+        app_log("openFdFromAsset failed: err: %s\n", strerror(errno));
+        return;
+    }
+
+    FILE *file = fdopen(fd, "r"); // When the stream is closed via fclose(3), fildes is closed also.
     if (file == NULL) {
+        close(fd);
         app_log("open file failed: err: %s\n", strerror(errno));
         return;
     }
 
-    png_structp pngStructp = NULL;
-    png_infop  pngInfop = NULL;
-    pngStructp = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    pngInfop = png_create_info_struct(pngStructp);
+    png_structp pngStructp = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    png_infop  pngInfop = png_create_info_struct(pngStructp);
 
     png_init_io(pngStructp, file);
     // 内部已经调用read_info，read_end，外面再调会崩溃
     png_read_png(pngStructp, pngInfop, PNG_TRANSFORM_EXPAND, NULL);
+
+    fclose(file);
 
     int bit_depth, color_type;
     png_get_IHDR(pngStructp, pngInfop, w, h, &bit_depth, &color_type, NULL, NULL, NULL);
@@ -38,8 +61,6 @@ static void loadPng(uint32_t *w, uint32_t *h, void **image) {
     }
 
     png_destroy_read_struct(&pngStructp, &pngInfop, NULL);
-
-    fclose(file);
 }
 
 /* 3 x 3 Image,  R G B A Channels RAW Format. */
@@ -59,7 +80,7 @@ GLubyte TextureUtils::pixels[9 * 4] = {
 
 GLuint TextureUtils::textureId = 0;
 
-GLuint TextureUtils::loadSimpleTexture() {
+GLuint TextureUtils::loadSimpleTexture(AAssetManager *assetMgr) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     glGenTextures(1, &textureId);
@@ -68,7 +89,7 @@ GLuint TextureUtils::loadSimpleTexture() {
 
     uint32_t w, h;
     void *image;
-    loadPng(&w, &h, &image);
+    loadPng(&w, &h, &image, assetMgr);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
     free(image);
 
