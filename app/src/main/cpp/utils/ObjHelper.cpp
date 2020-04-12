@@ -36,6 +36,31 @@ static void readInfexInfo(FILE *file, ObjHelper::ObjModel *pObjModel) {
     pObjModel->indeces.push_back({v3, t3, n3});
 }
 
+// 按照f索引，新建一套匹配的顶点，纹理和法向量坐标，由一套索引引用。
+static void rearrangeVVtVns(ObjHelper::ObjModel *pObjModel) {
+    std::vector<GLfloat>vs;
+    std::vector<GLfloat>vts;
+    std::vector<GLfloat>vns;
+    for (GLushort i = 0; i < pObjModel->indeces.size(); i++) {
+        // vertices
+        vs.push_back(pObjModel->vertices.at(pObjModel->indeces.at(i).at(0) * (GLushort)3));
+        vs.push_back(pObjModel->vertices.at(pObjModel->indeces.at(i).at(0) * (GLushort)3 + (GLushort)1));
+        vs.push_back(pObjModel->vertices.at(pObjModel->indeces.at(i).at(0) * (GLushort)3 + (GLushort)2));
+        // texCoords
+        vts.push_back(pObjModel->texCoords.at(pObjModel->indeces.at(i).at(1) * (GLushort)2));
+        vts.push_back(pObjModel->texCoords.at(pObjModel->indeces.at(i).at(1) * (GLushort)2 + (GLushort)1));
+        // normals
+        vns.push_back(pObjModel->normals.at(pObjModel->indeces.at(i).at(2) * (GLushort)3));
+        vns.push_back(pObjModel->normals.at(pObjModel->indeces.at(i).at(2) * (GLushort)3 + (GLushort)1));
+        vns.push_back(pObjModel->normals.at(pObjModel->indeces.at(i).at(2) * (GLushort)3 + (GLushort)2));
+        // indeces
+        pObjModel->indeces.at(i).at(0) = i; // 索引就是0, 1, 2, 3...
+    }
+    pObjModel->vertices = vs;
+    pObjModel->texCoords = vts;
+    pObjModel->normals = vns;
+}
+
 void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjModel *pObjModel) {
     if (file == NULL) return;
     bool shouldQuit = false;
@@ -74,4 +99,5 @@ void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjModel *pObjModel) {
                 break;
         }
     }
+    rearrangeVVtVns(pObjModel);
 }

@@ -10,6 +10,7 @@
 static const char *vert = "#version 300 es\n"
                           "layout(location = 0) in vec4 vPosition;\n"
                           "layout(location = 1) in vec2 vTexCoord;\n"
+                          "layout(location = 2) in vec4 vNormal;\n"
 
                           "uniform vec3 translate;\n" // vec is not array
                           "uniform vec3 scale;\n" // vec is not array
