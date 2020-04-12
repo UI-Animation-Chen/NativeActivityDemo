@@ -20,6 +20,8 @@
 #include "view/Cube.h"
 #include "utils/CoordinatesUtils.h"
 #include "utils/TouchEventHandler.h"
+#include "utils/AndroidAssetUtils.h"
+#include "view/ObjModel.h"
 
 static const int shape_len = 2;
 static Shape *pShape[shape_len] = {0};
@@ -119,8 +121,10 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 CoordinatesUtils::screenW = context->width;
                 CoordinatesUtils::screenH = context->height;
 
+                AndroidAssetUtils::init(app->activity->assetManager);
+
                 BaseShader::getSingletonProgram();
-                TextureUtils::loadSimpleTexture(app->activity->assetManager);
+                TextureUtils::loadSimpleTexture();
 
                 // 深度测试的基准,注意1.0代表从近裁剪面到远裁剪面 这一段范围！！并不是指Z轴的1个单位
                 // 深度，是一个Normolized的值，范围是 0-1，对应Z轴是从近裁剪面到远裁剪面。
@@ -133,8 +137,9 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 if (transY == 0) transY = context->height / 2;
 
                 // blend跟物体渲染顺序有关，需要后渲染半透明物体
-                pShape[0] = new Cube();
-                pShape[1] = new Triangles();
+//                pShape[0] = new Cube();
+//                pShape[1] = new Triangles();
+                pShape[0] = new ObjModel();
                 for (int i = 0; i < shape_len; i++) {
                     if (pShape[i]) {
                         pShape[i]->scale(scaleX, scaleY, scaleZ);

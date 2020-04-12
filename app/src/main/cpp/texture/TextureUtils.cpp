@@ -6,28 +6,14 @@
 #include "TextureUtils.h"
 #include "../utils/libpng1_6_29/png.h"
 #include "../app_log.h"
-#include <errno.h>
-#include <string.h>
-#include <stdlib.h>
+#include "../utils/AndroidAssetUtils.h"
+#include <cerrno>
+#include <cstring>
+#include <cstdlib>
 #include <unistd.h>
 
-static int openFdFromAsset(AAssetManager *assetMgr, const char *fileName) {
-    AAsset *asset = AAssetManager_open(assetMgr, fileName, AASSET_MODE_BUFFER);
-
-    off_t start = 0, len = 0;
-    int fd = AAsset_openFileDescriptor(asset, &start, &len);
-
-    AAsset_close(asset);
-
-    if (fd > 0) {
-        lseek(fd, start, SEEK_CUR);// 通过asset方式打开的文件，流里的[start, start+len)区间属于该文件。
-    }
-
-    return fd;
-}
-
-static void loadPng(uint32_t *w, uint32_t *h, void **image, AAssetManager *assetMgr) {
-    int fd = openFdFromAsset(assetMgr, "mt.png");
+static void loadPng(uint32_t *w, uint32_t *h, void **image) {
+    int fd = AndroidAssetUtils::openFdFromAsset("mt.png");
     if (fd <= 0) {
         app_log("openFdFromAsset failed: err: %s\n", strerror(errno));
         return;
@@ -80,7 +66,7 @@ GLubyte TextureUtils::pixels[9 * 4] = {
 
 GLuint TextureUtils::textureId = 0;
 
-GLuint TextureUtils::loadSimpleTexture(AAssetManager *assetMgr) {
+GLuint TextureUtils::loadSimpleTexture() {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     glGenTextures(1, &textureId);
@@ -89,7 +75,7 @@ GLuint TextureUtils::loadSimpleTexture(AAssetManager *assetMgr) {
 
     uint32_t w, h;
     void *image;
-    loadPng(&w, &h, &image, assetMgr);
+    loadPng(&w, &h, &image);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
     free(image);
 

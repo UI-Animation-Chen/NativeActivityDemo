@@ -13,11 +13,12 @@ add_library(native-activity SHARED
 
     texture/TextureUtils.cpp
 
-    view/Triangles.cpp view/Cube.cpp view/Shape.cpp
+    view/Triangles.cpp view/Cube.cpp view/Shape.cpp view/ObjModel.cpp
 
+    utils/AndroidAssetUtils.cpp
+    utils/ObjHelper.cpp utils/TouchEventHandler.cpp
     utils/ShaderUtils.c utils/CoordinatesUtils.cpp
-    utils/cjson/cJSON.c utils/cjson/cJSON_Utils.c
-    utils/TouchEventHandler.cpp)
+    utils/cjson/cJSON.c utils/cjson/cJSON_Utils.c)
 
 # Export ANativeActivity_onCreate(),
 # Refer to: https://github.com/android-ndk/ndk/issues/381.
