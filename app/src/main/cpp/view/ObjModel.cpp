@@ -86,7 +86,9 @@ ObjModel::ObjModel(): Shape() {
 
     delete pObjModel;
 
-    ambientV4[3] = 0.75f;
+//    ambientV4[3] = 0.75f;
+    glUniform3fv(lightPositionLocation, 1, lightPositionV3);
+    glUniform3fv(lightColorLocation, 1, lightColorV3);
 }
 
 ObjModel::~ObjModel() {

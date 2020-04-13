@@ -13,7 +13,7 @@
 #include <unistd.h>
 
 static void loadPng(uint32_t *w, uint32_t *h, void **image) {
-    int fd = AndroidAssetUtils::openFdFromAsset("mt.png");
+    int fd = AndroidAssetUtils::openFdFromAsset("gray.png");
     if (fd <= 0) {
         app_log("openFdFromAsset failed: err: %s\n", strerror(errno));
         return;
