@@ -124,7 +124,7 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 AndroidAssetUtils::init(app->activity->assetManager);
 
                 BaseShader::getSingletonProgram();
-                TextureUtils::loadSimpleTexture();
+                TextureUtils::loadSimpleTexture("mt.png");
 
                 // 深度测试的基准,注意1.0代表从近裁剪面到远裁剪面 这一段范围！！并不是指Z轴的1个单位
                 // 深度，是一个Normolized的值，范围是 0-1，对应Z轴是从近裁剪面到远裁剪面。

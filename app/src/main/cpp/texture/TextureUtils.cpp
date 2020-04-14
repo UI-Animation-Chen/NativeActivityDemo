@@ -12,8 +12,8 @@
 #include <cstdlib>
 #include <unistd.h>
 
-static void loadPng(uint32_t *w, uint32_t *h, void **image) {
-    int fd = AndroidAssetUtils::openFdFromAsset("gray.png");
+static void loadPng(uint32_t *w, uint32_t *h, void **image, const char *pngFile) {
+    int fd = AndroidAssetUtils::openFdFromAsset(pngFile);
     if (fd <= 0) {
         app_log("openFdFromAsset failed: err: %s\n", strerror(errno));
         return;
@@ -66,7 +66,7 @@ GLubyte TextureUtils::pixels[9 * 4] = {
 
 GLuint TextureUtils::textureId = 0;
 
-GLuint TextureUtils::loadSimpleTexture() {
+GLuint TextureUtils::loadSimpleTexture(const char *pngFile) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     glGenTextures(1, &textureId);
@@ -75,7 +75,7 @@ GLuint TextureUtils::loadSimpleTexture() {
 
     uint32_t w, h;
     void *image;
-    loadPng(&w, &h, &image);
+    loadPng(&w, &h, &image, pngFile);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
     free(image);
 

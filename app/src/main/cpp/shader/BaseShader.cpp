@@ -89,7 +89,7 @@ static const char *frag = "#version 300 es\n"
                           "out vec4 fColor;\n"
 
                           "void main() {\n"
-                          "    fColor = texture(texture, texCoord) * ambient * diffuse;\n"
+                          "    fColor = texture(texture, texCoord) * ambient * 0.65 + diffuse * 0.35;\n"
                           "}\n";
 
 GLuint BaseShader::vertShader = 0;

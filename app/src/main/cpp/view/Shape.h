@@ -42,7 +42,7 @@ protected: // 子类可以按需进行修改
     GLfloat ambientV4[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
     GLint lightPositionLocation;
-    GLfloat lightPositionV3[3] = {-2.0f, 2.0f, -5.0f};
+    GLfloat lightPositionV3[3] = {0.0f, 0.0f, -2.0f};
 
     GLint lightColorLocation;
     GLfloat lightColorV3[3] = {1.0f, 1.0f, 1.0f};
