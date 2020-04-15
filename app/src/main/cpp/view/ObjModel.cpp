@@ -15,7 +15,7 @@ ObjModel::ObjModel(): Shape() {
     glBindVertexArray(vao);
 
     // assets目录下，文件后缀是png才能读到，否则会报错: no such file or directory.
-    int fd = AndroidAssetUtils::openFdFromAsset("blenderObjs/monkey.png");
+    int fd = AndroidAssetUtils::openFdFromAsset("blenderObjs/sphere.png");
     if (fd <= 0) {
         app_log("openFdFromAsset failed: err: %s\n", strerror(errno));
         return;

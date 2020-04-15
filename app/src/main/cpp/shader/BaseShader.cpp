@@ -19,7 +19,7 @@ static const char *vert = "#version 300 es\n"
                           "uniform vec3 rotate;\n"
 
                           "out vec2 texCoord;\n" // send to next stage(frag shader)
-                          "out vec4 diffuse;\n" // send to next stage(frag shader)
+                          "out vec4 light;\n" // 镜面或漫反射光
 
                           "void main() {\n"
                           "    gl_Position = vPosition;\n"
@@ -66,11 +66,18 @@ static const char *vert = "#version 300 es\n"
                           "    gl_Position[1] += translate[1];\n"
                           "    gl_Position[2] += translate[2];\n"
 
-                          "    // 计算漫反射光\n"
                           "    vec3 modelVertex = vec3(gl_Position[0], gl_Position[1], gl_Position[2]);\n"
                           "    vec3 nLight = normalize(lightPosition - modelVertex);\n"
-                          "    float cosAngle = max(0.0, dot(normal, nLight));\n"
-                          "    diffuse = vec4(cosAngle * lightColor, 1.0);\n"
+                          "    if (1 == 2) { // 漫反射光\n"
+                          "        float cosAngle = max(0.0, dot(normal, nLight));\n"
+                          "        light = vec4(cosAngle * lightColor, 1.0);\n"
+                          "    } else { // 镜面反射光\n"
+                          "        vec3 nViewerPosition = vec3(0.0, 0.0, -1.0);\n"
+                          "        vec3 nH = normalize(nLight + nViewerPosition);\n"
+                          "        float shininessFactor = 40.0; // 确定高光区域大小，值越大区域越小，1-200\n"
+                          "        float sIntensity = pow(max(0.0, dot(normal, nH)), shininessFactor);\n"
+                          "        light = vec4(sIntensity * lightColor, 1.0);\n"
+                          "    }\n"
 
                           "    texCoord = vTexCoord;\n"
                           "}\n";
@@ -80,16 +87,15 @@ static const char *frag = "#version 300 es\n"
                           "precision mediump float;\n"
 
                           "in vec2 texCoord;\n" // receive from previous stage(vert shader)
-                          "in vec4 diffuse;\n" // receive from previous stage(vert shader)
+                          "in vec4 light;\n" // receive from previous stage(vert shader)
 
                           "uniform sampler2D texture;\n"
-
                           "uniform vec4 ambient;\n"
 
                           "out vec4 fColor;\n"
 
                           "void main() {\n"
-                          "    fColor = texture(texture, texCoord) * ambient * 0.65 + diffuse * 0.35;\n"
+                          "    fColor = texture(texture, texCoord) * ambient * 0.65 + light * 0.35;\n"
                           "}\n";
 
 GLuint BaseShader::vertShader = 0;
