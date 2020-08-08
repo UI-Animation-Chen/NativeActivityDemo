@@ -4,6 +4,10 @@
 
 #include "ObjHelper.h"
 #include "../app_log.h"
+#include <map>
+#include <string>
+
+#define SMOOTH_LIGHT
 
 static void readVertices(FILE *file, ObjHelper::ObjModel *pObjModel) {
     GLfloat x, y, z;
@@ -30,32 +34,74 @@ static void readTexCoords(FILE *file, ObjHelper::ObjModel *pObjModel) {
 
 static void readInfexInfo(FILE *file, ObjHelper::ObjModel *pObjModel) {
     GLushort v1, v2, v3, t1, t2, t3, n1, n2, n3;
+    // %hd 短整型
     fscanf(file, " %hd/%hd/%hd %hd/%hd/%hd %hd/%hd/%hd\n", &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3);
     pObjModel->indeces.push_back({v1, t1, n1});
     pObjModel->indeces.push_back({v2, t2, n2});
     pObjModel->indeces.push_back({v3, t3, n3});
 }
 
-// 按照f索引，新建一套匹配的顶点，纹理和法向量坐标，由一套索引引用。
+// 按照obj文件格式读出来后，顶点，纹理和法向量坐标都有各自的索引数组。
+// 现在新建一套匹配的顶点，纹理和法向量坐标，由同一个索引数组控制。
+// 这可能会导致各坐标数组变大，包含重复的坐标数据，这是统一索引的代价。
 static void rearrangeVVtVns(ObjHelper::ObjModel *pObjModel) {
-    std::vector<GLfloat>vs;
-    std::vector<GLfloat>vts;
-    std::vector<GLfloat>vns;
+    using namespace std;
+    vector<GLfloat>vs;
+    vector<GLfloat>vts;
+    vector<GLfloat>vns;
+
+    GLushort vertIndex;
+    GLushort texCoordsIndex;
+    GLushort nomalIndex;
+
+#ifdef SMOOTH_LIGHT
+    map<string, vector<GLushort>> vert2indeces; // 一个顶点被几个索引用过。
+#endif
+
     for (GLushort i = 0; i < pObjModel->indeces.size(); i++) {
         // vertices
-        vs.push_back(pObjModel->vertices.at(pObjModel->indeces.at(i).at(0) * (GLushort)3));
-        vs.push_back(pObjModel->vertices.at(pObjModel->indeces.at(i).at(0) * (GLushort)3 + (GLushort)1));
-        vs.push_back(pObjModel->vertices.at(pObjModel->indeces.at(i).at(0) * (GLushort)3 + (GLushort)2));
+        vertIndex = pObjModel->indeces.at(i).at(0) * (GLushort)3;
+        vs.push_back(pObjModel->vertices.at(vertIndex));
+        vs.push_back(pObjModel->vertices.at(vertIndex + (GLushort)1));
+        vs.push_back(pObjModel->vertices.at(vertIndex + (GLushort)2));
+#ifdef SMOOTH_LIGHT
+        GLushort vsIndex = i * (GLushort)3;
+        string vertKey = to_string(vs.at(vsIndex)) + to_string(vs.at(vsIndex + 1)) + to_string(vs.at(vsIndex + 2));
+        if (vert2indeces.count(vertKey) == 0) {
+            vert2indeces[vertKey] = {i};
+        } else {
+            vert2indeces[vertKey].push_back(i);
+        }
+#endif
         // texCoords
-        vts.push_back(pObjModel->texCoords.at(pObjModel->indeces.at(i).at(1) * (GLushort)2));
-        vts.push_back(pObjModel->texCoords.at(pObjModel->indeces.at(i).at(1) * (GLushort)2 + (GLushort)1));
+        texCoordsIndex = pObjModel->indeces.at(i).at(1) * (GLushort)2;
+        vts.push_back(pObjModel->texCoords.at(texCoordsIndex));
+        vts.push_back(pObjModel->texCoords.at(texCoordsIndex + (GLushort)1));
         // normals
-        vns.push_back(pObjModel->normals.at(pObjModel->indeces.at(i).at(2) * (GLushort)3));
-        vns.push_back(pObjModel->normals.at(pObjModel->indeces.at(i).at(2) * (GLushort)3 + (GLushort)1));
-        vns.push_back(pObjModel->normals.at(pObjModel->indeces.at(i).at(2) * (GLushort)3 + (GLushort)2));
+        nomalIndex = pObjModel->indeces.at(i).at(2) * (GLushort)3;
+        vns.push_back(pObjModel->normals.at(nomalIndex));
+        vns.push_back(pObjModel->normals.at(nomalIndex + (GLushort)1));
+        vns.push_back(pObjModel->normals.at(nomalIndex + (GLushort)2));
         // indeces
-        pObjModel->indeces.at(i).at(0) = i; // 索引就是0, 1, 2, 3...
+        pObjModel->indeces.at(i).at(0) = i; // 索引就是0, 1, 2, 3... 索引里每一个值都对应一个坐标(xyz)。
     }
+#ifdef SMOOTH_LIGHT
+    for (auto const &entry: vert2indeces) {
+        GLfloat nx = 0, ny = 0, nz = 0; // 将该顶点对应的所有面的法向量相加，在shader里进行归一化。
+        for (GLushort i = 0; i < entry.second.size(); i++) {
+            GLushort vnsIndex = entry.second.at(i) * (GLushort)3;
+            nx += vns.at(vnsIndex);
+            ny += vns.at(vnsIndex + (GLushort)1);
+            nz += vns.at(vnsIndex + (GLushort)2);
+        }
+        for (GLushort i = 0; i < entry.second.size(); i++) {
+            GLushort vnsIndex = entry.second.at(i) * (GLushort)3;
+            vns.at(vnsIndex) = nx;
+            vns.at(vnsIndex + (GLushort)1) = ny;
+            vns.at(vnsIndex + (GLushort)2) = nz;
+        }
+    }
+#endif
     pObjModel->vertices = vs;
     pObjModel->texCoords = vts;
     pObjModel->normals = vns;

@@ -22,7 +22,7 @@ static const char *vert = "#version 300 es\n"
 
                           "void main() {\n"
                           "    gl_Position = vPosition;\n"
-                          "    modelNormal = vNormal;\n" // 法向量，obj文件里的是归一化的，只随旋转而变
+                          "    modelNormal = normalize(vNormal);\n" // 法向量，进行归一化
 
                           "    gl_Position[0] *= scale[0];\n"
                           "    gl_Position[1] *= scale[1];\n"
