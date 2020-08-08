@@ -15,6 +15,7 @@ ObjModel::ObjModel(): Shape() {
     glBindVertexArray(vao);
 
     // assets目录下，文件后缀是png才能读到，否则会报错: no such file or directory.
+    // 原因是：assets目录下的文件会进行压缩，所以读不到。而png会被认为是压缩文件，不会再次压缩。
     int fd = AndroidAssetUtils::openFdFromAsset("blenderObjs/sphere.png");
     if (fd <= 0) {
         app_log("openFdFromAsset failed: err: %s\n", strerror(errno));

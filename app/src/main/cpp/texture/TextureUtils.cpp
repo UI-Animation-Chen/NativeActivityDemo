@@ -27,7 +27,7 @@ static void loadPng(uint32_t *w, uint32_t *h, void **image, const char *pngFile)
     }
 
     png_structp pngStructp = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    png_infop  pngInfop = png_create_info_struct(pngStructp);
+    png_infop pngInfop = png_create_info_struct(pngStructp);
 
     png_init_io(pngStructp, file);
     // 内部已经调用read_info，read_end，外面再调会崩溃
