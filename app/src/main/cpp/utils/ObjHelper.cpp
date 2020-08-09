@@ -17,6 +17,8 @@ static void readVertices(FILE *file, ObjHelper::ObjModel *pObjModel) {
     pObjModel->vertices.push_back(z);
 }
 
+// obj文件中每个顶点的法向量，其实是构成一个三角面片的面法向量，这三个顶点的法向量都相同。
+// 同一个顶点，当其所处的三角面片不一样，就会具有不同的法向量。
 static void readNormals(FILE *file, ObjHelper::ObjModel *pObjModel) {
     GLfloat x, y, z;
     fscanf(file, " %f %f %f\n", &x, &y, &z);
