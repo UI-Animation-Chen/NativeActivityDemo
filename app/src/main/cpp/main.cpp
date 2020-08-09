@@ -169,25 +169,25 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         case APP_CMD_GAINED_FOCUS:
             // When our app gains focus, we start monitoring the accelerometer.
             app_log("cmd -- gained focus\n");
-//            if (context->accelerometerSensor != NULL) {
-//            ASensorEventQueue_enableSensor(context->sensorEventQueue,
-//                                           context->accelerometerSensor);
-//            // We'd like to get 60 events per second (in us).
-//            ASensorEventQueue_setEventRate(context->sensorEventQueue,
-//                                           context->accelerometerSensor,
-//                                           (1000L / 60) * 1000);
-//            }
+            if (context->accelerometerSensor != NULL) {
+            ASensorEventQueue_enableSensor(context->sensorEventQueue,
+                                           context->accelerometerSensor);
+            // We'd like to get 60 events per second (in us).
+            ASensorEventQueue_setEventRate(context->sensorEventQueue,
+                                           context->accelerometerSensor,
+                                           (1000L / 60) * 1000);
+            }
             break;
         case APP_CMD_LOST_FOCUS:
             // When our app loses focus, we stop monitoring the accelerometer.
             app_log("cmd -- lost focus\n");
             // This is to avoid consuming battery while not being used.
-//            if (context->accelerometerSensor != NULL) {
-//            ASensorEventQueue_disableSensor(context->sensorEventQueue,
-//                                            context->accelerometerSensor);
-//            }
+            if (context->accelerometerSensor != NULL) {
+            ASensorEventQueue_disableSensor(context->sensorEventQueue,
+                                            context->accelerometerSensor);
+            }
             // Also stop animating.
-//            context->animating = 0;
+            context->animating = 0;
             break;
         default:
             break;
@@ -281,7 +281,7 @@ void initTouchEventHandlerCallbacks() {
     touchEventHandler->setOnRotate([](float rotateDeg, float currMillis) {
         for (int i = 0; i < shape_len; i++) {
             if (pShape[i]) {
-                pShape[i]->rotate(rotateX, rotateY, -(rotateZ += rotateDeg) / 180.0f);
+//                pShape[i]->rotate(rotateX, rotateY, -(rotateZ += rotateDeg) / 180.0f);
             }
         }
     });
@@ -305,11 +305,11 @@ void android_main(struct android_app *app) {
     initTouchEventHandlerCallbacks();
 
     // Prepare to monitor accelerometer
-//    context.sensorManager = AcquireASensorManagerInstance(app);
-//    context.accelerometerSensor = ASensorManager_getDefaultSensor(context.sensorManager,
-//                                                                ASENSOR_TYPE_ACCELEROMETER);
-//    context.sensorEventQueue = ASensorManager_createEventQueue(context.sensorManager, app->looper,
-//                                                             LOOPER_ID_USER, NULL, NULL);
+    context.sensorManager = AcquireASensorManagerInstance(app);
+    context.accelerometerSensor = ASensorManager_getDefaultSensor(context.sensorManager,
+                                                                  ASENSOR_TYPE_ACCELEROMETER);
+    context.sensorEventQueue = ASensorManager_createEventQueue(context.sensorManager, app->looper,
+                                                               LOOPER_ID_USER, NULL, NULL);
 
     if (app->savedState != NULL) {
         // We are starting with a previous saved state; restore from it.
@@ -336,15 +336,20 @@ void android_main(struct android_app *app) {
             }
 
             // If a sensor has data, process it now.
-//          if (ident == LOOPER_ID_USER) {
-//              if (context.accelerometerSensor != NULL) {
-//                  ASensorEvent event;
-//                  while (ASensorEventQueue_getEvents(context.sensorEventQueue, &event, 1) > 0) {
-//                      //app_log("accelerometer: x=%f y=%f z=%f\n", event.acceleration.x,
-//                      //       event.acceleration.y, event.acceleration.z);
-//                  }
-//              }
-//          }
+          if (ident == LOOPER_ID_USER) {
+              if (context.accelerometerSensor != NULL) {
+                  ASensorEvent event;
+                  while (ASensorEventQueue_getEvents(context.sensorEventQueue, &event, 1) > 0) {
+//                      app_log("accelerometer: x=%f y=%f z=%f\n", event.acceleration.x,
+//                              event.acceleration.y, event.acceleration.z);
+                      for (int i = 0; i < shape_len; i++) {
+                          if (pShape[i]) {
+                              pShape[i]->rotate(-event.acceleration.y / 10, event.acceleration.x / 10, rotateZ);
+                          }
+                      }
+                  }
+              }
+          }
 
             // Check if we are exiting.
             if (app->destroyRequested != 0) {

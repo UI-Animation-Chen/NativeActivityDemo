@@ -95,7 +95,7 @@ static const char *frag = "#version 300 es\n"
                           "    float sIntensity = pow(max(0.0, dot(nNormal, nH)), shininessFactor);\n"
                           "    vec4 specular = vec4(sIntensity * lightColor, 1.0);\n"
 
-                          "    fColor = texture(texture, texCoord) * ambient * 0.8 + diffuse * 0.15 + specular * 0.25;\n"
+                          "    fColor = texture(texture, texCoord) * ambient * 0.7 + diffuse * 0.15 + specular * 0.15;\n"
                           "}\n";
 
 GLuint BaseShader::vertShader = 0;
