@@ -10,6 +10,7 @@
 float CoordinatesUtils::screenW = 1;
 float CoordinatesUtils::screenH = 1;
 
+// 将安卓的坐标值转换为OpenGL ES的坐标值。
 float CoordinatesUtils::android2gles_x(float x) {
     return 2*x/screenW - 1;
 }
@@ -19,6 +20,7 @@ float CoordinatesUtils::android2gles_y(float y) {
     return (1 - 2*y/screenH);
 }
 
+// 将OpenGL ES的坐标值转换为安卓的坐标值。
 float CoordinatesUtils::gles2android_x(float x) {
     return (x + 1) * screenW/2;
 }
