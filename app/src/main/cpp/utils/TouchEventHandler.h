@@ -34,7 +34,7 @@ public:
     void setOnRotate(std::function<void(float rotateDeg, float currMillis)> onTouchRotateFunc);
 
 private:
-    // callback functions
+    // callback functions. 函数中时间参数为java.lang.System.nanoTime().
     std::function<void(float downX, float downY, float downMillis)> onTouchDownFunc;
     std::function<void(float deltaX, float deltaY, float currX, float currY,
                        float currMillis, int fingers)> onTouchMoveFunc;

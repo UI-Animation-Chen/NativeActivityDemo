@@ -33,7 +33,7 @@ public:
 
     virtual void move(float offsetX, float offsetY, float offsetZ);
 
-    virtual void rotate(float xDeg, float yDeg, float zDeg);
+    virtual void rotate(float xRadian, float yRadian, float zRadian);
 
     virtual void scale(float x, float y, float z);
 

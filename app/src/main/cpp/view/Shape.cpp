@@ -12,10 +12,10 @@ void Shape::move(float offsetX, float offsetY, float offsetZ) {
     glUniform3fv(transLocation, 1, translateXYZ); // vec is not array, so the count is 1.
 }
 
-void Shape::rotate(float xDeg, float yDeg, float zDeg) {
-    rotateXYZ[0] = xDeg;
-    rotateXYZ[1] = yDeg;
-    rotateXYZ[2] = zDeg;
+void Shape::rotate(float xRadian, float yRadian, float zRadian) {
+    rotateXYZ[0] = xRadian;
+    rotateXYZ[1] = yRadian;
+    rotateXYZ[2] = zRadian;
     glUniform3fv(rotateLocation, 1, rotateXYZ);
 }
 

@@ -9,6 +9,7 @@
 #define MAX_DEGREES_IN_TWO_MOVE_EVENTS 180.0f
 #define REFERENCE_DEGREES (360.0f - MAX_DEGREES_IN_TWO_MOVE_EVENTS)  // 权衡考虑，定为180
 #define RADIAN_TO_DEGREE ((float) (180.0f / M_PI))
+#define NS_2_MS (1.0f / 1000000.0f)
 
 /**
  * Math.atan2(x, y): 左侧的-180和180交界需要额外处理，其余区域都是连续的。
@@ -89,6 +90,7 @@ void TouchEventHandler::resetOldValues() {
     old2FingersDistance = 0;
 }
 
+// 关于java.lang.System.nanoTime()，表示从虚拟机实例开始运行的时延值。跨度需小于292年（2的63次方纳秒）。
 void TouchEventHandler::onTouchEvent(AInputEvent *event) {
     int action = AMotionEvent_getAction(event);
     switch (action & AMOTION_EVENT_ACTION_MASK) {
@@ -96,7 +98,8 @@ void TouchEventHandler::onTouchEvent(AInputEvent *event) {
             resetOldValues();
             oldX = AMotionEvent_getX(event, 0);
             oldY = AMotionEvent_getY(event, 0);
-            if (onTouchDownFunc) onTouchDownFunc(oldX, oldX, 0);
+            if (onTouchDownFunc)
+                onTouchDownFunc(oldX, oldX, AMotionEvent_getEventTime(event) * NS_2_MS);
             break;
         }
         case AMOTION_EVENT_ACTION_POINTER_DOWN: {
@@ -105,7 +108,8 @@ void TouchEventHandler::onTouchEvent(AInputEvent *event) {
 
             // 在pointer_down事件之后，手指数。
             if (!moreThan2Fingers && AMotionEvent_getPointerCount(event) > 2) {
-                if (onTouchCancelFunc) onTouchCancelFunc(oldX, oldY, 0);
+                if (onTouchCancelFunc)
+                    onTouchCancelFunc(oldX, oldY, AMotionEvent_getEventTime(event) * NS_2_MS);
                 moreThan2Fingers = true;
                 return;
             } else {
@@ -123,12 +127,15 @@ void TouchEventHandler::onTouchEvent(AInputEvent *event) {
             if ((fingers = AMotionEvent_getPointerCount(event)) == 2) {
                 // handle rotate
                 float currDeltaRotatedDeg = getRotatedDegBetween2Events(event);
-                if (onTouchRotateFunc) onTouchRotateFunc(currDeltaRotatedDeg, 0);
+                if (onTouchRotateFunc)
+                    onTouchRotateFunc(currDeltaRotatedDeg, AMotionEvent_getEventTime(event) * NS_2_MS);
                 // handle scale
                 float deltaScaledX = getDeltaScaledXBetween2Events(event);
                 float deltaScaledY = getDeltaScaledYBetween2Events(event);
                 float deltaScaledDistance = getScaledDistanceBetween2Events(event);
-                if (onTouchScaleFunc) onTouchScaleFunc(deltaScaledX, deltaScaledY, deltaScaledDistance, 0);
+                if (onTouchScaleFunc)
+                    onTouchScaleFunc(deltaScaledX, deltaScaledY, deltaScaledDistance,
+                                     AMotionEvent_getEventTime(event) * NS_2_MS);
 
                 newX = (AMotionEvent_getX(event, 0) + AMotionEvent_getX(event, 1)) / 2.0f;
                 newY = (AMotionEvent_getY(event, 0) + AMotionEvent_getY(event, 1)) / 2.0f;
@@ -142,7 +149,9 @@ void TouchEventHandler::onTouchEvent(AInputEvent *event) {
             oldX = newX;
             oldY = newY;
 
-            if (onTouchMoveFunc) onTouchMoveFunc(currDeltaMovedX, currDeltaMovedY, newX, newY, 0, fingers);
+            if (onTouchMoveFunc)
+                onTouchMoveFunc(currDeltaMovedX, currDeltaMovedY, newX, newY,
+                                AMotionEvent_getEventTime(event) * NS_2_MS, fingers);
             break;
         }
         case AMOTION_EVENT_ACTION_POINTER_UP: {
@@ -161,11 +170,13 @@ void TouchEventHandler::onTouchEvent(AInputEvent *event) {
             break;
         }
         case AMOTION_EVENT_ACTION_CANCEL: {
-            if (!moreThan2Fingers && onTouchCancelFunc) onTouchCancelFunc(oldX, oldY, 0);
+            if (!moreThan2Fingers && onTouchCancelFunc)
+                onTouchCancelFunc(oldX, oldY, AMotionEvent_getEventTime(event) * NS_2_MS);
             break;
         }
         case AMOTION_EVENT_ACTION_UP: {
-            if (!moreThan2Fingers && onTouchUpFunc) onTouchUpFunc(oldX, oldX, 0);
+            if (!moreThan2Fingers && onTouchUpFunc)
+                onTouchUpFunc(oldX, oldX, AMotionEvent_getEventTime(event) * NS_2_MS);
             moreThan2Fingers = false;
             break;
         }

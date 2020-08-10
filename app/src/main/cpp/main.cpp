@@ -23,6 +23,9 @@
 #include "utils/AndroidAssetUtils.h"
 #include "view/ObjModel.h"
 
+static const float NS_2_S = 1.0f / 1000000000.0f; // 将纳秒转成秒
+static const float DEG_2_RADIAN = (float) M_PI / 180.0f;
+
 static const int shape_len = 2;
 static Shape *pShape[shape_len] = {0};
 
@@ -30,7 +33,9 @@ static TouchEventHandler *touchEventHandler = NULL;
 
 static float transX = 0, transY = 0, transZ = 0;
 static float scaleX = 1.0f, scaleY = 1.0f, scaleZ = 1.0f;
-static float rotateX = 0, rotateY = 0, rotateZ = 0;
+static float rotateXradian = 0, rotateYradian = 0, rotateZradian = 0;
+
+static float gyro_event_ts_s_old = -1;
 
 /**
  * Our saved state data.
@@ -51,7 +56,7 @@ struct context {
     int32_t height;
 
     ASensorManager *sensorManager;
-    const ASensor *accelerometerSensor;
+    const ASensor *gyroscopeSensor;
     ASensorEventQueue *sensorEventQueue;
 
     int animating;
@@ -143,7 +148,7 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 for (int i = 0; i < shape_len; i++) {
                     if (pShape[i]) {
                         pShape[i]->scale(scaleX, scaleY, scaleZ);
-                        pShape[i]->rotate(rotateX, rotateY, -rotateZ / 180.0f);
+                        pShape[i]->rotate(rotateXradian, rotateYradian, -rotateZradian);
                         pShape[i]->move(transX, transY, transZ);
                         pShape[i]->draw();
                     }
@@ -169,22 +174,23 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         case APP_CMD_GAINED_FOCUS:
             // When our app gains focus, we start monitoring the accelerometer.
             app_log("cmd -- gained focus\n");
-            if (context->accelerometerSensor != NULL) {
-            ASensorEventQueue_enableSensor(context->sensorEventQueue,
-                                           context->accelerometerSensor);
-            // We'd like to get 60 events per second (in us).
-            ASensorEventQueue_setEventRate(context->sensorEventQueue,
-                                           context->accelerometerSensor,
-                                           (1000L / 60) * 1000);
+            if (context->gyroscopeSensor != NULL) {
+                ASensorEventQueue_enableSensor(context->sensorEventQueue,
+                                               context->gyroscopeSensor);
+                // We'd like to get 60 events per second (in us).
+                ASensorEventQueue_setEventRate(context->sensorEventQueue,
+                                               context->gyroscopeSensor,
+                                               (1000L / 60) * 1000); // 16667微秒，即16.667毫秒
+                gyro_event_ts_s_old = -1;
             }
             break;
         case APP_CMD_LOST_FOCUS:
             // When our app loses focus, we stop monitoring the accelerometer.
             app_log("cmd -- lost focus\n");
             // This is to avoid consuming battery while not being used.
-            if (context->accelerometerSensor != NULL) {
-            ASensorEventQueue_disableSensor(context->sensorEventQueue,
-                                            context->accelerometerSensor);
+            if (context->gyroscopeSensor != NULL) {
+                ASensorEventQueue_disableSensor(context->sensorEventQueue,
+                                                context->gyroscopeSensor);
             }
             // Also stop animating.
             context->animating = 0;
@@ -203,7 +209,6 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
 #include <EGL/egl.h>
 
 ASensorManager *AcquireASensorManagerInstance(struct android_app *app) {
-
     if (!app)
         return NULL;
 
@@ -247,8 +252,8 @@ void initTouchEventHandlerCallbacks() {
     touchEventHandler->setOnTouchMove([](float deltaX, float deltaY, float currX, float currY,
                                          float currMillis, int fingers) {
         if (fingers == 1) {
-            rotateX += (deltaY * M_PI / CoordinatesUtils::screenH);
-            rotateY += (deltaX * M_PI / CoordinatesUtils::screenH);
+            rotateXradian += (deltaY * M_PI / CoordinatesUtils::screenH); // 划过屏幕为一个PI
+            rotateYradian += (deltaX * M_PI / CoordinatesUtils::screenW);
         } else {
             transX += deltaX;
             transY += deltaY;
@@ -256,7 +261,7 @@ void initTouchEventHandlerCallbacks() {
         for (int i = 0; i < shape_len; i++) {
             if (pShape[i]) {
                 if (fingers == 1) {
-                    pShape[i]->rotate(rotateX, rotateY, -rotateZ / 180.0f);
+                    pShape[i]->rotate(rotateXradian, rotateYradian, -rotateZradian);
                 } else {
                     pShape[i]->move(transX, transY, transZ);
                 }
@@ -279,9 +284,10 @@ void initTouchEventHandlerCallbacks() {
                 }
             });
     touchEventHandler->setOnRotate([](float rotateDeg, float currMillis) {
+        rotateZradian += rotateDeg * DEG_2_RADIAN;
         for (int i = 0; i < shape_len; i++) {
             if (pShape[i]) {
-//                pShape[i]->rotate(rotateX, rotateY, -(rotateZ += rotateDeg) / 180.0f);
+                pShape[i]->rotate(rotateXradian, rotateYradian, -rotateZradian);
             }
         }
     });
@@ -306,8 +312,8 @@ void android_main(struct android_app *app) {
 
     // Prepare to monitor accelerometer
     context.sensorManager = AcquireASensorManagerInstance(app);
-    context.accelerometerSensor = ASensorManager_getDefaultSensor(context.sensorManager,
-                                                                  ASENSOR_TYPE_ACCELEROMETER);
+    context.gyroscopeSensor = ASensorManager_getDefaultSensor(context.sensorManager,
+                                                              ASENSOR_TYPE_GYROSCOPE);
     context.sensorEventQueue = ASensorManager_createEventQueue(context.sensorManager, app->looper,
                                                                LOOPER_ID_USER, NULL, NULL);
 
@@ -317,7 +323,6 @@ void android_main(struct android_app *app) {
     }
 
     // loop waiting for stuff to do.
-
     while (1) {
         // Read all pending events.
         int ident;
@@ -329,27 +334,32 @@ void android_main(struct android_app *app) {
         // to draw the next frame of animation.
         while ((ident = ALooper_pollAll(/*context.animating ? 0 : */-1, NULL, &events,
                                                                     (void **) &source)) >= 0) {
-
             // Process this event.
             if (source != NULL) {
                 source->process(app, source);
             }
 
             // If a sensor has data, process it now.
-          if (ident == LOOPER_ID_USER) {
-              if (context.accelerometerSensor != NULL) {
-                  ASensorEvent event;
-                  while (ASensorEventQueue_getEvents(context.sensorEventQueue, &event, 1) > 0) {
-//                      app_log("accelerometer: x=%f y=%f z=%f\n", event.acceleration.x,
-//                              event.acceleration.y, event.acceleration.z);
-                      for (int i = 0; i < shape_len; i++) {
-                          if (pShape[i]) {
-                              pShape[i]->rotate(-event.acceleration.y / 10, event.acceleration.x / 10, rotateZ);
-                          }
-                      }
-                  }
-              }
-          }
+            if (ident == LOOPER_ID_USER) {
+                if (context.gyroscopeSensor != NULL) {
+                    ASensorEvent event;
+                    while (ASensorEventQueue_getEvents(context.sensorEventQueue, &event, 1) > 0) {
+                        float event_ts_s_now = event.timestamp * NS_2_S;
+                        if (gyro_event_ts_s_old != -1) {
+                            float dT = event_ts_s_now - gyro_event_ts_s_old;
+                            rotateXradian -= event.data[0] * dT; // gyro返回的值单位是弧度/s
+                            rotateYradian -= event.data[1] * dT;
+                            rotateZradian += event.data[2] * dT;
+                            for (int i = 0; i < shape_len; i++) {
+                                if (pShape[i]) {
+                                    pShape[i]->rotate(rotateXradian, rotateYradian, -rotateZradian);
+                                }
+                            }
+                        }
+                        gyro_event_ts_s_old = event_ts_s_now;
+                    }
+                }
+            }
 
             // Check if we are exiting.
             if (app->destroyRequested != 0) {
@@ -360,7 +370,6 @@ void android_main(struct android_app *app) {
             if (app->window != NULL) {
 //                renderByANativeWindowAPI(app->window);
 
-                GLfloat factor = context.state.y / context.height;
                 glClearColor(0, 0, 0, 0);
                 glClearDepthf(1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
