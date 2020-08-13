@@ -4,6 +4,7 @@
 
 #include "ObjHelper.h"
 #include "../app_log.h"
+#include "CoordinatesUtils.h"
 #include <map>
 #include <string>
 
@@ -12,6 +13,11 @@
 static void readVertices(FILE *file, ObjHelper::ObjModel *pObjModel) {
     GLfloat x, y, z;
     fscanf(file, "%f %f %f\n", &x, &y, &z);
+    if (CoordinatesUtils::screenW > CoordinatesUtils::screenH) {
+        x = x * (GLfloat)CoordinatesUtils::screenH / (GLfloat)CoordinatesUtils::screenW;
+    } else if (CoordinatesUtils::screenW < CoordinatesUtils::screenH) {
+        y = y * (GLfloat)CoordinatesUtils::screenW / (GLfloat)CoordinatesUtils::screenH;
+    }
     pObjModel->vertices.push_back(x);
     pObjModel->vertices.push_back(y);
     pObjModel->vertices.push_back(z);

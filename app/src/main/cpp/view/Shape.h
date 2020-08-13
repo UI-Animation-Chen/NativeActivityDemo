@@ -22,6 +22,9 @@ public:
         lightColorLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "lightColor");
         glUseProgram(BaseShader::getSingletonProgram());
         glUniform1i(textureLocation, 0);
+        move(0, 0, 0); // 初始化。
+        rotate(0, 0, 0);
+        scale(1.0f, 1.0f, 1.0f);
         app_log("Shape constructor");
     }
 
@@ -48,6 +51,8 @@ protected: // 子类可以按需进行修改
     GLfloat lightColorV3[3] = {1.0f, 1.0f, 1.0f};
 
 private:
+    GLint bounds[4]; // [x, y, w, h]
+
     GLfloat translateXYZ[3];
     GLint transLocation;
 
