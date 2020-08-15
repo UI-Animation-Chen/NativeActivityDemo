@@ -13,11 +13,6 @@
 static void readVertices(FILE *file, ObjHelper::ObjModel *pObjModel) {
     GLfloat x, y, z;
     fscanf(file, "%f %f %f\n", &x, &y, &z);
-    if (CoordinatesUtils::screenW > CoordinatesUtils::screenH) {
-        x = x * (GLfloat)CoordinatesUtils::screenH / (GLfloat)CoordinatesUtils::screenW;
-    } else if (CoordinatesUtils::screenW < CoordinatesUtils::screenH) {
-        y = y * (GLfloat)CoordinatesUtils::screenW / (GLfloat)CoordinatesUtils::screenH;
-    }
     pObjModel->vertices.push_back(x);
     pObjModel->vertices.push_back(y);
     pObjModel->vertices.push_back(z);
@@ -43,7 +38,8 @@ static void readTexCoords(FILE *file, ObjHelper::ObjModel *pObjModel) {
 static void readInfexInfo(FILE *file, ObjHelper::ObjModel *pObjModel) {
     GLushort v1, v2, v3, t1, t2, t3, n1, n2, n3;
     // %hd 短整型
-    fscanf(file, " %hd/%hd/%hd %hd/%hd/%hd %hd/%hd/%hd\n", &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3);
+    fscanf(file, " %hd/%hd/%hd %hd/%hd/%hd %hd/%hd/%hd\n",
+                   &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3);
     pObjModel->indeces.push_back({v1, t1, n1});
     pObjModel->indeces.push_back({v2, t2, n2});
     pObjModel->indeces.push_back({v3, t3, n3});
@@ -58,55 +54,64 @@ static void rearrangeVVtVns(ObjHelper::ObjModel *pObjModel) {
     vector<GLfloat>vts;
     vector<GLfloat>vns;
 
-    GLushort vertIndex;
-    GLushort texCoordsIndex;
-    GLushort nomalIndex;
+    GLuint vertIndex;
+    GLuint texCoordsIndex;
+    GLuint nomalIndex;
 
 #ifdef SMOOTH_LIGHT
-    map<string, vector<GLushort>> vert2indeces; // 一个顶点被几个索引用过。
+    map<string, vector<GLuint>> vert2indecesMap; // 一个顶点被几个索引用过。
 #endif
 
-    for (GLushort i = 0; i < pObjModel->indeces.size(); i++) {
+    for (GLuint i = 0; i < pObjModel->indeces.size(); i++) {
         // vertices
-        vertIndex = pObjModel->indeces.at(i).at(0) * (GLushort)3;
+        vertIndex = pObjModel->indeces.at(i).at(0) * (GLuint)3; // 乘法左边是GLushort，会自动提为int
         vs.push_back(pObjModel->vertices.at(vertIndex));
-        vs.push_back(pObjModel->vertices.at(vertIndex + (GLushort)1));
-        vs.push_back(pObjModel->vertices.at(vertIndex + (GLushort)2));
+        vs.push_back(pObjModel->vertices.at(vertIndex + 1));
+        vs.push_back(pObjModel->vertices.at(vertIndex + 2));
 #ifdef SMOOTH_LIGHT
-        GLushort vsIndex = i * (GLushort)3;
-        string vertKey = to_string(vs.at(vsIndex)) + to_string(vs.at(vsIndex + 1)) + to_string(vs.at(vsIndex + 2));
-        if (vert2indeces.count(vertKey) == 0) {
-            vert2indeces[vertKey] = {i};
-        } else {
-            vert2indeces[vertKey].push_back(i);
-        }
+        GLuint vsIndex = i * 3;
+        string vertKey = to_string(vs.at(vsIndex)) +
+                         to_string(vs.at(vsIndex + 1)) +
+                         to_string(vs.at(vsIndex + 2));
+        vert2indecesMap[vertKey].push_back(i);
 #endif
         // texCoords
-        texCoordsIndex = pObjModel->indeces.at(i).at(1) * (GLushort)2;
+        texCoordsIndex = pObjModel->indeces.at(i).at(1) * (GLuint)2;
         vts.push_back(pObjModel->texCoords.at(texCoordsIndex));
-        vts.push_back(pObjModel->texCoords.at(texCoordsIndex + (GLushort)1));
+        vts.push_back(pObjModel->texCoords.at(texCoordsIndex + 1));
         // normals
-        nomalIndex = pObjModel->indeces.at(i).at(2) * (GLushort)3;
+        nomalIndex = pObjModel->indeces.at(i).at(2) * (GLuint)3;
         vns.push_back(pObjModel->normals.at(nomalIndex));
-        vns.push_back(pObjModel->normals.at(nomalIndex + (GLushort)1));
-        vns.push_back(pObjModel->normals.at(nomalIndex + (GLushort)2));
+        vns.push_back(pObjModel->normals.at(nomalIndex + 1));
+        vns.push_back(pObjModel->normals.at(nomalIndex + 2));
         // indeces
-        pObjModel->indeces.at(i).at(0) = i; // 索引就是0, 1, 2, 3... 索引里每一个值都对应一个坐标(xyz)。
+        pObjModel->indeces.at(i).at(0) = (GLushort)i; // 索引就是0,1,2... 每个索引都对应一个坐标(xyz)。
     }
 #ifdef SMOOTH_LIGHT
-    for (auto const &entry: vert2indeces) {
+    for (auto const &entry: vert2indecesMap) {
         GLfloat nx = 0, ny = 0, nz = 0; // 将该顶点对应的所有面的法向量相加，在shader里进行归一化。
-        for (GLushort i = 0; i < entry.second.size(); i++) {
-            GLushort vnsIndex = entry.second.at(i) * (GLushort)3;
-            nx += vns.at(vnsIndex);
-            ny += vns.at(vnsIndex + (GLushort)1);
-            nz += vns.at(vnsIndex + (GLushort)2);
+        map<string, vector<GLfloat>> uniqueVnMap; // 该顶点相同的法向量去重，只保留不同的
+        for (GLuint i = 0; i < entry.second.size(); i++) {
+            GLuint vnsIndex = entry.second.at(i) * 3;
+            string vnKey = to_string(vns.at(vnsIndex)) +
+                           to_string(vns.at(vnsIndex + 1)) +
+                           to_string(vns.at(vnsIndex + 2));
+            if (uniqueVnMap.count(vnKey) == 0) {
+                uniqueVnMap[vnKey].push_back(vns.at(vnsIndex));
+                uniqueVnMap[vnKey].push_back(vns.at(vnsIndex + 1));
+                uniqueVnMap[vnKey].push_back(vns.at(vnsIndex + 2));
+            }
         }
-        for (GLushort i = 0; i < entry.second.size(); i++) {
-            GLushort vnsIndex = entry.second.at(i) * (GLushort)3;
+        for (auto const &vnEntry: uniqueVnMap) {
+            nx += vnEntry.second.at(0);
+            ny += vnEntry.second.at(1);
+            nz += vnEntry.second.at(2);
+        }
+        for (GLuint i = 0; i < entry.second.size(); i++) {
+            GLuint vnsIndex = entry.second.at(i) * 3;
             vns.at(vnsIndex) = nx;
-            vns.at(vnsIndex + (GLushort)1) = ny;
-            vns.at(vnsIndex + (GLushort)2) = nz;
+            vns.at(vnsIndex + 1) = ny;
+            vns.at(vnsIndex + 2) = nz;
         }
     }
 #endif

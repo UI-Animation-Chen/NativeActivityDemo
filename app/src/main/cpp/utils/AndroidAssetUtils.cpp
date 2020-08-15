@@ -13,6 +13,9 @@ void AndroidAssetUtils::init(AAssetManager *assetMgr) {
 
 int AndroidAssetUtils::openFdFromAsset(const char *assetName) {
     AAsset *asset = AAssetManager_open(assetManager, assetName, AASSET_MODE_STREAMING);
+    if (asset == nullptr) {
+        return -1;
+    }
 
     off_t start = 0, len = 0;
     int fd = AAsset_openFileDescriptor(asset, &start, &len);

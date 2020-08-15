@@ -22,7 +22,7 @@ static const char *vert = "#version 300 es\n"
 
                           "void main() {\n"
                           "    gl_Position = vPosition;\n"
-                          "    modelNormal = vNormal;\n" // 法向量，片元中进行了归一化，此处不必。
+                          "    modelNormal = normalize(vNormal);\n" // 法向量，进行归一化，片元中仍需要。
 
                           "    gl_Position[0] *= scale[0];\n"
                           "    gl_Position[1] *= scale[1];\n"

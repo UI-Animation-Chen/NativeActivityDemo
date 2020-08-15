@@ -127,6 +127,14 @@ int GLESEngine_init(ANativeWindow *window) {
     glEnable(GL_DEPTH_TEST); // 开启深度测试，让z轴起作用。
     glDepthFunc(GL_LESS); // z轴正向是屏幕向里，所以值小表示离用户更近。
 
+    if (w < h) {
+        glViewport(0, (h - w)/2, w, w);
+    } else if (w > h) {
+        glViewport((w - h)/2, 0, h, h);
+    } else {
+        glViewport(0, 0, w, h); // default config set by opengl es engine
+    }
+
     return 0;
 }
 
