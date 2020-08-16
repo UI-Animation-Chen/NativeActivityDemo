@@ -9,6 +9,7 @@
 #include <string>
 
 #define SMOOTH_LIGHT
+//#define NO_TEX_COOR
 
 static void readVertices(FILE *file, ObjHelper::ObjModel *pObjModel) {
     GLfloat x, y, z;
@@ -38,11 +39,21 @@ static void readTexCoords(FILE *file, ObjHelper::ObjModel *pObjModel) {
 static void readInfexInfo(FILE *file, ObjHelper::ObjModel *pObjModel) {
     GLushort v1, v2, v3, t1, t2, t3, n1, n2, n3;
     // %hd 短整型
+#ifdef NO_TEX_COOR
+    fscanf(file, " %hd//%hd %hd//%hd %hd//%hd\n", &v1, &n1, &v2, &n2, &v3, &n3);
+#else
     fscanf(file, " %hd/%hd/%hd %hd/%hd/%hd %hd/%hd/%hd\n",
                    &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3);
+#endif
+#ifdef NO_TEX_COOR
+    pObjModel->indeces.push_back({v1, 1, n1});
+    pObjModel->indeces.push_back({v2, 1, n2});
+    pObjModel->indeces.push_back({v3, 1, n3});
+#else
     pObjModel->indeces.push_back({v1, t1, n1});
     pObjModel->indeces.push_back({v2, t2, n2});
     pObjModel->indeces.push_back({v3, t3, n3});
+#endif
 }
 
 // 按照obj文件格式读出来后，顶点，纹理和法向量坐标都有各自的索引数组。
@@ -158,5 +169,9 @@ void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjModel *pObjModel) {
                 break;
         }
     }
+#ifdef NO_TEX_COOR
+    pObjModel->texCoords.push_back(0.5f); // 如果没有生成纹理坐标，就创建一个坐标，使用纹理的中心点颜色
+    pObjModel->texCoords.push_back(0.5f);
+#endif
     rearrangeVVtVns(pObjModel);
 }

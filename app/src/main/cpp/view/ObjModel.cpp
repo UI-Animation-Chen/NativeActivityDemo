@@ -16,7 +16,7 @@ ObjModel::ObjModel(): Shape() {
 
     // assets目录下，文件后缀是png才能读到，否则会报错: no such file or directory.
     // 原因是：assets目录下的文件会进行压缩，所以读不到。而png会被认为是压缩文件，不会再次压缩。
-    const char *assetName = "blenderObjs/monkey.png";
+    const char *assetName = "blenderObjs/cocacola.png";
     int fd = AndroidAssetUtils::openFdFromAsset(assetName);
     if (fd <= 0) {
         app_log("openFdFromAsset \"%s\" failed: err: %s\n", assetName, strerror(errno));
