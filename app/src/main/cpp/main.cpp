@@ -132,8 +132,8 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 TextureUtils::loadSimpleTexture("cocacola.png");
 
                 // 深度测试的基准,注意1.0代表从近裁剪面到远裁剪面 这一段范围！！并不是指Z轴的1个单位
-                // 深度，是一个Normolized的值，范围是 0-1，对应Z轴是从近裁剪面到远裁剪面。
-                // 所以这里的 1.0f 指的是 ，深度缓冲区中默认值是远裁剪面。
+                // 深度，是一个normolized的值，范围是 0-1(不是z轴坐标)，对应Z轴是从近裁剪面到远裁剪面
+                // 所以这里的 1.0f 指的是，深度缓冲区中远裁剪面以内全部清除
                 glClearDepthf(1.0f);
                 glClearColor(0, 0, 0, 0);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

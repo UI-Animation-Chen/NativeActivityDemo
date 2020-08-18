@@ -42,8 +42,8 @@ static void loadPng(uint32_t *w, uint32_t *h, void **image, const char *pngFile)
     png_bytepp rows = png_get_rows(pngStructp, pngInfop);
     uint32_t rowbytes = png_get_rowbytes(pngStructp, pngInfop);
     for (int row = 0; row < *h; row++) {
-        // texture接收的图片像素值是上下颠倒的。
-        memcpy(((png_bytep)*image + (*h - 1 - row) * rowbytes), rows[row], rowbytes);
+        // texture接收的图片像素值是上下倒置的，注意「不是」旋转180度。
+        memcpy((png_bytep)*image + (*h - 1 - row) * rowbytes, rows[row], rowbytes);
     }
 
     png_destroy_read_struct(&pngStructp, &pngInfop, NULL);

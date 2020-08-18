@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#define SMOOTH_LIGHT
+//#define SMOOTH_LIGHT
 //#define NO_TEX_COOR
 
 static void readVertices(FILE *file, ObjHelper::ObjModel *pObjModel) {
