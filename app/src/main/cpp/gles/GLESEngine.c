@@ -106,8 +106,8 @@ int GLESEngine_init(ANativeWindow *window) {
     engine.display = display;
     engine.context = context;
     engine.surface = surface;
-    engine.width = w;
-    engine.height = h;
+    engine.width = w > h ? h : w;
+    engine.height = h > w ? w : h;
 
     // Check openGL on the system
     GLenum opengl_info[] = {GL_VENDOR, GL_RENDERER, GL_VERSION, GL_EXTENSIONS};
