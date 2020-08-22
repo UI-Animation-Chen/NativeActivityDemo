@@ -31,16 +31,16 @@ ObjModel::ObjModel(): Shape() {
 //        return;
 //    }
 
-    auto pObjModel = new ObjHelper::ObjModel();
-    ObjHelper::readObjFile(file, pObjModel);
+    auto pObjModelData = new ObjHelper::ObjModelData();
+    ObjHelper::readObjFile(file, pObjModelData);
     fclose(file);
 
     // vertex data
     glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-    long verticesSize = sizeof(GLfloat) * pObjModel->vertices.size();
+    long verticesSize = sizeof(GLfloat) * pObjModelData->vertices.size();
     auto vertices = (GLfloat *)malloc((size_t)verticesSize);
     auto tmpVertices = vertices;
-    for (GLfloat value: pObjModel->vertices) {
+    for (GLfloat value: pObjModelData->vertices) {
         *tmpVertices++ = value;
     }
     glBufferData(GL_ARRAY_BUFFER, verticesSize, vertices, GL_STATIC_DRAW);
@@ -49,12 +49,12 @@ ObjModel::ObjModel(): Shape() {
     glEnableVertexAttribArray(0);
 
     // indeces
-    indexCount = pObjModel->indeces.size();
+    indexCount = pObjModelData->indeces.size();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
-    long indecesSize = sizeof(GLushort) * pObjModel->indeces.size();
+    long indecesSize = sizeof(GLushort) * pObjModelData->indeces.size();
     auto indeces = (GLushort *)malloc((size_t)indecesSize);
     auto tmpIndeces = indeces;
-    for (std::vector<GLushort> value: pObjModel->indeces) {
+    for (std::vector<GLushort> value: pObjModelData->indeces) {
         *tmpIndeces++ = value.at(0);
     }
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indecesSize, indeces, GL_STATIC_DRAW);
@@ -62,10 +62,10 @@ ObjModel::ObjModel(): Shape() {
 
     // texture coordinates data
     glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
-    long texCoordsSize = sizeof(GLfloat) * pObjModel->texCoords.size();
+    long texCoordsSize = sizeof(GLfloat) * pObjModelData->texCoords.size();
     auto texCoords = (GLfloat *)malloc((size_t)texCoordsSize);
     auto tmpTexCoords = texCoords;
-    for (GLfloat value: pObjModel->texCoords) {
+    for (GLfloat value: pObjModelData->texCoords) {
         *tmpTexCoords++ = value;
     }
     glBufferData(GL_ARRAY_BUFFER, texCoordsSize, texCoords, GL_STATIC_DRAW);
@@ -75,10 +75,10 @@ ObjModel::ObjModel(): Shape() {
 
     // normals data
     glBindBuffer(GL_ARRAY_BUFFER, buffers[3]);
-    long normalsSize = sizeof(GLfloat) * pObjModel->normals.size();
+    long normalsSize = sizeof(GLfloat) * pObjModelData->normals.size();
     auto normals = (GLfloat *)malloc((size_t)normalsSize);
     auto tmpNormals = normals;
-    for (GLfloat value: pObjModel->normals) {
+    for (GLfloat value: pObjModelData->normals) {
         *tmpNormals++ = value;
     }
     glBufferData(GL_ARRAY_BUFFER, normalsSize, normals, GL_STATIC_DRAW);
@@ -86,7 +86,7 @@ ObjModel::ObjModel(): Shape() {
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(2);
 
-    delete pObjModel;
+    delete pObjModelData;
 
 //    ambientV4[3] = 0.75f;
     glUniform3fv(lightPositionLocation, 1, lightPositionV3);
