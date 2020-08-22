@@ -11,13 +11,13 @@
 
 class ObjHelper {
 public:
-    class ObjModelData {
+    class ObjData {
     public:
         std::vector<GLfloat> vertices; // 3个为一组
         std::vector<GLfloat> normals; // 3个为一组
         std::vector<GLfloat> texCoords; // 2个为一组
         std::vector<std::vector<GLushort>> indeces; // v vt vn的索引
-        ObjModelData() {
+        ObjData() {
             vertices.push_back(0); // obj文件中，索引是从1开始的，这里先存入索引0的无用数据。
             vertices.push_back(0);
             vertices.push_back(0);
@@ -30,7 +30,7 @@ public:
             texCoords.push_back(0);
         }
     };
-    static void readObjFile(FILE *file, ObjModelData *pObjModelData);
+    static void readObjFile(FILE *file, ObjData *pObjData);
 };
 
 #endif //NATIVEACTIVITYDEMO_OBJHELPER_H

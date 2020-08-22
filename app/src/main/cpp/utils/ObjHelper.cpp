@@ -11,32 +11,32 @@
 //#define SMOOTH_LIGHT
 //#define NO_TEX_COOR
 
-static void readVertices(FILE *file, ObjHelper::ObjModelData *pObjModelData) {
+static void readVertices(FILE *file, ObjHelper::ObjData *pObjData) {
     GLfloat x, y, z;
     fscanf(file, "%f %f %f\n", &x, &y, &z);
-    pObjModelData->vertices.push_back(x);
-    pObjModelData->vertices.push_back(y);
-    pObjModelData->vertices.push_back(z);
+    pObjData->vertices.push_back(x);
+    pObjData->vertices.push_back(y);
+    pObjData->vertices.push_back(z);
 }
 
 // obj文件中每个顶点的法向量，其实是构成一个三角面片的面法向量，这三个顶点的法向量都相同。
 // 同一个顶点，当其所处的三角面片不一样，就会具有不同的法向量。
-static void readNormals(FILE *file, ObjHelper::ObjModelData *pObjModelData) {
+static void readNormals(FILE *file, ObjHelper::ObjData *pObjData) {
     GLfloat x, y, z;
     fscanf(file, " %f %f %f\n", &x, &y, &z);
-    pObjModelData->normals.push_back(x);
-    pObjModelData->normals.push_back(y);
-    pObjModelData->normals.push_back(z);
+    pObjData->normals.push_back(x);
+    pObjData->normals.push_back(y);
+    pObjData->normals.push_back(z);
 }
 
-static void readTexCoords(FILE *file, ObjHelper::ObjModelData *pObjModelData) {
+static void readTexCoords(FILE *file, ObjHelper::ObjData *pObjData) {
     GLfloat u, v;
     fscanf(file, " %f %f\n", &u, &v);
-    pObjModelData->texCoords.push_back(u);
-    pObjModelData->texCoords.push_back(v);
+    pObjData->texCoords.push_back(u);
+    pObjData->texCoords.push_back(v);
 }
 
-static void readInfexInfo(FILE *file, ObjHelper::ObjModelData *pObjModelData) {
+static void readInfexInfo(FILE *file, ObjHelper::ObjData *pObjData) {
     GLushort v1, v2, v3, t1, t2, t3, n1, n2, n3;
     // %hd 短整型
 #ifdef NO_TEX_COOR
@@ -46,20 +46,20 @@ static void readInfexInfo(FILE *file, ObjHelper::ObjModelData *pObjModelData) {
                    &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3);
 #endif
 #ifdef NO_TEX_COOR
-    pObjModelData->indeces.push_back({v1, 1, n1});
-    pObjModelData->indeces.push_back({v2, 1, n2});
-    pObjModelData->indeces.push_back({v3, 1, n3});
+    pObjData->indeces.push_back({v1, 1, n1});
+    pObjData->indeces.push_back({v2, 1, n2});
+    pObjData->indeces.push_back({v3, 1, n3});
 #else
-    pObjModelData->indeces.push_back({v1, t1, n1});
-    pObjModelData->indeces.push_back({v2, t2, n2});
-    pObjModelData->indeces.push_back({v3, t3, n3});
+    pObjData->indeces.push_back({v1, t1, n1});
+    pObjData->indeces.push_back({v2, t2, n2});
+    pObjData->indeces.push_back({v3, t3, n3});
 #endif
 }
 
 // 按照obj文件格式读出来后，顶点，纹理和法向量坐标都有各自的索引数组。
 // 现在新建一套匹配的顶点，纹理和法向量坐标，由同一个索引数组控制。
 // 这可能会导致各坐标数组变大，包含重复的坐标数据，这是统一索引的代价。
-static void rearrangeVVtVns(ObjHelper::ObjModelData *pObjModelData) {
+static void rearrangeVVtVns(ObjHelper::ObjData *pObjData) {
     using namespace std;
     vector<GLfloat>vs;
     vector<GLfloat>vts;
@@ -73,12 +73,12 @@ static void rearrangeVVtVns(ObjHelper::ObjModelData *pObjModelData) {
     map<string, vector<GLuint>> vert2indecesMap; // 一个顶点被几个索引用过。
 #endif
 
-    for (GLuint i = 0; i < pObjModelData->indeces.size(); i++) {
+    for (GLuint i = 0; i < pObjData->indeces.size(); i++) {
         // vertices
-        vertIndex = pObjModelData->indeces.at(i).at(0) * (GLuint)3; // 乘法左边是GLushort，会自动提为int
-        vs.push_back(pObjModelData->vertices.at(vertIndex));
-        vs.push_back(pObjModelData->vertices.at(vertIndex + 1));
-        vs.push_back(pObjModelData->vertices.at(vertIndex + 2));
+        vertIndex = pObjData->indeces.at(i).at(0) * (GLuint)3; // 乘法左边是GLushort，会自动提为int
+        vs.push_back(pObjData->vertices.at(vertIndex));
+        vs.push_back(pObjData->vertices.at(vertIndex + 1));
+        vs.push_back(pObjData->vertices.at(vertIndex + 2));
 #ifdef SMOOTH_LIGHT
         GLuint vsIndex = i * 3;
         string vertKey = to_string(vs.at(vsIndex)) +
@@ -87,16 +87,16 @@ static void rearrangeVVtVns(ObjHelper::ObjModelData *pObjModelData) {
         vert2indecesMap[vertKey].push_back(i);
 #endif
         // texCoords
-        texCoordsIndex = pObjModelData->indeces.at(i).at(1) * (GLuint)2;
-        vts.push_back(pObjModelData->texCoords.at(texCoordsIndex));
-        vts.push_back(pObjModelData->texCoords.at(texCoordsIndex + 1));
+        texCoordsIndex = pObjData->indeces.at(i).at(1) * (GLuint)2;
+        vts.push_back(pObjData->texCoords.at(texCoordsIndex));
+        vts.push_back(pObjData->texCoords.at(texCoordsIndex + 1));
         // normals
-        nomalIndex = pObjModelData->indeces.at(i).at(2) * (GLuint)3;
-        vns.push_back(pObjModelData->normals.at(nomalIndex));
-        vns.push_back(pObjModelData->normals.at(nomalIndex + 1));
-        vns.push_back(pObjModelData->normals.at(nomalIndex + 2));
+        nomalIndex = pObjData->indeces.at(i).at(2) * (GLuint)3;
+        vns.push_back(pObjData->normals.at(nomalIndex));
+        vns.push_back(pObjData->normals.at(nomalIndex + 1));
+        vns.push_back(pObjData->normals.at(nomalIndex + 2));
         // indeces
-        pObjModelData->indeces.at(i).at(0) = (GLushort)i; // 索引就是0,1,2... 每个索引都对应一个坐标(xyz)。
+        pObjData->indeces.at(i).at(0) = (GLushort)i; // 索引就是0,1,2... 每个索引都对应一个坐标(xyz)。
     }
 #ifdef SMOOTH_LIGHT
     for (auto const &entry: vert2indecesMap) {
@@ -126,12 +126,12 @@ static void rearrangeVVtVns(ObjHelper::ObjModelData *pObjModelData) {
         }
     }
 #endif
-    pObjModelData->vertices = vs;
-    pObjModelData->texCoords = vts;
-    pObjModelData->normals = vns;
+    pObjData->vertices = vs;
+    pObjData->texCoords = vts;
+    pObjData->normals = vns;
 }
 
-void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjModelData *pObjModelData) {
+void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjData *pObjData) {
     if (file == NULL) return;
     bool shouldQuit = false;
     int c;
@@ -147,13 +147,13 @@ void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjModelData *pObjModelData) 
                 c = fgetc(file);
                 switch (c) {
                     case ' ':
-                        readVertices(file, pObjModelData);
+                        readVertices(file, pObjData);
                         break;
                     case 'n':
-                        readNormals(file, pObjModelData);
+                        readNormals(file, pObjData);
                         break;
                     case 't':
-                        readTexCoords(file, pObjModelData);
+                        readTexCoords(file, pObjData);
                         break;
                     default:
                         app_log("case v, found some unkown chars!!! the char is: %c", c);
@@ -161,7 +161,7 @@ void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjModelData *pObjModelData) 
                 }
                 break;
             case 'f': // face, index info
-                readInfexInfo(file, pObjModelData);
+                readInfexInfo(file, pObjData);
                 break;
             default:
                 shouldQuit = true;
@@ -170,8 +170,8 @@ void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjModelData *pObjModelData) 
         }
     }
 #ifdef NO_TEX_COOR
-    pObjModelData->texCoords.push_back(0.5f); // 如果没有生成纹理坐标，就创建一个坐标，使用纹理的中心点颜色
-    pObjModelData->texCoords.push_back(0.5f);
+    pObjData->texCoords.push_back(0.5f); // 如果没有生成纹理坐标，就创建一个坐标，使用纹理的中心点颜色
+    pObjData->texCoords.push_back(0.5f);
 #endif
-    rearrangeVVtVns(pObjModelData);
+    rearrangeVVtVns(pObjData);
 }
