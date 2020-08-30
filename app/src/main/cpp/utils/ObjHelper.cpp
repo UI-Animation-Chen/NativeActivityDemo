@@ -14,7 +14,7 @@
 static void readVertices(FILE *file, ObjHelper::ObjData *pObjData) {
     GLfloat x, y, z;
     fscanf(file, "%f %f %f\n", &x, &y, &z);
-    pObjData->vertices.push_back(x);
+    pObjData->vertices.push_back(-x); // obj文件(导出设置z forward，y up)的x坐标是反的。
     pObjData->vertices.push_back(y);
     pObjData->vertices.push_back(z);
 }
@@ -24,7 +24,7 @@ static void readVertices(FILE *file, ObjHelper::ObjData *pObjData) {
 static void readNormals(FILE *file, ObjHelper::ObjData *pObjData) {
     GLfloat x, y, z;
     fscanf(file, " %f %f %f\n", &x, &y, &z);
-    pObjData->normals.push_back(x);
+    pObjData->normals.push_back(-x); // obj文件(导出设置z forward，y up)的x坐标是反的。
     pObjData->normals.push_back(y);
     pObjData->normals.push_back(z);
 }
