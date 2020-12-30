@@ -16,10 +16,19 @@ android {
             }
         }
     }
+    signingConfigs {
+        release {
+            keyAlias 'android'
+            keyPassword '12345678'
+            storeFile file('./android.keystore')
+            storePassword '12345678'
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
     externalNativeBuild {
