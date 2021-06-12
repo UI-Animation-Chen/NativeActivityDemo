@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-//#define SMOOTH_LIGHT
+#define SMOOTH_LIGHT
 //#define NO_TEX_COOR
 
 static void readVertices(FILE *file, ObjHelper::ObjData *pObjData) {
@@ -36,7 +36,7 @@ static void readTexCoords(FILE *file, ObjHelper::ObjData *pObjData) {
     pObjData->texCoords.push_back(v);
 }
 
-static void readInfexInfo(FILE *file, ObjHelper::ObjData *pObjData) {
+static void readIndexInfo(FILE *file, ObjHelper::ObjData *pObjData) {
     GLushort v1, v2, v3, t1, t2, t3, n1, n2, n3;
     // %hd 短整型
 #ifdef NO_TEX_COOR
@@ -161,7 +161,7 @@ void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjData *pObjData) {
                 }
                 break;
             case 'f': // face, index info
-                readInfexInfo(file, pObjData);
+                readIndexInfo(file, pObjData);
                 break;
             default:
                 shouldQuit = true;
