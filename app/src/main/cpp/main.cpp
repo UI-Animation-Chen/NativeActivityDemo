@@ -93,7 +93,8 @@ static void renderByANativeWindowAPI(ANativeWindow *window) {
         app_log("ts.tv_sec: %ld, tv_nsec: %ld\n", ts.tv_sec, ts.tv_nsec);
 
         for (int i = 0; i < 500000; i++) {
-            *((int32_t *) buf.bits + i + 400000) = 255;
+            if (i % 2 == 0)
+                *((int32_t *) buf.bits + i + 400000) = 255 << 8; // ABGR各占8位，共32位
         }
 
         ANativeWindow_unlockAndPost(window);
