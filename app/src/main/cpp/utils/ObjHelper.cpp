@@ -11,12 +11,44 @@
 #define SMOOTH_LIGHT
 //#define NO_TEX_COOR
 
+static void findMinMaxVertex(GLfloat x, GLfloat y, GLfloat z, ObjHelper::ObjData *pObjData) {
+    if (x <= 0) {
+        if (x < pObjData->minVertex.at(0)) {
+            pObjData->minVertex.at(0) = x;
+        }
+    } else {
+        if (x > pObjData->maxVertex.at(0)) {
+            pObjData->maxVertex.at(0) = x;
+        }
+    }
+    if (y <= 0) {
+        if (y < pObjData->minVertex.at(1)) {
+            pObjData->minVertex.at(1) = y;
+        }
+    } else {
+        if (y > pObjData->maxVertex.at(1)) {
+            pObjData->maxVertex.at(1) = y;
+        }
+    }
+    if (z <= 0) {
+        if (z < pObjData->minVertex.at(2)) {
+            pObjData->minVertex.at(2) = z;
+        }
+    } else {
+        if (z > pObjData->maxVertex.at(2)) {
+            pObjData->maxVertex.at(2) = z;
+        }
+    }
+}
+
 static void readVertices(FILE *file, ObjHelper::ObjData *pObjData) {
     GLfloat x, y, z;
     fscanf(file, "%f %f %f\n", &x, &y, &z);
     pObjData->vertices.push_back(-x); // obj文件(导出设置z forward，y up)的x坐标是反的。
     pObjData->vertices.push_back(y);
     pObjData->vertices.push_back(z);
+
+    findMinMaxVertex(-x, y, z, pObjData);
 }
 
 // obj文件中每个顶点的法向量，其实是构成一个三角面片的面法向量，这三个顶点的法向量都相同。

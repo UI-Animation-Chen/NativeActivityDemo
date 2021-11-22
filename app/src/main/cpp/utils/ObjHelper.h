@@ -13,6 +13,9 @@ class ObjHelper {
 public:
     class ObjData {
     public:
+        std::vector<GLfloat> minVertex = {0.0f, 0.0f, 0.0f}; // 物体中心为原点，包围盒的x，y，z最小值
+        std::vector<GLfloat> maxVertex = {0.0f, 0.0f, 0.0f}; // 物体中心为原点，包围盒的x，y，z最大值
+
         std::vector<GLfloat> vertices; // 3个为一组
         std::vector<GLfloat> normals; // 3个为一组
         std::vector<GLfloat> texCoords; // 2个为一组

@@ -35,6 +35,10 @@ ObjModel::ObjModel(): Shape() {
     ObjHelper::readObjFile(file, pObjData);
     fclose(file);
 
+    app_log("min(x: %f, y: %f, z: %f), max(x: %f, y: %f, z: %f)\n",
+        pObjData->minVertex.at(0), pObjData->minVertex.at(1), pObjData->minVertex.at(2),
+        pObjData->maxVertex.at(0), pObjData->maxVertex.at(1), pObjData->maxVertex.at(2));
+
     // vertex data
     glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
     long verticesSize = sizeof(GLfloat) * pObjData->vertices.size();
