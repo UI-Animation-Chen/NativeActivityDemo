@@ -9,8 +9,8 @@
 
 class ObjModel: public Shape {
 private:
-    GLuint vao = 0; // vertex array object
-    GLuint buffers[4] = {0};
+    GLuint vao[2] = {0}; // vertex array object
+    GLuint buffers[6] = {0};
     GLuint indexCount = 0;
 
 public:

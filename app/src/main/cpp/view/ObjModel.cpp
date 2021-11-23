@@ -9,10 +9,10 @@
 #include <cerrno>
 
 ObjModel::ObjModel(): Shape() {
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(4, buffers);
+    glGenVertexArrays(2, vao);
+    glGenBuffers(6, buffers);
 
-    glBindVertexArray(vao);
+    glBindVertexArray(vao[0]);
 
     // assets目录下，文件后缀是png才能读到，否则会报错: no such file or directory.
     // 原因是：assets目录下的文件会进行压缩，所以读不到。而png会被认为是压缩文件，不会再次压缩。
@@ -34,10 +34,6 @@ ObjModel::ObjModel(): Shape() {
     auto pObjData = new ObjHelper::ObjData();
     ObjHelper::readObjFile(file, pObjData);
     fclose(file);
-
-    app_log("min(x: %f, y: %f, z: %f), max(x: %f, y: %f, z: %f)\n",
-        pObjData->minVertex.at(0), pObjData->minVertex.at(1), pObjData->minVertex.at(2),
-        pObjData->maxVertex.at(0), pObjData->maxVertex.at(1), pObjData->maxVertex.at(2));
 
     // vertex data
     glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
@@ -90,6 +86,47 @@ ObjModel::ObjModel(): Shape() {
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(2);
 
+    // 包围盒
+    glBindVertexArray(vao[1]);
+    GLfloat minX = pObjData->minVertex.at(0);
+    GLfloat minY = pObjData->minVertex.at(1);
+    GLfloat minZ = pObjData->minVertex.at(2);
+    GLfloat maxX = pObjData->maxVertex.at(0);
+    GLfloat maxY = pObjData->maxVertex.at(1);
+    GLfloat maxZ = pObjData->maxVertex.at(2);
+    app_log("min(x: %f, y: %f, z: %f), max(x: %f, y: %f, z: %f)\n", minX, minY, minZ, maxX, maxY, maxZ);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[4]);
+    /**
+     *         a0 -------- d3 (max)
+     *           /       /
+     *        b1 -------- c2
+     *         a`4-------- d`7
+     *           /       /
+     *  (min) b`5-------- c`6
+     */
+    GLfloat wrapBoxVertices[] = {
+            minX, maxY, maxZ, // a
+            minX, maxY, minZ, // b
+            maxX, maxY, minZ, // c
+            maxX, maxY, maxZ, // d
+            minX, minY, maxZ, // a`
+            minX, minY, minZ, // b`
+            maxX, minY, minZ, // c`
+            maxX, minY, maxZ  // d`
+    };
+    glBufferData(GL_ARRAY_BUFFER, sizeof(wrapBoxVertices), wrapBoxVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+    // indeces
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[5]);
+    GLushort wrapBoxIndeces[] = {
+        0, 1, 2, 3, 0,
+        6, 7, 4, 5, 6,
+        3, 5, 0, 2, 7,
+        5, 1, 6, 2, 5
+    };
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(wrapBoxIndeces), wrapBoxIndeces, GL_STATIC_DRAW);
+
     delete pObjData;
 
 //    ambientV4[3] = 0.75f;
@@ -98,12 +135,16 @@ ObjModel::ObjModel(): Shape() {
 }
 
 ObjModel::~ObjModel() {
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(4, buffers);
+    glDeleteVertexArrays(2, vao);
+    glDeleteBuffers(6, buffers);
 }
 
 void ObjModel::draw() {
-    glBindVertexArray(vao);
+    glBindVertexArray(vao[0]);
     glUniform4fv(ambientLocation, 1, ambientV4);
     glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
+
+    glBindVertexArray(vao[1]);
+    glLineWidth(5.0f);
+    glDrawElements(GL_LINE_STRIP, 20, GL_UNSIGNED_SHORT, 0);
 }

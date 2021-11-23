@@ -25,8 +25,8 @@ Triangles::Triangles(): Shape() {
     };
     glBufferData(GL_ARRAY_BUFFER, sizeof(triangles), triangles, GL_STATIC_DRAW);
     // glVertexAttribPointer操作的是[当前绑定]到GL_ARRAY_BUFFER上的VBO
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); // index与shader中的location对应
+    glEnableVertexAttribArray(0); // index与shader中的location对应
 
     glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
     GLfloat texCoords[] = {
