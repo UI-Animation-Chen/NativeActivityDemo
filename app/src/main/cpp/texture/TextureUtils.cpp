@@ -53,7 +53,7 @@ static void loadPng(uint32_t *w, uint32_t *h, void **image, const char *pngFile)
 GLubyte TextureUtils::pixels[9 * 4] = {
         18,  140, 171, 255, /* Some Colour Bottom Left. */
         143, 143, 143, 255, /* Some Colour Bottom Middle. */
-        255, 255, 255, 255, /* Some Colour Bottom Right. */
+        255, 255, 255, 255, /* White Bottom Right. */
 
         255, 255, 0,   255, /* Yellow Middle Left. */
         0,   255, 255, 255, /* Some Colour Middle. */
@@ -61,7 +61,7 @@ GLubyte TextureUtils::pixels[9 * 4] = {
 
         255, 0,   0,   255, /* Red Top Left. */
         0,   255, 0,   255, /* Green Top Middle. */
-        0,   0,   255, 255, /* Blue Top Right. */
+        0,   0,   255, 255  /* Blue Top Right. */
 };
 
 GLuint TextureUtils::textureId = 0;
@@ -73,11 +73,13 @@ GLuint TextureUtils::loadSimpleTexture(const char *pngFile) {
     glActiveTexture(GL_TEXTURE0); // 在绑定之前先激活
     glBindTexture(GL_TEXTURE_2D, textureId);
 
-    uint32_t w, h;
-    void *image;
-    loadPng(&w, &h, &image, pngFile);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-    free(image);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 3, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+//    uint32_t w, h;
+//    void *image;
+//    loadPng(&w, &h, &image, pngFile);
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+//    free(image);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
