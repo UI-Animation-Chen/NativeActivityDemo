@@ -64,31 +64,37 @@ GLubyte TextureUtils::pixels[9 * 4] = {
         0,   0,   255, 255  /* Blue Top Right. */
 };
 
-GLuint TextureUtils::textureId = 0;
+GLubyte TextureUtils::pixelsWhite[1 * 4] = {
+        0, 255, 0, 255
+};
+
+GLuint TextureUtils::textureIds[2] = {0};
 
 GLuint TextureUtils::loadSimpleTexture(const char *pngFile) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-    glGenTextures(1, &textureId);
-    glActiveTexture(GL_TEXTURE0); // 在绑定之前先激活
-    glBindTexture(GL_TEXTURE_2D, textureId);
+    glActiveTexture(GL_TEXTURE0); // 激活纹理单元（texure unit），对应frag shader中的sampler2D变量。
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 3, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glGenTextures(2, textureIds); // 获取纹理对象id
 
-//    uint32_t w, h;
-//    void *image;
-//    loadPng(&w, &h, &image, pngFile);
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-//    free(image);
-
+    glBindTexture(GL_TEXTURE_2D, textureIds[0]); // 对于一个纹理单元只能绑定同一种target类型：GL_TEXTURE_2D, GL_TEXTURE_3D等
+    uint32_t w, h;
+    void *image;
+    loadPng(&w, &h, &image, pngFile);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+    free(image);
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 3, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    return textureId;
+    glBindTexture(GL_TEXTURE_2D, textureIds[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelsWhite);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    return textureIds[0];
 }
 
 void TextureUtils::deleteSimpleTexture() {
-    if (textureId != 0) {
-        glDeleteTextures(1, &textureId);
-    }
+    glDeleteTextures(2, textureIds);
 }

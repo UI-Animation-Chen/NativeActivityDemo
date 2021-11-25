@@ -82,7 +82,7 @@ static const char *frag = "#version 300 es\n"
                           "in vec3 modelVertex;\n" // 变换之后的顶点坐标
 
                           "uniform sampler2D texture;\n"
-                          "uniform vec4 ambient;\n"
+                          "uniform vec4 modelColorFactor;\n" // 物体本身颜色的乘法因子，实现控制物体的颜色和透明度
                           "uniform vec3 lightPosition;\n" // 光源位置
                           "uniform vec3 lightColor;\n" // 光源颜色
 
@@ -101,7 +101,10 @@ static const char *frag = "#version 300 es\n"
                           "    float sIntensity = pow(max(0.0, dot(nNormal, nH)), shininessFactor);\n"
                           "    vec4 specular = vec4(sIntensity * lightColor, 1.0);\n"
 
-                          "    fColor = texture(texture, texCoord) * ambient * 0.7 + diffuse * 0.15 + specular * 0.15;\n"
+                          "    vec4 factor68 = vec4(0.68, 0.68, 0.68, 1.0);\n" // 透明度为1，物体本身提供100%的透明度
+                          "    vec4 factor17 = vec4(0.17, 0.17, 0.17, 0.0);\n" // 透明度为0，光照不提供透明度通道
+                          "    vec4 factor15 = vec4(0.15, 0.15, 0.15, 0.0);\n" // 透明度为0，光照不提供透明度通道
+                          "    fColor = texture(texture, texCoord) * modelColorFactor * factor68 + diffuse * factor17 + specular * factor15;\n"
                           "}\n";
 
 GLuint BaseShader::vertShader = 0;

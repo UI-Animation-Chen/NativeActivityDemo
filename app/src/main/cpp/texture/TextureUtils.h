@@ -11,9 +11,10 @@ class TextureUtils {
 public:
     static GLuint loadSimpleTexture(const char *pngFile);
     static void deleteSimpleTexture();
+    static GLuint textureIds[];
 private:
-    static GLuint textureId;
     static GLubyte pixels[];
+    static GLubyte pixelsWhite[];
 };
 
 #endif //NATIVEACTIVITYDEMO_TEXTUREUTILS_H

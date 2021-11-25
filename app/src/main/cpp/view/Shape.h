@@ -17,7 +17,7 @@ public:
         scaleLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "scale");
         rotateLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "rotate");
         textureLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "texture");
-        ambientLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "ambient");
+        modelColorFactorLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "modelColorFactor");
         lightPositionLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "lightPosition");
         lightColorLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "lightColor");
         glUseProgram(BaseShader::getSingletonProgram());
@@ -41,8 +41,8 @@ public:
     virtual void scale(float x, float y, float z);
 
 protected: // 子类可以按需进行修改
-    GLint ambientLocation;
-    GLfloat ambientV4[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLint modelColorFactorLocation;
+    GLfloat modelColorFactorV4[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
     GLint lightPositionLocation;
     GLfloat lightPositionV3[3] = {0.0f, 0.0f, -2.0f};

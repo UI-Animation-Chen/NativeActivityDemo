@@ -129,7 +129,7 @@ ObjModel::ObjModel(): Shape() {
 
     delete pObjData;
 
-//    ambientV4[3] = 0.75f;
+//    modelColorFactorV4[3] = 0.75f;
     glUniform3fv(lightPositionLocation, 1, lightPositionV3);
     glUniform3fv(lightColorLocation, 1, lightColorV3);
 }
@@ -140,11 +140,16 @@ ObjModel::~ObjModel() {
 }
 
 void ObjModel::draw() {
+    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[0]);
     glBindVertexArray(vao[0]);
-    glUniform4fv(ambientLocation, 1, ambientV4);
+    modelColorFactorV4[3] = 1.0f;
+    glUniform4fv(modelColorFactorLocation, 1, modelColorFactorV4);
     glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
 
+    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[1]);
     glBindVertexArray(vao[1]);
+    modelColorFactorV4[3] = 0.18f;
+    glUniform4fv(modelColorFactorLocation, 1, modelColorFactorV4);
     glLineWidth(5.0f);
     glDrawElements(GL_LINE_STRIP, 20, GL_UNSIGNED_SHORT, 0);
 }
