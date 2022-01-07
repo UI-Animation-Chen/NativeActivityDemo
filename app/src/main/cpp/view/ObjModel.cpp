@@ -16,7 +16,7 @@ ObjModel::ObjModel(): Shape() {
 
     // assets目录下，文件后缀是png才能读到，否则会报错: no such file or directory.
     // 原因是：assets目录下的文件会进行压缩，所以读不到。而png会被认为是压缩文件，不会再次压缩。
-    const char *assetName = "blenderObjs/monkey.png";
+    const char *assetName = "blenderObjs/cocacola.png";
     int fd = AndroidAssetUtils::openFdFromAsset(assetName);
     if (fd <= 0) {
         app_log("openFdFromAsset \"%s\" failed: err: %s\n", assetName, strerror(errno));
@@ -121,9 +121,9 @@ ObjModel::ObjModel(): Shape() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[5]);
     GLushort wrapBoxIndeces[] = {
         0, 1, 2, 3, 0,
-        6, 7, 4, 5, 6,
-        3, 5, 0, 2, 7,
-        5, 1, 6, 2, 5
+        4, 5, 6, 7, 4,
+        6, 2, 7, 3, 1,
+        5
     };
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(wrapBoxIndeces), wrapBoxIndeces, GL_STATIC_DRAW);
 
@@ -148,8 +148,8 @@ void ObjModel::draw() {
 
     glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[1]);
     glBindVertexArray(vao[1]);
-    modelColorFactorV4[3] = 0.18f;
+    modelColorFactorV4[3] = 0.34f;
     glUniform4fv(modelColorFactorLocation, 1, modelColorFactorV4);
     glLineWidth(5.0f);
-    glDrawElements(GL_LINE_STRIP, 20, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_LINE_STRIP, 16, GL_UNSIGNED_SHORT, 0);
 }
