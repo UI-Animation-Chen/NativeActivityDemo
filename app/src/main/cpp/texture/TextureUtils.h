@@ -14,7 +14,7 @@ public:
     static GLuint textureIds[];
 private:
     static GLubyte pixels[];
-    static GLubyte pixelsWhite[];
+    static GLubyte pixelsGreen[];
 };
 
 #endif //NATIVEACTIVITYDEMO_TEXTUREUTILS_H

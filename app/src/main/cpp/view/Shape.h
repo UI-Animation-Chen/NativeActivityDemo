@@ -16,12 +16,12 @@ public:
         transLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "translate");
         scaleLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "scale");
         rotateLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "rotate");
-        textureLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "texture");
+        textureUnitLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "textureUnit");
         modelColorFactorLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "modelColorFactor");
         lightPositionLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "lightPosition");
         lightColorLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "lightColor");
         glUseProgram(BaseShader::getSingletonProgram());
-        glUniform1i(textureLocation, 0);
+        glUniform1i(textureUnitLocation, 0);
         move(0, 0, 0); // 初始化。
         rotate(0, 0, 0);
         scale(1.0f, 1.0f, 1.0f);
@@ -62,7 +62,7 @@ private:
     GLfloat rotateXYZ[3];
     GLint rotateLocation;
 
-    GLint textureLocation;
+    GLint textureUnitLocation;
 };
 
 #endif //NATIVEACTIVITYDEMO_SHAPE_H

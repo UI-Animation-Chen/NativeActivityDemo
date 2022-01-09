@@ -64,7 +64,7 @@ GLubyte TextureUtils::pixels[9 * 4] = {
         0,   0,   255, 255  /* Blue Top Right. */
 };
 
-GLubyte TextureUtils::pixelsWhite[1 * 4] = {
+GLubyte TextureUtils::pixelsGreen[1 * 4] = {
         0, 255, 0, 255
 };
 
@@ -75,7 +75,7 @@ GLuint TextureUtils::loadSimpleTexture(const char *pngFile) {
 
     glActiveTexture(GL_TEXTURE0); // 激活纹理单元（texure unit），对应frag shader中的sampler2D变量。
 
-    glGenTextures(2, textureIds); // 获取纹理对象id
+    glGenTextures(2, textureIds); // 生成纹理对象id
 
     glBindTexture(GL_TEXTURE_2D, textureIds[0]); // 对于一个纹理单元只能绑定同一种target类型：GL_TEXTURE_2D, GL_TEXTURE_3D等
     uint32_t w, h;
@@ -88,7 +88,7 @@ GLuint TextureUtils::loadSimpleTexture(const char *pngFile) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glBindTexture(GL_TEXTURE_2D, textureIds[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelsWhite);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelsGreen);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
