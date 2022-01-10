@@ -15,8 +15,8 @@ private:
 
     const static GLint wrapBoxVerticesSize = 24;
     const static GLint wrapBox2DVerticesSize = 12;
-    GLfloat wrapBoxVertices[wrapBoxVerticesSize];
-    GLfloat wrapBox2DVertices[wrapBox2DVerticesSize];
+    GLfloat wrapBoxVertices[wrapBoxVerticesSize] = {0};
+    GLfloat wrapBox2DVertices[wrapBox2DVerticesSize] = {0};
 
     float transX = 0, transY = 0, transZ = 0;
     float scaleX = 1.0f, scaleY = 1.0f, scaleZ = 1.0f;

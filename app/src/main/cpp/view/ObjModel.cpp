@@ -37,8 +37,8 @@ ObjModel::ObjModel(): Shape() {
     // vertex data
     glBindVertexArray(vao[0]);
     glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-    long verticesSize = sizeof(GLfloat) * pObjData->vertices.size();
-    auto vertices = (GLfloat *)malloc((size_t)verticesSize);
+    size_t verticesSize = sizeof(GLfloat) * pObjData->vertices.size();
+    auto vertices = (GLfloat *)malloc(verticesSize);
     auto tmpVertices = vertices;
     for (GLfloat value: pObjData->vertices) {
         *tmpVertices++ = value;
@@ -51,8 +51,8 @@ ObjModel::ObjModel(): Shape() {
     // indeces
     indexCount = pObjData->indeces.size();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
-    long indecesSize = sizeof(GLushort) * pObjData->indeces.size();
-    auto indeces = (GLushort *)malloc((size_t)indecesSize);
+    size_t indecesSize = sizeof(GLushort) * pObjData->indeces.size();
+    auto indeces = (GLushort *)malloc(indecesSize);
     auto tmpIndeces = indeces;
     for (std::vector<GLushort> value: pObjData->indeces) {
         *tmpIndeces++ = value.at(0);
@@ -62,8 +62,8 @@ ObjModel::ObjModel(): Shape() {
 
     // texture coordinates data
     glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
-    long texCoordsSize = sizeof(GLfloat) * pObjData->texCoords.size();
-    auto texCoords = (GLfloat *)malloc((size_t)texCoordsSize);
+    size_t texCoordsSize = sizeof(GLfloat) * pObjData->texCoords.size();
+    auto texCoords = (GLfloat *)malloc(texCoordsSize);
     auto tmpTexCoords = texCoords;
     for (GLfloat value: pObjData->texCoords) {
         *tmpTexCoords++ = value;
@@ -75,8 +75,8 @@ ObjModel::ObjModel(): Shape() {
 
     // normals data
     glBindBuffer(GL_ARRAY_BUFFER, buffers[3]);
-    long normalsSize = sizeof(GLfloat) * pObjData->normals.size();
-    auto normals = (GLfloat *)malloc((size_t)normalsSize);
+    size_t normalsSize = sizeof(GLfloat) * pObjData->normals.size();
+    auto normals = (GLfloat *)malloc(normalsSize);
     auto tmpNormals = normals;
     for (GLfloat value: pObjData->normals) {
         *tmpNormals++ = value;
@@ -98,22 +98,22 @@ ObjModel::ObjModel(): Shape() {
     glBindVertexArray(vao[1]);
     glBindBuffer(GL_ARRAY_BUFFER, buffers[4]);
     /**
-     *         a0 -------- d3 (max)
-     *           /       /
-     *        b1 -------- c2
-     *         a`4-------- d`7
-     *           /       /
-     *  (min) b`5-------- c`6
+     *        0 -------- 3 (max)
+     *         /       /
+     *       1 -------- 2
+     *        4 -------- 7
+     *         /       /
+     * (min) 5 -------- 6
      */
     GLfloat wrapBoxVertices_[] = {
-            minX, maxY, maxZ, // a
-            minX, maxY, minZ, // b
-            maxX, maxY, minZ, // c
-            maxX, maxY, maxZ, // d
-            minX, minY, maxZ, // a`
-            minX, minY, minZ, // b`
-            maxX, minY, minZ, // c`
-            maxX, minY, maxZ  // d`
+            minX, maxY, maxZ,
+            minX, maxY, minZ,
+            maxX, maxY, minZ,
+            maxX, maxY, maxZ,
+            minX, minY, maxZ,
+            minX, minY, minZ,
+            maxX, minY, minZ,
+            maxX, minY, maxZ
     };
     memcpy(wrapBoxVertices, wrapBoxVertices_, sizeof(wrapBoxVertices_));
     glBufferData(GL_ARRAY_BUFFER, sizeof(wrapBoxVertices), wrapBoxVertices, GL_STATIC_DRAW);
@@ -121,13 +121,22 @@ ObjModel::ObjModel(): Shape() {
     glEnableVertexAttribArray(0);
     // indeces
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[5]);
-    GLushort wrapBoxIndeces[] = {
-        0, 1, 2, 3, 0,
-        4, 5, 6, 7, 4,
-        6, 2, 7, 3, 1,
-        5
+    GLushort wrapBoxIndeces[] = { // 16
+            0, 1, 2, 3, 0,
+            4, 5, 6, 7, 4,
+            6, 2, 7, 3, 1,
+            5
+    };
+    GLushort cubeIndices[] = { // 36
+            0, 1, 2, 0, 2, 3, // 上， 逆时针
+            1, 5, 6, 1, 6, 2, // 前， 逆时针
+            2, 6, 7, 2, 7, 3, // 右， 逆时针
+            3, 7, 4, 3, 4, 0, // 里， 逆时针
+            0, 4, 5, 0, 5, 1, // 左， 逆时针
+            5, 4, 7, 5, 7, 6  // 下， 逆时针
     };
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(wrapBoxIndeces), wrapBoxIndeces, GL_STATIC_DRAW);
+//    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
 
     // 2D包围框，不使用vao、vbo，直接用本地数据渲染
     glBindVertexArray(0); // break previous binding
@@ -170,6 +179,7 @@ void ObjModel::draw() {
     glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[1]); // green texture
     glBindVertexArray(vao[1]);
     glDrawElements(GL_LINE_STRIP, 16, GL_UNSIGNED_SHORT, 0);
+//    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
 
     // wrapBox2D
     glUniform1i(transformEnabledLocation, 0);
