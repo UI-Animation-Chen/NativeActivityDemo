@@ -175,7 +175,7 @@ void ObjModel::draw() {
     glUniform1i(transformEnabledLocation, 0);
     glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[2]); // red texture
     glBindVertexArray(vao[2]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(wrapBox2DVertices), wrapBox2DVertices, GL_STREAM_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(wrapBox2DVertices), wrapBox2DVertices);
     glDrawArrays(GL_LINE_LOOP, 0, wrapBox2DVerticesSize/3);
 }
 
