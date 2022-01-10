@@ -31,8 +31,8 @@ ObjModel::ObjModel(): Shape() {
     ObjHelper::readObjFile(file, pObjData);
     fclose(file);
 
-    glGenVertexArrays(3, vao);
-    glGenBuffers(7, buffers);
+    glGenVertexArrays(2, vao);
+    glGenBuffers(6, buffers);
 
     // vertex data
     glBindVertexArray(vao[0]);
@@ -129,9 +129,9 @@ ObjModel::ObjModel(): Shape() {
     };
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(wrapBoxIndeces), wrapBoxIndeces, GL_STATIC_DRAW);
 
-    // 2D包围框
-    glBindVertexArray(vao[2]);
-    glBindBuffer(GL_ARRAY_BUFFER, buffers[6]);
+    // 2D包围框，不使用vao、vbo，直接用本地数据渲染
+    glBindVertexArray(0); // break previous binding
+    glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind previous binding
     GLfloat wrapBox2DVertices_[] = {
             minX, minY, 0.0f, // 左下
             maxX, minY, 0.0f, // b
@@ -139,9 +139,9 @@ ObjModel::ObjModel(): Shape() {
             minX, maxY, 0.0f  // d
     };
     memcpy(wrapBox2DVertices, wrapBox2DVertices_, sizeof(wrapBox2DVertices_));
-    glBufferData(GL_ARRAY_BUFFER, sizeof(wrapBox2DVertices), wrapBox2DVertices, GL_STREAM_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0);
+    // 如果只有一个物体，初始化时设置一次即可。如果是多个物体，每次绘制前要设置用哪个顶点数据。
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, wrapBox2DVertices);
+    glEnableVertexAttribArray(0); // 如果其他地方有关闭操作，则要在每次绘制前开启。
 
 //    modelColorFactorV4[3] = 0.75f;
     glUniform3fv(lightPositionLocation, 1, lightPositionV3);
@@ -149,16 +149,16 @@ ObjModel::ObjModel(): Shape() {
 }
 
 ObjModel::~ObjModel() {
-    glDeleteVertexArrays(3, vao);
-    glDeleteBuffers(7, buffers);
+    glDeleteVertexArrays(2, vao);
+    glDeleteBuffers(6, buffers);
 }
 
 void ObjModel::draw() {
     // obj
     glUniform1i(transformEnabledLocation, 1);
-    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[0]); // img texture
     modelColorFactorV4[3] = 1.0f;
     glUniform4fv(modelColorFactorLocation, 1, modelColorFactorV4);
+    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[0]); // img texture
     glBindVertexArray(vao[0]);
     glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
 
@@ -174,8 +174,9 @@ void ObjModel::draw() {
     // wrapBox2D
     glUniform1i(transformEnabledLocation, 0);
     glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[2]); // red texture
-    glBindVertexArray(vao[2]);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(wrapBox2DVertices), wrapBox2DVertices);
+    glBindVertexArray(0); // break previous binding
+    // 如果只有一个物体，初始化时设置一次即可。如果是多个物体，每次绘制前要设置用哪个顶点数据。
+//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, wrapBox2DVertices);
     glDrawArrays(GL_LINE_LOOP, 0, wrapBox2DVerticesSize/3);
 }
 
@@ -204,7 +205,7 @@ void ObjModel::rotate(float xRadian, float yRadian, float zRadian) {
 }
 
 void ObjModel::updateTransform() {
-    GLfloat minX = 0, minY = 0, minZ = 0, maxX  = 0, maxY = 0, maxZ = 0;
+    GLfloat minX = 0, minY = 0, minZ = 0, maxX = 0, maxY = 0, maxZ = 0;
     GLfloat wrapBoxVerticesTmp[wrapBoxVerticesSize];
     for (int i = 0; i < wrapBoxVerticesSize; i+=3) {
         // --==-- scale

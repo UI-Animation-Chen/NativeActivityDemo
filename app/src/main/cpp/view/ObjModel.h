@@ -9,8 +9,8 @@
 
 class ObjModel: public Shape {
 private:
-    GLuint vao[3] = {0}; // vertex array object
-    GLuint buffers[7] = {0};
+    GLuint vao[2] = {0}; // vertex array object
+    GLuint buffers[6] = {0}; // vertex buffer object
     GLuint indexCount = 0;
 
     const static GLint wrapBoxVerticesSize = 24;
