@@ -5,15 +5,11 @@
 #include "ObjModel.h"
 #include "../utils/ObjHelper.h"
 #include "../utils/AndroidAssetUtils.h"
+#include "../utils/CoordinatesUtils.h"
 #include <cstring>
 #include <cerrno>
 
 ObjModel::ObjModel(): Shape() {
-    glGenVertexArrays(2, vao);
-    glGenBuffers(6, buffers);
-
-    glBindVertexArray(vao[0]);
-
     // assets目录下，文件后缀是png才能读到，否则会报错: no such file or directory.
     // 原因是：assets目录下的文件会进行压缩，所以读不到。而png会被认为是压缩文件，不会再次压缩。
     const char *assetName = "blenderObjs/cocacola.png";
@@ -35,7 +31,11 @@ ObjModel::ObjModel(): Shape() {
     ObjHelper::readObjFile(file, pObjData);
     fclose(file);
 
+    glGenVertexArrays(3, vao);
+    glGenBuffers(7, buffers);
+
     // vertex data
+    glBindVertexArray(vao[0]);
     glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
     long verticesSize = sizeof(GLfloat) * pObjData->vertices.size();
     auto vertices = (GLfloat *)malloc((size_t)verticesSize);
@@ -86,15 +86,16 @@ ObjModel::ObjModel(): Shape() {
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(2);
 
-    // 包围盒
-    glBindVertexArray(vao[1]);
+    // 3D包围盒
     GLfloat minX = pObjData->minVertex.at(0);
     GLfloat minY = pObjData->minVertex.at(1);
     GLfloat minZ = pObjData->minVertex.at(2);
     GLfloat maxX = pObjData->maxVertex.at(0);
     GLfloat maxY = pObjData->maxVertex.at(1);
     GLfloat maxZ = pObjData->maxVertex.at(2);
+    delete pObjData;
     app_log("min(x: %f, y: %f, z: %f), max(x: %f, y: %f, z: %f)\n", minX, minY, minZ, maxX, maxY, maxZ);
+    glBindVertexArray(vao[1]);
     glBindBuffer(GL_ARRAY_BUFFER, buffers[4]);
     /**
      *         a0 -------- d3 (max)
@@ -104,7 +105,7 @@ ObjModel::ObjModel(): Shape() {
      *           /       /
      *  (min) b`5-------- c`6
      */
-    GLfloat wrapBoxVertices[] = {
+    GLfloat wrapBoxVertices_[] = {
             minX, maxY, maxZ, // a
             minX, maxY, minZ, // b
             maxX, maxY, minZ, // c
@@ -114,6 +115,7 @@ ObjModel::ObjModel(): Shape() {
             maxX, minY, minZ, // c`
             maxX, minY, maxZ  // d`
     };
+    memcpy(wrapBoxVertices, wrapBoxVertices_, sizeof(wrapBoxVertices_));
     glBufferData(GL_ARRAY_BUFFER, sizeof(wrapBoxVertices), wrapBoxVertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
@@ -127,7 +129,19 @@ ObjModel::ObjModel(): Shape() {
     };
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(wrapBoxIndeces), wrapBoxIndeces, GL_STATIC_DRAW);
 
-    delete pObjData;
+    // 2D包围框
+    glBindVertexArray(vao[2]);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[6]);
+    GLfloat wrapBox2DVertices_[] = {
+            minX, minY, 0.0f, // 左下
+            maxX, minY, 0.0f, // b
+            maxX, maxY, 0.0f, // 右上
+            minX, maxY, 0.0f  // d
+    };
+    memcpy(wrapBox2DVertices, wrapBox2DVertices_, sizeof(wrapBox2DVertices_));
+    glBufferData(GL_ARRAY_BUFFER, sizeof(wrapBox2DVertices), wrapBox2DVertices, GL_STREAM_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
 
 //    modelColorFactorV4[3] = 0.75f;
     glUniform3fv(lightPositionLocation, 1, lightPositionV3);
@@ -135,21 +149,119 @@ ObjModel::ObjModel(): Shape() {
 }
 
 ObjModel::~ObjModel() {
-    glDeleteVertexArrays(2, vao);
-    glDeleteBuffers(6, buffers);
+    glDeleteVertexArrays(3, vao);
+    glDeleteBuffers(7, buffers);
 }
 
 void ObjModel::draw() {
-    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[0]);
-    glBindVertexArray(vao[0]);
+    // obj
+    glUniform1i(transformEnabledLocation, 1);
+    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[0]); // img texture
     modelColorFactorV4[3] = 1.0f;
     glUniform4fv(modelColorFactorLocation, 1, modelColorFactorV4);
+    glBindVertexArray(vao[0]);
     glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
 
-    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[1]);
-    glBindVertexArray(vao[1]);
+    // 包围盒
     modelColorFactorV4[3] = 0.34f;
     glUniform4fv(modelColorFactorLocation, 1, modelColorFactorV4);
     glLineWidth(5.0f);
+    // wrapBox3D
+    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[1]); // green texture
+    glBindVertexArray(vao[1]);
     glDrawElements(GL_LINE_STRIP, 16, GL_UNSIGNED_SHORT, 0);
+
+    // wrapBox2D
+    glUniform1i(transformEnabledLocation, 0);
+    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[2]); // red texture
+    glBindVertexArray(vao[2]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(wrapBox2DVertices), wrapBox2DVertices, GL_STREAM_DRAW);
+    glDrawArrays(GL_LINE_LOOP, 0, wrapBox2DVerticesSize/3);
+}
+
+void ObjModel::scale(float x, float y, float z) {
+    Shape::scale(x, y, z);
+    scaleX = x;
+    scaleY = y;
+    scaleZ = z;
+    updateTransform();
+}
+
+void ObjModel::move(float offsetX, float offsetY, float offsetZ) {
+    Shape::move(offsetX, offsetY, offsetZ);
+    transX = CoordinatesUtils::android2gles_x(offsetX);
+    transY = CoordinatesUtils::android2gles_y(offsetY);
+    transZ = offsetZ;
+    updateTransform();
+}
+
+void ObjModel::rotate(float xRadian, float yRadian, float zRadian) {
+    Shape::rotate(xRadian, yRadian, zRadian);
+    rotateXradian = xRadian;
+    rotateYradian = yRadian;
+    rotateZradian = zRadian;
+    updateTransform();
+}
+
+void ObjModel::updateTransform() {
+    GLfloat minX = 0, minY = 0, minZ = 0, maxX  = 0, maxY = 0, maxZ = 0;
+    GLfloat wrapBoxVerticesTmp[wrapBoxVerticesSize];
+    for (int i = 0; i < wrapBoxVerticesSize; i+=3) {
+        // --==-- scale
+        wrapBoxVerticesTmp[i] = wrapBoxVertices[i] * scaleX;
+        wrapBoxVerticesTmp[i+1] = wrapBoxVertices[i + 1] * scaleY;
+        wrapBoxVerticesTmp[i+2] = wrapBoxVertices[i + 2] * scaleZ;
+
+        // --==-- rotate
+        GLfloat cos_xDeg = cos(rotateXradian);
+        GLfloat sin_xDeg = sin(rotateXradian);
+        GLfloat cos_yDeg = cos(rotateYradian);
+        GLfloat sin_yDeg = sin(rotateYradian);
+        GLfloat cos_zDeg = cos(rotateZradian);
+        GLfloat sin_zDeg = sin(rotateZradian);
+        GLfloat x = wrapBoxVerticesTmp[i];
+        GLfloat y = wrapBoxVerticesTmp[i+1];
+        GLfloat z = wrapBoxVerticesTmp[i+2];
+        // 绕x轴旋转
+        wrapBoxVerticesTmp[i+2] = z * cos_xDeg - y * sin_xDeg;
+        wrapBoxVerticesTmp[i+1] = z * sin_xDeg + y * cos_xDeg;
+        // 绕y轴旋转
+        z = wrapBoxVerticesTmp[i+2];
+        wrapBoxVerticesTmp[i] = x * cos_yDeg - z * sin_yDeg;
+        wrapBoxVerticesTmp[i+2] = x * sin_yDeg + z * cos_yDeg;
+        // 绕z轴旋转
+        x = wrapBoxVerticesTmp[i];
+        y = wrapBoxVerticesTmp[i+1];
+        wrapBoxVerticesTmp[i] = x * cos_zDeg - y * sin_zDeg;
+        wrapBoxVerticesTmp[i+1] = x * sin_zDeg + y * cos_zDeg;
+
+        // --==-- translate
+        wrapBoxVerticesTmp[i] += transX;
+        wrapBoxVerticesTmp[i+1] += transY;
+        wrapBoxVerticesTmp[i+2] += transZ;
+
+        if (wrapBoxVerticesTmp[i] < minX) {
+            minX = wrapBoxVerticesTmp[i];
+        } else if (wrapBoxVerticesTmp[i] > maxX) {
+            maxX = wrapBoxVerticesTmp[i];
+        }
+        if (wrapBoxVerticesTmp[i+1] < minY) {
+            minY = wrapBoxVerticesTmp[i+1];
+        } else if (wrapBoxVerticesTmp[i+1] > maxY) {
+            maxY = wrapBoxVerticesTmp[i+1];
+        }
+        if (wrapBoxVerticesTmp[i+2] < minZ) {
+            minZ = wrapBoxVerticesTmp[i+2];
+        } else if (wrapBoxVerticesTmp[i+2] > maxZ) {
+            maxZ = wrapBoxVerticesTmp[i+2];
+        }
+    }
+
+    GLfloat wrapBox2DVertices_[] = {
+            minX, minY, 0.0f, // 左下
+            maxX, minY, 0.0f, // 右下
+            maxX, maxY, 0.0f, // 右上
+            minX, maxY, 0.0f  // 左上
+    };
+    memcpy(wrapBox2DVertices, wrapBox2DVertices_, sizeof(wrapBox2DVertices_));
 }

@@ -15,6 +15,7 @@ public:
 private:
     static GLubyte pixels[];
     static GLubyte pixelsGreen[];
+    static GLubyte pixelsRed[];
 };
 
 #endif //NATIVEACTIVITYDEMO_TEXTUREUTILS_H

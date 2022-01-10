@@ -13,6 +13,7 @@
 class Shape {
 public:
     Shape() {
+        transformEnabledLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "transformEnabled");
         transLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "translate");
         scaleLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "scale");
         rotateLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "rotate");
@@ -41,6 +42,8 @@ public:
     virtual void scale(float x, float y, float z);
 
 protected: // 子类可以按需进行修改
+    GLint transformEnabledLocation;
+
     GLint modelColorFactorLocation;
     GLfloat modelColorFactorV4[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 

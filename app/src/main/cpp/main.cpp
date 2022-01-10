@@ -371,7 +371,7 @@ void android_main(struct android_app *app) {
             if (app->window != NULL) {
 //                renderByANativeWindowAPI(app->window);
 
-                glClearColor(0, 0, 0, 0);
+                glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
                 glClearDepthf(1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

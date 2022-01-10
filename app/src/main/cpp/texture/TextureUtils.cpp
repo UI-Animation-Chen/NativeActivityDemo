@@ -67,8 +67,11 @@ GLubyte TextureUtils::pixels[9 * 4] = {
 GLubyte TextureUtils::pixelsGreen[1 * 4] = {
         0, 255, 0, 255
 };
+GLubyte TextureUtils::pixelsRed[1 * 4] = {
+        255, 0, 0, 255
+};
 
-GLuint TextureUtils::textureIds[2] = {0};
+GLuint TextureUtils::textureIds[3] = {0};
 
 GLuint TextureUtils::loadSimpleTexture(const char *pngFile) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -89,6 +92,11 @@ GLuint TextureUtils::loadSimpleTexture(const char *pngFile) {
 
     glBindTexture(GL_TEXTURE_2D, textureIds[1]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelsGreen);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glBindTexture(GL_TEXTURE_2D, textureIds[2]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelsRed);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
