@@ -215,7 +215,7 @@ void ObjModel::rotate(float xRadian, float yRadian, float zRadian) {
 }
 
 void ObjModel::updateTransform() {
-    GLfloat minX = 0, minY = 0, minZ = 0, maxX = 0, maxY = 0, maxZ = 0;
+    GLfloat minX = 2.0f, minY = 2.0f, minZ = 2.0f, maxX = -2.0f, maxY = -2.0f, maxZ = -2.0f; // 2.0是为了超出OpenGL屏幕范围，只要大于1即可
     GLfloat wrapBoxVerticesTmp[wrapBoxVerticesSize];
     for (int i = 0; i < wrapBoxVerticesSize; i+=3) {
         // --==-- scale
@@ -253,17 +253,20 @@ void ObjModel::updateTransform() {
 
         if (wrapBoxVerticesTmp[i] < minX) {
             minX = wrapBoxVerticesTmp[i];
-        } else if (wrapBoxVerticesTmp[i] > maxX) {
+        }
+        if (wrapBoxVerticesTmp[i] > maxX) {
             maxX = wrapBoxVerticesTmp[i];
         }
         if (wrapBoxVerticesTmp[i+1] < minY) {
             minY = wrapBoxVerticesTmp[i+1];
-        } else if (wrapBoxVerticesTmp[i+1] > maxY) {
+        }
+        if (wrapBoxVerticesTmp[i+1] > maxY) {
             maxY = wrapBoxVerticesTmp[i+1];
         }
         if (wrapBoxVerticesTmp[i+2] < minZ) {
             minZ = wrapBoxVerticesTmp[i+2];
-        } else if (wrapBoxVerticesTmp[i+2] > maxZ) {
+        }
+        if (wrapBoxVerticesTmp[i+2] > maxZ) {
             maxZ = wrapBoxVerticesTmp[i+2];
         }
     }
