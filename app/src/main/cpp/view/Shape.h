@@ -26,11 +26,17 @@ public:
         move(0, 0, 0); // 初始化。
         rotate(0, 0, 0);
         scale(1.0f, 1.0f, 1.0f);
+
+        glGenVertexArrays(1, vao);
+        glGenBuffers(2, vbo);
+
         app_log("Shape constructor");
     }
 
     virtual ~Shape() {
         app_log("Shape destructor");
+        glDeleteVertexArrays(1, vao);
+        glDeleteBuffers(2, vbo);
     }
 
     virtual void draw() = 0;
@@ -40,6 +46,11 @@ public:
     virtual void rotate(float xRadian, float yRadian, float zRadian);
 
     virtual void scale(float x, float y, float z);
+
+    void initWrapBox(GLfloat minX, GLfloat minY, GLfloat minZ, GLfloat maxX, GLfloat maxY, GLfloat maxZ);
+
+    void drawWrapBox2D();
+    void drawWrapBox3D();
 
 protected: // 子类可以按需进行修改
     GLint transformEnabledLocation;
@@ -56,6 +67,13 @@ protected: // 子类可以按需进行修改
 private:
     GLint bounds[4]; // [x, y, w, h]
 
+    GLuint vao[1];
+    GLuint vbo[2];
+    const static GLint wrapBox3DVerticesSize = 24;
+    const static GLint wrapBox2DVerticesSize = 12;
+    GLfloat wrapBox3DVertices[wrapBox3DVerticesSize] = {0};
+    GLfloat wrapBox2DVertices[wrapBox2DVerticesSize] = {0};
+
     GLfloat translateXYZ[3];
     GLint transLocation;
 
@@ -66,6 +84,8 @@ private:
     GLint rotateLocation;
 
     GLint textureUnitLocation;
+
+    void updateWrapBoxTransform();
 };
 
 #endif //NATIVEACTIVITYDEMO_SHAPE_H
