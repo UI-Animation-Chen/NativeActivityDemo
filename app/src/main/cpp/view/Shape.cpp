@@ -3,7 +3,7 @@
 //
 
 #include <cstring>
-#include <cstdlib>
+#include <cmath>
 #include <GLES3/gl32.h>
 #include "Shape.h"
 #include "../utils/CoordinatesUtils.h"
