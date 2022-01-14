@@ -65,7 +65,7 @@ protected: // 子类可以按需进行修改
     GLfloat lightColorV3[3] = {1.0f, 1.0f, 1.0f};
 
 private:
-    GLint bounds[4]; // [x, y, w, h]
+    int bounds[4]; // [l, t, r, b]，屏幕尺寸值，不是GL ES的归一化值。
 
     GLuint vao[1];
     GLuint vbo[2];
@@ -86,6 +86,7 @@ private:
     GLint textureUnitLocation;
 
     void updateWrapBoxTransform();
+    void updateBounds(GLfloat minX, GLfloat minY, GLfloat maxX, GLfloat maxY);
 };
 
 #endif //NATIVEACTIVITYDEMO_SHAPE_H

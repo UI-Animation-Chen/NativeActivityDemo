@@ -57,6 +57,9 @@ void Shape::drawWrapBox3D() {
 
 void Shape::initWrapBox(GLfloat minX, GLfloat minY, GLfloat minZ,
                         GLfloat maxX, GLfloat maxY, GLfloat maxZ) {
+    // init bounds
+    updateBounds(minX, minY, maxX, maxY);
+
     glBindVertexArray(vao[0]);
     glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
     /**
@@ -180,4 +183,12 @@ void Shape::updateWrapBoxTransform() {
             minX, maxY, 0.0f  // 左上
     };
     memcpy(wrapBox2DVertices, wrapBox2DVertices_, sizeof(wrapBox2DVertices_));
+    updateBounds(minX, minY, maxX, maxY);
+}
+
+void Shape::updateBounds(GLfloat minX, GLfloat minY, GLfloat maxX, GLfloat maxY) {
+    bounds[0] = lround(CoordinatesUtils::gles2android_x(minX));
+    bounds[1] = lround(CoordinatesUtils::gles2android_y(maxY));
+    bounds[2] = lround(CoordinatesUtils::gles2android_y(maxX));
+    bounds[3] = lround(CoordinatesUtils::gles2android_y(minY));
 }
