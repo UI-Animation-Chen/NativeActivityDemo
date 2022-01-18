@@ -96,6 +96,11 @@ ObjModel::ObjModel(): Shape() {
     app_log("min(x: %f, y: %f, z: %f), max(x: %f, y: %f, z: %f)\n", minX, minY, minZ, maxX, maxY, maxZ);
     initWrapBox(minX, minY, minZ, maxX, maxY, maxZ);
 
+    float left = CoordinatesUtils::screenW / 2 * minX;
+    float top = CoordinatesUtils::screenH / 2 * maxY;
+    app_log("objModel: left: %f, top: %f\n", left, top);
+    move(-left, top, 0); // 物体左上角对齐窗口左上角
+
     delete pObjData;
 
 //    modelColorFactorV4[3] = 0.75f;
@@ -109,6 +114,8 @@ ObjModel::~ObjModel() {
 }
 
 void ObjModel::draw() {
+    Shape::draw();
+
     // obj
     glUniform1i(transformEnabledLocation, 1); // 开启shader中的transform
     modelColorFactorV4[3] = 1.0f;

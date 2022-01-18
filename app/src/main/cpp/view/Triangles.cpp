@@ -48,6 +48,8 @@ Triangles::~Triangles() {
 }
 
 void Triangles::draw() {
+    Shape::draw();
+
     glBindVertexArray(vao);
     glUniform4fv(modelColorFactorLocation, 1, modelColorFactorV4);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);

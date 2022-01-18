@@ -78,7 +78,7 @@ GLuint TextureUtils::loadSimpleTexture(const char *pngFile) {
 
     glActiveTexture(GL_TEXTURE0); // 激活纹理单元（texure unit），对应frag shader中的sampler2D变量。
 
-    glGenTextures(2, textureIds); // 生成纹理对象id
+    glGenTextures(3, textureIds); // 生成纹理对象id
 
     glBindTexture(GL_TEXTURE_2D, textureIds[0]); // 对于一个纹理单元只能绑定同一种target类型：GL_TEXTURE_2D, GL_TEXTURE_3D等
     uint32_t w, h;
@@ -104,5 +104,5 @@ GLuint TextureUtils::loadSimpleTexture(const char *pngFile) {
 }
 
 void TextureUtils::deleteSimpleTexture() {
-    glDeleteTextures(2, textureIds);
+    glDeleteTextures(3, textureIds);
 }

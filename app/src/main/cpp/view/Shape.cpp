@@ -9,27 +9,32 @@
 #include "../utils/CoordinatesUtils.h"
 
 void Shape::move(float offsetX, float offsetY, float offsetZ) {
-    translateXYZ[0] = CoordinatesUtils::android2gles_x(offsetX);
-    translateXYZ[1] = CoordinatesUtils::android2gles_y(offsetY);
-    translateXYZ[2] = offsetZ;
-    glUniform3fv(transLocation, 1, translateXYZ); // vec is not array, so the count is 1.
+    this->_offsetX += offsetX;
+    this->_offsetY += offsetY;
+    translateXYZ[0] = CoordinatesUtils::android2gles_x(this->_offsetX);
+    translateXYZ[1] = CoordinatesUtils::android2gles_y(this->_offsetY);
+    translateXYZ[2] += offsetZ;
     updateWrapBoxTransform();
 }
 
 void Shape::rotate(float xRadian, float yRadian, float zRadian) {
-    rotateXYZ[0] = xRadian;
-    rotateXYZ[1] = yRadian;
-    rotateXYZ[2] = zRadian;
-    glUniform3fv(rotateLocation, 1, rotateXYZ);
+    rotateXYZ[0] += xRadian;
+    rotateXYZ[1] += yRadian;
+    rotateXYZ[2] += zRadian;
     updateWrapBoxTransform();
 }
 
 void Shape::scale(float x, float y, float z) {
-    scaleXYZ[0] = x;
-    scaleXYZ[1] = y;
-    scaleXYZ[2] = z;
-    glUniform3fv(scaleLocation, 1, scaleXYZ);
+    scaleXYZ[0] += x;
+    scaleXYZ[1] += y;
+    scaleXYZ[2] += z;
     updateWrapBoxTransform();
+}
+
+void Shape::draw() {
+    glUniform3fv(transLocation, 1, translateXYZ); // vec is not array, so the count is 1.
+    glUniform3fv(rotateLocation, 1, rotateXYZ);
+    glUniform3fv(scaleLocation, 1, scaleXYZ);
 }
 
 void Shape::drawWrapBox2D() {
@@ -189,6 +194,7 @@ void Shape::updateWrapBoxTransform() {
 void Shape::updateBounds(GLfloat minX, GLfloat minY, GLfloat maxX, GLfloat maxY) {
     bounds[0] = lround(CoordinatesUtils::gles2android_x(minX));
     bounds[1] = lround(CoordinatesUtils::gles2android_y(maxY));
-    bounds[2] = lround(CoordinatesUtils::gles2android_y(maxX));
+    bounds[2] = lround(CoordinatesUtils::gles2android_x(maxX));
     bounds[3] = lround(CoordinatesUtils::gles2android_y(minY));
+//    app_log("bounds: l: %d, t: %d, r: %d, b: %d\n", bounds[0], bounds[1], bounds[2], bounds[3]);
 }

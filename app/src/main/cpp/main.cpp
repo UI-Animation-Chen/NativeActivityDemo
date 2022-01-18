@@ -31,10 +31,6 @@ static Shape *pShape[shape_len] = {0};
 
 static TouchEventHandler *touchEventHandler = NULL;
 
-static float transX = 0, transY = 0, transZ = 0;
-static float scaleX = 1.0f, scaleY = 1.0f, scaleZ = 1.0f;
-static float rotateXradian = 0, rotateYradian = 0, rotateZradian = 0;
-
 static float gyro_event_ts_s_old = -1;
 
 /**
@@ -133,24 +129,19 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 TextureUtils::loadSimpleTexture("cocacola.png");
 
                 // 深度测试的基准,注意1.0代表从近裁剪面到远裁剪面 这一段范围！！并不是指Z轴的1个单位
-                // 深度，是一个normolized的值，范围是 0-1(不是z轴坐标)，对应Z轴是从近裁剪面到远裁剪面
+                // 深度，是一个normalized的值，范围是 0-1(不是z轴坐标)，对应Z轴是从近裁剪面到远裁剪面
                 // 所以这里的 1.0f 指的是，深度缓冲区中远裁剪面以内全部清除
                 glClearDepthf(1.0f);
                 glClearColor(0, 0, 0, 0);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                if (transX == 0) transX = context->width / 2;
-                if (transY == 0) transY = context->height / 2;
-
                 // blend跟物体渲染顺序有关，需要后渲染半透明物体
 //                pShape[0] = new Cube();
 //                pShape[1] = new Triangles();
                 pShape[0] = new ObjModel();
+                pShape[1] = new Cube();
                 for (int i = 0; i < shape_len; i++) {
                     if (pShape[i]) {
-                        pShape[i]->scale(scaleX, scaleY, scaleZ);
-                        pShape[i]->rotate(rotateXradian, rotateYradian, -rotateZradian);
-                        pShape[i]->move(transX, transY, transZ);
                         pShape[i]->draw();
                     }
                 }
@@ -252,19 +243,23 @@ void initTouchEventHandlerCallbacks() {
     });
     touchEventHandler->setOnTouchMove([](float deltaX, float deltaY, float currX, float currY,
                                          float currMillis, int fingers) {
+        float rotateXradian = 0; // 划过屏幕为一个PI
+        float rotateYradian = 0;
+        float transX = 0;
+        float transY = 0;
         if (fingers == 1) {
-            rotateXradian += (deltaY * M_PI / CoordinatesUtils::screenH); // 划过屏幕为一个PI
-            rotateYradian += (deltaX * M_PI / CoordinatesUtils::screenW);
+            rotateXradian = (float)(deltaY * M_PI / CoordinatesUtils::screenH); // 划过屏幕为一个PI
+            rotateYradian = (float)(deltaX * M_PI / CoordinatesUtils::screenW);
         } else {
-            transX += deltaX;
-            transY += deltaY;
+            transX = deltaX;
+            transY = deltaY;
         }
         for (int i = 0; i < shape_len; i++) {
             if (pShape[i]) {
                 if (fingers == 1) {
-                    pShape[i]->rotate(rotateXradian, rotateYradian, -rotateZradian);
+                    pShape[i]->rotate(rotateXradian, rotateYradian, 0);
                 } else {
-                    pShape[i]->move(transX, transY, transZ);
+                    pShape[i]->move(transX, transY, 0);
                 }
             }
         }
@@ -276,19 +271,18 @@ void initTouchEventHandlerCallbacks() {
     });
     touchEventHandler->setOnScale(
             [](float scaleX1, float scaleY1, float scaleDistance, float currMillis) {
-//                transZ += (scaleDistance / CoordinatesUtils::screenH);
                 float scale = scaleDistance / CoordinatesUtils::screenH;
                 for (int i = 0; i < shape_len; i++) {
                     if (pShape[i]) {
-                        pShape[i]->scale(scaleX += scale, scaleY += scale, scaleZ += scale);
+                        pShape[i]->scale(scale, scale, scale);
                     }
                 }
             });
     touchEventHandler->setOnRotate([](float rotateDeg, float currMillis) {
-        rotateZradian += rotateDeg * DEG_2_RADIAN;
+        float rotateZradian = rotateDeg * DEG_2_RADIAN;
         for (int i = 0; i < shape_len; i++) {
             if (pShape[i]) {
-                pShape[i]->rotate(rotateXradian, rotateYradian, -rotateZradian);
+                pShape[i]->rotate(0, 0, -rotateZradian);
             }
         }
     });
@@ -348,12 +342,12 @@ void android_main(struct android_app *app) {
                         float event_ts_s_now = event.timestamp * NS_2_S;
                         if (gyro_event_ts_s_old != -1) {
                             float dT = event_ts_s_now - gyro_event_ts_s_old;
-                            rotateXradian -= event.data[0] * dT; // gyro返回的值单位是弧度/s
-                            rotateYradian -= event.data[1] * dT;
-                            rotateZradian += event.data[2] * dT;
+                            float rotateXradian = event.data[0] * dT; // gyro返回的值单位是弧度/s
+                            float rotateYradian = event.data[1] * dT;
+                            float rotateZradian = event.data[2] * dT;
                             for (int i = 0; i < shape_len; i++) {
                                 if (pShape[i]) {
-                                    pShape[i]->rotate(rotateXradian, rotateYradian, -rotateZradian);
+                                    pShape[i]->rotate(-rotateXradian, -rotateYradian, -rotateZradian);
                                 }
                             }
                         }

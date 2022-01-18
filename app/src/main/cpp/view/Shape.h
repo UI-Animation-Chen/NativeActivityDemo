@@ -23,9 +23,6 @@ public:
         lightColorLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "lightColor");
         glUseProgram(BaseShader::getSingletonProgram());
         glUniform1i(textureUnitLocation, 0);
-        move(0, 0, 0); // 初始化。
-        rotate(0, 0, 0);
-        scale(1.0f, 1.0f, 1.0f);
 
         glGenVertexArrays(1, vao);
         glGenBuffers(2, vbo);
@@ -39,7 +36,7 @@ public:
         glDeleteBuffers(2, vbo);
     }
 
-    virtual void draw() = 0;
+    virtual void draw();
 
     virtual void move(float offsetX, float offsetY, float offsetZ);
 
@@ -74,13 +71,15 @@ private:
     GLfloat wrapBox3DVertices[wrapBox3DVerticesSize] = {0};
     GLfloat wrapBox2DVertices[wrapBox2DVerticesSize] = {0};
 
-    GLfloat translateXYZ[3];
+    float _offsetX = 0;
+    float _offsetY = 0;
+    GLfloat translateXYZ[3] = {0};
     GLint transLocation;
 
-    GLfloat scaleXYZ[3];
+    GLfloat scaleXYZ[3] = {1.0f, 1.0f, 1.0f};
     GLint scaleLocation;
 
-    GLfloat rotateXYZ[3];
+    GLfloat rotateXYZ[3] = {0};
     GLint rotateLocation;
 
     GLint textureUnitLocation;

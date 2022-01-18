@@ -5,6 +5,7 @@
 #include <GLES3/gl32.h>
 
 #include "Cube.h"
+#include "../utils/CoordinatesUtils.h"
 
 Cube::Cube(): Shape() {
     glGenVertexArrays(1, &vao);
@@ -75,6 +76,12 @@ Cube::Cube(): Shape() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(texCoords), texCoords, GL_STATIC_DRAW);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(1);
+
+    initWrapBox(-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f);
+    float left = CoordinatesUtils::screenW / 2 * -0.5f;
+    float top = CoordinatesUtils::screenH / 2 * 0.5f;
+    app_log("cube: left: %f, top: %f\n", left, top);
+    move(-left, top, 0); // 物体左上角对齐窗口左上角
 }
 
 Cube::~Cube() {
@@ -83,7 +90,18 @@ Cube::~Cube() {
 }
 
 void Cube::draw() {
-    glBindVertexArray(vao);
+    Shape::draw();
+
+    glUniform1i(transformEnabledLocation, 1); // 开启shader中的transform
+    modelColorFactorV4[3] = 1.0f;
     glUniform4fv(modelColorFactorLocation, 1, modelColorFactorV4);
+    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[0]); // img texture
+    glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 30, GL_UNSIGNED_SHORT, 0);
+
+    // 包围盒
+    drawWrapBox3D();
+
+    // wrapBox2D
+    drawWrapBox2D();
 }
