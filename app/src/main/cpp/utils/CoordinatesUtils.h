@@ -28,8 +28,13 @@ public:
     static float gles2android_x(float x);
     static float gles2android_y(float y);
 
+    static float gles2android_distance(float glesDistance);
+    static float android2gles_distance(float androidDistance);
+
     static float screenW;
     static float screenH;
+    static float screenL;
+    static float screenS;
 };
 
 #endif //NATIVEACTIVITYDEMO_COORDINATESUTILS_H

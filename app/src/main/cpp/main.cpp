@@ -122,6 +122,8 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
 
                 CoordinatesUtils::screenW = context->width;
                 CoordinatesUtils::screenH = context->height;
+                CoordinatesUtils::screenS = context->width > context->height ? context->height : context->width;
+                CoordinatesUtils::screenL = context->width > context->height ? context->width : context->height;
 
                 AndroidAssetUtils::init(app->activity->assetManager);
 
@@ -137,9 +139,9 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
 
                 // blend跟物体渲染顺序有关，需要后渲染半透明物体
 //                pShape[0] = new Cube();
-//                pShape[1] = new Triangles();
+//                pShape[0] = new Triangles();
                 pShape[0] = new ObjModel();
-                pShape[1] = new Cube();
+//                pShape[1] = new Cube();
                 for (int i = 0; i < shape_len; i++) {
                     if (pShape[i]) {
                         pShape[i]->draw();
@@ -248,8 +250,9 @@ void initTouchEventHandlerCallbacks() {
         float transX = 0;
         float transY = 0;
         if (fingers == 1) {
-            rotateXradian = (float)(deltaY * M_PI / CoordinatesUtils::screenH); // 划过屏幕为一个PI
-            rotateYradian = (float)(deltaX * M_PI / CoordinatesUtils::screenW);
+            float distance2radianFactor = M_PI / CoordinatesUtils::screenS; // 划过屏幕短边为一个PI，横竖一致，符合操作常理
+            rotateXradian = (float)(deltaY * distance2radianFactor);
+            rotateYradian = (float)(deltaX * distance2radianFactor);
         } else {
             transX = deltaX;
             transY = deltaY;
@@ -259,7 +262,7 @@ void initTouchEventHandlerCallbacks() {
                 if (fingers == 1) {
                     pShape[i]->rotate(rotateXradian, rotateYradian, 0);
                 } else {
-                    pShape[i]->move(transX, transY, 0);
+                    pShape[i]->move(transX, -transY, 0);
                 }
             }
         }
@@ -271,7 +274,7 @@ void initTouchEventHandlerCallbacks() {
     });
     touchEventHandler->setOnScale(
             [](float scaleX1, float scaleY1, float scaleDistance, float currMillis) {
-                float scale = scaleDistance / CoordinatesUtils::screenH;
+                float scale = scaleDistance / CoordinatesUtils::screenS;
                 for (int i = 0; i < shape_len; i++) {
                     if (pShape[i]) {
                         pShape[i]->scale(scale, scale, scale);

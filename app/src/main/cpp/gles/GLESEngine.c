@@ -106,8 +106,8 @@ int GLESEngine_init(ANativeWindow *window) {
     engine.display = display;
     engine.context = context;
     engine.surface = surface;
-    engine.width = w > h ? h : w;
-    engine.height = h > w ? w : h;
+    engine.width = w;
+    engine.height = h;
 
     // Check openGL on the system
     GLenum opengl_info[] = {GL_VENDOR, GL_RENDERER, GL_VERSION, GL_EXTENSIONS};
@@ -127,12 +127,21 @@ int GLESEngine_init(ANativeWindow *window) {
     glEnable(GL_DEPTH_TEST); // 开启深度测试，让z轴起作用。
     glDepthFunc(GL_LESS); // z轴正向是屏幕向里，所以值小表示离用户更近。
 
-    if (w < h) {
-        glViewport(0, (h - w)/2, w, w); // 指定左下角坐标和宽高
-    } else if (w > h) {
-        glViewport((w - h)/2, 0, h, h);
+    app_log("OpenGL window w: %d, h: %d, ratio: %f\n", w, h, (float)h/w);
+
+    // 选取缩小后的正方形
+//    if (w < h) {
+//        glViewport(0, (h - w)/2, w, w); // 指定左下角坐标和宽高
+//    } else if (w > h) {
+//        glViewport((w - h)/2, 0, h, h);
+//    } else {
+//        glViewport(0, 0, w, h); // default config set by opengl es engine
+//    }
+    // 选取放大后的正方形
+    if (w <= h) {
+        glViewport((w-h)/2, 0, h, h); // 指定左下角坐标和宽高
     } else {
-        glViewport(0, 0, w, h); // default config set by opengl es engine
+        glViewport(0, (h-w)/2, w, w);
     }
 
     return 0;

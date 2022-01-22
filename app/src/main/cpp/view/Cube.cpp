@@ -78,10 +78,6 @@ Cube::Cube(): Shape() {
     glEnableVertexAttribArray(1);
 
     initWrapBox(-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f);
-    float left = CoordinatesUtils::screenW / 2 * -0.5f;
-    float top = CoordinatesUtils::screenH / 2 * 0.5f;
-    app_log("cube: left: %f, top: %f\n", left, top);
-    move(-left, top, 0); // 物体左上角对齐窗口左上角
 }
 
 Cube::~Cube() {

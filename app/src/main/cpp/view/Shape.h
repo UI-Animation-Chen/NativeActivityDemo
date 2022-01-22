@@ -49,6 +49,10 @@ public:
     void drawWrapBox2D();
     void drawWrapBox3D();
 
+    const GLfloat *getScale();
+
+    const int *getBounds();
+
 protected: // 子类可以按需进行修改
     GLint transformEnabledLocation;
 
