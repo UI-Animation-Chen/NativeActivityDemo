@@ -7,6 +7,9 @@
 #include <GLES3/gl32.h>
 #include "Shape.h"
 #include "../utils/CoordinatesUtils.h"
+#include "../utils/libglm0_9_6_3/glm/glm.hpp"
+#include "../utils/libglm0_9_6_3/glm/gtc/matrix_transform.hpp"
+#include "../utils/libglm0_9_6_3/glm/ext.hpp"
 
 void Shape::move(float offsetX, float offsetY, float offsetZ) {
     this->_offsetX += offsetX;
@@ -14,6 +17,7 @@ void Shape::move(float offsetX, float offsetY, float offsetZ) {
     translateXYZ[0] = CoordinatesUtils::android2gles_distance(this->_offsetX);
     translateXYZ[1] = CoordinatesUtils::android2gles_distance(this->_offsetY);
     translateXYZ[2] += offsetZ;
+    updateModelMat4();
     updateWrapBoxTransform();
 }
 
@@ -21,6 +25,7 @@ void Shape::rotate(float xRadian, float yRadian, float zRadian) {
     rotateXYZ[0] += xRadian;
     rotateXYZ[1] += yRadian;
     rotateXYZ[2] += zRadian;
+    updateModelMat4();
     updateWrapBoxTransform();
 }
 
@@ -28,13 +33,12 @@ void Shape::scale(float x, float y, float z) {
     scaleXYZ[0] += x;
     scaleXYZ[1] += y;
     scaleXYZ[2] += z;
+    updateModelMat4();
     updateWrapBoxTransform();
 }
 
 void Shape::draw() {
-    glUniform3fv(transLocation, 1, translateXYZ); // vec is not array, so the count is 1.
-    glUniform3fv(rotateLocation, 1, rotateXYZ);
-    glUniform3fv(scaleLocation, 1, scaleXYZ);
+    glUniformMatrix4fv(transformMat4Location, 1, GL_FALSE, glm::value_ptr(modelMat4));
 }
 
 void Shape::drawWrapBox2D() {
@@ -128,38 +132,11 @@ void Shape::updateWrapBoxTransform() {
     GLfloat minX = 2.0f, minY = 2.0f, minZ = 2.0f, maxX = -2.0f, maxY = -2.0f, maxZ = -2.0f; // 2.0是为了超出OpenGL屏幕范围，只要大于1即可
     GLfloat wrapBoxVerticesTmp[wrapBox3DVerticesSize];
     for (int i = 0; i < wrapBox3DVerticesSize; i+=3) {
-        // --==-- scale
-        wrapBoxVerticesTmp[i] = wrapBox3DVertices[i] * scaleXYZ[0];
-        wrapBoxVerticesTmp[i+1] = wrapBox3DVertices[i + 1] * scaleXYZ[1];
-        wrapBoxVerticesTmp[i+2] = wrapBox3DVertices[i + 2] * scaleXYZ[2];
-
-        // --==-- rotate
-        GLfloat cos_xDeg = cos(rotateXYZ[0]);
-        GLfloat sin_xDeg = sin(rotateXYZ[0]);
-        GLfloat cos_yDeg = cos(rotateXYZ[1]);
-        GLfloat sin_yDeg = sin(rotateXYZ[1]);
-        GLfloat cos_zDeg = cos(rotateXYZ[2]);
-        GLfloat sin_zDeg = sin(rotateXYZ[2]);
-        GLfloat x = wrapBoxVerticesTmp[i];
-        GLfloat y = wrapBoxVerticesTmp[i+1];
-        GLfloat z = wrapBoxVerticesTmp[i+2];
-        // 绕x轴旋转
-        wrapBoxVerticesTmp[i+2] = z * cos_xDeg - y * sin_xDeg;
-        wrapBoxVerticesTmp[i+1] = z * sin_xDeg + y * cos_xDeg;
-        // 绕y轴旋转
-        z = wrapBoxVerticesTmp[i+2];
-        wrapBoxVerticesTmp[i] = x * cos_yDeg - z * sin_yDeg;
-        wrapBoxVerticesTmp[i+2] = x * sin_yDeg + z * cos_yDeg;
-        // 绕z轴旋转
-        x = wrapBoxVerticesTmp[i];
-        y = wrapBoxVerticesTmp[i+1];
-        wrapBoxVerticesTmp[i] = x * cos_zDeg - y * sin_zDeg;
-        wrapBoxVerticesTmp[i+1] = x * sin_zDeg + y * cos_zDeg;
-
-        // --==-- translate
-        wrapBoxVerticesTmp[i] += translateXYZ[0];
-        wrapBoxVerticesTmp[i+1] += translateXYZ[1];
-        wrapBoxVerticesTmp[i+2] += translateXYZ[2];
+        glm::vec4 wrapBoxVerticesTmpVec4(wrapBox3DVertices[i], wrapBox3DVertices[i+1], wrapBox3DVertices[i+2], 1.0f);
+        wrapBoxVerticesTmpVec4 = modelMat4 * wrapBoxVerticesTmpVec4;
+        wrapBoxVerticesTmp[i] = wrapBoxVerticesTmpVec4[0];
+        wrapBoxVerticesTmp[i+1] = wrapBoxVerticesTmpVec4[1];
+        wrapBoxVerticesTmp[i+2] = wrapBoxVerticesTmpVec4[2];
 
         if (wrapBoxVerticesTmp[i] < minX) {
             minX = wrapBoxVerticesTmp[i];
@@ -201,4 +178,35 @@ void Shape::updateBounds(GLfloat minX, GLfloat minY, GLfloat maxX, GLfloat maxY)
 
 const GLfloat *Shape::getScale() {
     return scaleXYZ;
+}
+
+/**
+ * GLM是基于（GLSL）规范的图形软件的仅头文件C++数学库。该库可与OpenGL完美配合。
+ * 1、glm::mat4在内存中存储是列优先的。
+ * 2、glm::vec4是列向量，应当左边乘以矩阵。但是当右边乘以矩阵时，也能看做行向量。
+ * 3、glm::mat4.length() 返回矩阵的列数，glm::mat4[i][j]返回的是第i列第j行的元素。
+ * 4、glm::mat3x4表示3列4行的矩阵。注意不是3行4列！
+ */
+void Shape::updateModelMat4() {
+    // model变换
+    modelMat4 = glm::mat4(1);
+    // translate
+    modelMat4 = glm::translate(modelMat4, glm::vec3(translateXYZ[0], translateXYZ[1], translateXYZ[2]));
+    // rotate 注意：x，y，z的先后顺序不同，旋转的效果不同
+    modelMat4 = glm::rotate(modelMat4, rotateXYZ[2], glm::vec3(0, 0, 1)); // z轴
+    modelMat4 = glm::rotate(modelMat4, rotateXYZ[1], glm::vec3(0, 1, 0)); // y轴
+    modelMat4 = glm::rotate(modelMat4, rotateXYZ[0], glm::vec3(1, 0, 0)); // x轴
+    // scale
+    modelMat4 = glm::scale(modelMat4, glm::vec3(scaleXYZ[0], scaleXYZ[1], scaleXYZ[2]));
+
+    // view变换
+//    glm::mat4 viewMat4 = glm::lookAt(glm::vec3(0, 4, 10), glm::vec3(0), glm::vec3(0, 0, 1));
+//    viewMat4 = glm::translate(viewMat4, glm::vec3(-0.3, 0, 0));
+//    viewMat4 = glm::rotate(viewMat4, 0.5f, glm::vec3(1, 0, 0));
+//    viewMat4 = glm::rotate(viewMat4, -0.5f, glm::vec3(0, 0, 1));
+
+    // 视图变换
+//    glm::mat4 projectMat4 = glm::perspective(glm::radians(60.0f), 1.0f, 1.0f, 100.0f);
+
+//    modelMat4 = projectMat4 * viewMat4 * modelMat4; // 最先发生的变换矩阵，往后放
 }

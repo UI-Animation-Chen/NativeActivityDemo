@@ -41,7 +41,7 @@ int GLESEngine_init(ANativeWindow *window) {
      * component compatible with on-screen windows
      */
     const EGLint attribs[] = {
-            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+            EGL_SURFACE_TYPE, EGL_WINDOW_BIT, /*EGL_PBUFFER_BIT*/ // 创建屏外渲染的surface
             EGL_BLUE_SIZE, 8,
             EGL_GREEN_SIZE, 8,
             EGL_RED_SIZE, 8,
@@ -56,6 +56,7 @@ int GLESEngine_init(ANativeWindow *window) {
      * find the best match if possible, otherwise use the very first one
      */
     eglChooseConfig(display, attribs, NULL, 0, &numConfigs);
+    app_log("egl numConfigs: %d\n", numConfigs);
     EGLConfig supportedConfigs[numConfigs];
     eglChooseConfig(display, attribs, supportedConfigs, numConfigs, &numConfigs);
     assert(numConfigs);
@@ -92,7 +93,7 @@ int GLESEngine_init(ANativeWindow *window) {
             EGL_CONTEXT_CLIENT_VERSION, 3,
             EGL_NONE
     };
-    EGLContext context = eglCreateContext(display, config, NULL, contextAttribs);
+    EGLContext context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs); // 不和其他上下文共享资源
 
     if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
         app_log("Unable to eglMakeCurrent\n");

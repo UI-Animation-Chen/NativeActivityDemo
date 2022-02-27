@@ -13,9 +13,7 @@ static const char *vert = "#version 300 es\n"
                           "layout(location = 2) in vec3 vNormal;\n"
 
                           "uniform int transformEnabled;\n" // transform开关
-                          "uniform vec3 translate;\n" // vec is not array
-                          "uniform vec3 scale;\n"
-                          "uniform vec3 rotate;\n"
+                          "uniform mat4 transformMat4;\n"
 
                           "out vec2 texCoord;\n" // send to next stage(frag shader)
                           "out vec3 modelNormal;\n"
@@ -26,50 +24,8 @@ static const char *vert = "#version 300 es\n"
                           "    modelNormal = normalize(vNormal);\n" // 法向量，进行归一化，片元中仍需要。
 
                           "    if (transformEnabled == 1) {\n" // 是否在shader里进行缩放、旋转、平移操作等
-                                   // 缩放
-                          "        gl_Position[0] *= scale[0];\n"
-                          "        gl_Position[1] *= scale[1];\n"
-                          "        gl_Position[2] *= scale[2];\n"
-
-                                   // 旋转
-                          "        float cos_xDeg = cos(rotate[0]);\n"
-                          "        float sin_xDeg = sin(rotate[0]);\n"
-                          "        float cos_yDeg = cos(rotate[1]);\n"
-                          "        float sin_yDeg = sin(rotate[1]);\n"
-                          "        float cos_zDeg = cos(rotate[2]);\n"
-                          "        float sin_zDeg = sin(rotate[2]);\n"
-                          "        float x = gl_Position[0];\n"
-                          "        float y = gl_Position[1];\n"
-                          "        float z = gl_Position[2];\n"
-                          "        float nx = modelNormal[0];\n" // 法线坐标，进行旋转变化
-                          "        float ny = modelNormal[1];\n"
-                          "        float nz = modelNormal[2];\n"
-                                   // 绕x轴旋转
-                          "        gl_Position[2] = z * cos_xDeg - y * sin_xDeg;\n"
-                          "        gl_Position[1] = z * sin_xDeg + y * cos_xDeg;\n"
-                          "        modelNormal[2] = nz * cos_xDeg - ny * sin_xDeg;\n"
-                          "        modelNormal[1] = nz * sin_xDeg + ny * cos_xDeg;\n"
-                                   // 绕y轴旋转
-                          "        z = gl_Position[2];\n"
-                          "        nz = modelNormal[2];\n"
-                          "        gl_Position[0] = x * cos_yDeg - z * sin_yDeg;\n"
-                          "        gl_Position[2] = x * sin_yDeg + z * cos_yDeg;\n"
-                          "        modelNormal[0] = nx * cos_yDeg - nz * sin_yDeg;\n"
-                          "        modelNormal[2] = nx * sin_yDeg + nz * cos_yDeg;\n"
-                                   // 绕z轴旋转
-                          "        x = gl_Position[0];\n"
-                          "        y = gl_Position[1];\n"
-                          "        nx = modelNormal[0];\n"
-                          "        ny = modelNormal[1];\n"
-                          "        gl_Position[0] = x * cos_zDeg - y * sin_zDeg;\n"
-                          "        gl_Position[1] = x * sin_zDeg + y * cos_zDeg;\n"
-                          "        modelNormal[0] = nx * cos_zDeg - ny * sin_zDeg;\n"
-                          "        modelNormal[1] = nx * sin_zDeg + ny * cos_zDeg;\n"
-
-                                   // 移动
-                          "        gl_Position[0] += translate[0];\n"
-                          "        gl_Position[1] += translate[1];\n"
-                          "        gl_Position[2] += translate[2];\n"
+                          "        gl_Position = transformMat4 * vPosition;\n"
+                          "        modelNormal = vec3(transformMat4 * vec4(modelNormal, 0.0));\n"
                           "    }\n"
 
                           "    modelVertex = vec3(gl_Position[0], gl_Position[1], gl_Position[2]);\n"

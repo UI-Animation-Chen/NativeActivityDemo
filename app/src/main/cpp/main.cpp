@@ -260,7 +260,7 @@ void initTouchEventHandlerCallbacks() {
         for (int i = 0; i < shape_len; i++) {
             if (pShape[i]) {
                 if (fingers == 1) {
-                    pShape[i]->rotate(rotateXradian, rotateYradian, 0);
+                    pShape[i]->rotate(-rotateXradian, -rotateYradian, 0); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
                 } else {
                     pShape[i]->move(transX, -transY, 0);
                 }
@@ -285,7 +285,7 @@ void initTouchEventHandlerCallbacks() {
         float rotateZradian = rotateDeg * DEG_2_RADIAN;
         for (int i = 0; i < shape_len; i++) {
             if (pShape[i]) {
-                pShape[i]->rotate(0, 0, -rotateZradian);
+                pShape[i]->rotate(0, 0, -rotateZradian); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
             }
         }
     });

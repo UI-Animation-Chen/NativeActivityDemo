@@ -9,18 +9,17 @@
 #include "../app_log.h"
 #include "../shader/BaseShader.h"
 #include "../texture/TextureUtils.h"
+#include "../utils/libglm0_9_6_3/glm/glm.hpp"
 
 class Shape {
 public:
     Shape() {
         transformEnabledLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "transformEnabled");
-        transLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "translate");
-        scaleLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "scale");
-        rotateLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "rotate");
         textureUnitLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "textureUnit");
         modelColorFactorLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "modelColorFactor");
         lightPositionLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "lightPosition");
         lightColorLocation = glGetUniformLocation(BaseShader::getSingletonProgram(), "lightColor");
+        transformMat4Location = glGetUniformLocation(BaseShader::getSingletonProgram(), "transformMat4");
         glUseProgram(BaseShader::getSingletonProgram());
         glUniform1i(textureUnitLocation, 0);
 
@@ -78,18 +77,17 @@ private:
     float _offsetX = 0;
     float _offsetY = 0;
     GLfloat translateXYZ[3] = {0};
-    GLint transLocation;
-
     GLfloat scaleXYZ[3] = {1.0f, 1.0f, 1.0f};
-    GLint scaleLocation;
-
     GLfloat rotateXYZ[3] = {0};
-    GLint rotateLocation;
+
+    glm::mat4 modelMat4 = glm::mat4(1);
+    GLint transformMat4Location;
 
     GLint textureUnitLocation;
 
     void updateWrapBoxTransform();
     void updateBounds(GLfloat minX, GLfloat minY, GLfloat maxX, GLfloat maxY);
+    void updateModelMat4();
 };
 
 #endif //NATIVEACTIVITYDEMO_SHAPE_H
