@@ -350,7 +350,7 @@ void android_main(struct android_app *app) {
                             float rotateZradian = event.data[2] * dT;
                             for (int i = 0; i < shape_len; i++) {
                                 if (pShape[i]) {
-                                    pShape[i]->rotate(-rotateXradian, -rotateYradian, -rotateZradian);
+                                    pShape[i]->rotate(rotateXradian, rotateYradian, -rotateZradian);
                                 }
                             }
                         }
