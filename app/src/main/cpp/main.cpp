@@ -128,7 +128,7 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 AndroidAssetUtils::init(app->activity->assetManager);
 
                 BaseShader::getSingletonProgram();
-                TextureUtils::loadSimpleTexture("cocacola.png");
+                TextureUtils::loadSimpleTexture("tower.png");
 
                 // 深度测试的基准,注意1.0代表从近裁剪面到远裁剪面 这一段范围！！并不是指Z轴的1个单位
                 // 深度，是一个normalized的值，范围是 0-1(不是z轴坐标)，对应Z轴是从近裁剪面到远裁剪面
@@ -278,6 +278,7 @@ void initTouchEventHandlerCallbacks() {
                 for (int i = 0; i < shape_len; i++) {
                     if (pShape[i]) {
                         pShape[i]->scale(scale, scale, scale);
+//                        pShape[i]->move(0, 0, -scale*10); // 放大手势为正值，加负号改为向z轴负方向
                     }
                 }
             });

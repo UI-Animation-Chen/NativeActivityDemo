@@ -11,9 +11,25 @@
 #include "../utils/libglm0_9_6_3/glm/gtc/matrix_transform.hpp"
 #include "../utils/libglm0_9_6_3/glm/ext.hpp"
 
+void printMat(const glm::mat4 &Mat0)
+{
+    app_log("mat4(\n");
+    app_log("\tvec4(%2.9f, %2.9f, %2.9f, %2.9f)\n", Mat0[0][0], Mat0[0][1], Mat0[0][2], Mat0[0][3]);
+    app_log("\tvec4(%2.9f, %2.9f, %2.9f, %2.9f)\n", Mat0[1][0], Mat0[1][1], Mat0[1][2], Mat0[1][3]);
+    app_log("\tvec4(%2.9f, %2.9f, %2.9f, %2.9f)\n", Mat0[2][0], Mat0[2][1], Mat0[2][2], Mat0[2][3]);
+    app_log("\tvec4(%2.9f, %2.9f, %2.9f, %2.9f))\n\n", Mat0[3][0], Mat0[3][1], Mat0[3][2], Mat0[3][3]);
+}
+
+static int perspective = -1; // -1表示开启透视模式
+
 void Shape::move(float offsetX, float offsetY, float offsetZ) {
-    this->_offsetX += offsetX;
-    this->_offsetY += offsetY;
+    if (perspective = -1) {
+        this->_offsetX += offsetX*5; // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
+        this->_offsetY += offsetY*5;
+    } else {
+        this->_offsetX += offsetX;
+        this->_offsetY += offsetY;
+    }
     translateXYZ[0] = CoordinatesUtils::android2gles_distance(this->_offsetX);
     translateXYZ[1] = CoordinatesUtils::android2gles_distance(this->_offsetY);
     translateXYZ[2] += offsetZ;
@@ -190,23 +206,25 @@ const GLfloat *Shape::getScale() {
 void Shape::updateModelMat4() {
     // model变换
     modelMat4 = glm::mat4(1);
-    // translate
-    modelMat4 = glm::translate(modelMat4, glm::vec3(translateXYZ[0], translateXYZ[1], translateXYZ[2]));
+    // translate。透视模式下x需反转一下
+    modelMat4 = glm::translate(modelMat4, glm::vec3(perspective * translateXYZ[0], translateXYZ[1], translateXYZ[2]));
     // rotate 注意：x，y，z的先后顺序不同，旋转的效果不同
-    modelMat4 = glm::rotate(modelMat4, rotateXYZ[2], glm::vec3(0, 0, 1)); // z轴
-    modelMat4 = glm::rotate(modelMat4, rotateXYZ[1], glm::vec3(0, 1, 0)); // y轴
+    modelMat4 = glm::rotate(modelMat4, perspective * rotateXYZ[2], glm::vec3(0, 0, 1)); // z轴。透视模式下需反转一下
+    modelMat4 = glm::rotate(modelMat4, perspective *rotateXYZ[1], glm::vec3(0, 1, 0)); // y轴。透视模式下需反转一下
     modelMat4 = glm::rotate(modelMat4, rotateXYZ[0], glm::vec3(1, 0, 0)); // x轴
     // scale
     modelMat4 = glm::scale(modelMat4, glm::vec3(scaleXYZ[0], scaleXYZ[1], scaleXYZ[2]));
 
-    // view变换
-//    glm::mat4 viewMat4 = glm::lookAt(glm::vec3(0, 4, 10), glm::vec3(0), glm::vec3(0, 0, 1));
-//    viewMat4 = glm::translate(viewMat4, glm::vec3(-0.3, 0, 0));
-//    viewMat4 = glm::rotate(viewMat4, 0.5f, glm::vec3(1, 0, 0));
-//    viewMat4 = glm::rotate(viewMat4, -0.5f, glm::vec3(0, 0, 1));
+    if (perspective == -1) {
+        // view变换
+        glm::mat4 viewMat4 = glm::lookAt(glm::vec3(0, 3, -10), glm::vec3(0), glm::vec3(0, 1, 0));
+//        viewMat4 = glm::translate(viewMat4, glm::vec3(-0.3, 0, 0));
+//        viewMat4 = glm::rotate(viewMat4, glm::radians(30.0f), glm::vec3(1, 0, 0)); // 绕y和z轴都是对的，x轴是反的
+//        viewMat4 = glm::rotate(viewMat4, -0.5f, glm::vec3(0, 0, 1));
 
-    // 视图变换
-//    glm::mat4 projectMat4 = glm::perspective(glm::radians(60.0f), 1.0f, 1.0f, 100.0f);
+        // 透视投影变换
+        glm::mat4 projectMat4 = glm::perspective(glm::radians(60.0f), 1.0f, 1.0f, 50.0f);
 
-//    modelMat4 = projectMat4 * viewMat4 * modelMat4; // 最先发生的变换矩阵，往后放
+        modelMat4 = projectMat4 * viewMat4 * modelMat4; // 最先发生的变换矩阵，往后放
+    }
 }

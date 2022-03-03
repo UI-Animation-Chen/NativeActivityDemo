@@ -9,10 +9,14 @@
 #include <cstring>
 #include <cerrno>
 
+// 从free3d.com中下载.blender文件素材，导入blender后再导出为obj，导出设置：
+// 1、z forward，y up；这种方式导出后x坐标是反的，ObjHelper.cpp中进行了处理。在视图和透视矩阵加入后，x坐标就不反了。
+// 2、write normals, include uvs, triangulate faces，其他都不要选
+
 ObjModel::ObjModel(): Shape() {
     // assets目录下，文件后缀是png才能读到，否则会报错: no such file or directory.
     // 原因是：assets目录下的文件会进行压缩，所以读不到。而png会被认为是压缩文件，不会再次压缩。
-    const char *assetName = "blenderObjs/cocacola.png";
+    const char *assetName = "blenderObjs/tower.png";
     int fd = AndroidAssetUtils::openFdFromAsset(assetName);
     if (fd <= 0) {
         app_log("openFdFromAsset \"%s\" failed: err: %s\n", assetName, strerror(errno));
