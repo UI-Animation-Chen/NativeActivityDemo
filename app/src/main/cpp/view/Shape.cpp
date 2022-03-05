@@ -214,9 +214,9 @@ void Shape::updateModelMat4() {
     // translate。透视模式下x需反转一下
     modelMat4 = glm::translate(modelMat4, glm::vec3(perspective * translateXYZ[0], translateXYZ[1], translateXYZ[2]));
     // rotate 注意：x，y，z的先后顺序不同，旋转的效果不同
-    modelMat4 = glm::rotate(modelMat4, perspective * rotateXYZ[2], glm::vec3(0, 0, 1)); // z轴。透视模式下需反转一下
-    modelMat4 = glm::rotate(modelMat4, perspective *rotateXYZ[1], glm::vec3(0, 1, 0)); // y轴。透视模式下需反转一下
     modelMat4 = glm::rotate(modelMat4, rotateXYZ[0], glm::vec3(1, 0, 0)); // x轴
+    modelMat4 = glm::rotate(modelMat4, perspective *rotateXYZ[1], glm::vec3(0, 1, 0)); // y轴。透视模式下需反转一下
+    modelMat4 = glm::rotate(modelMat4, perspective * rotateXYZ[2], glm::vec3(0, 0, 1)); // z轴。透视模式下需反转一下
     // scale
     modelMat4 = glm::scale(modelMat4, glm::vec3(scaleXYZ[0], scaleXYZ[1], scaleXYZ[2]));
 
@@ -228,7 +228,7 @@ void Shape::updateModelMat4() {
 //        viewMat4 = glm::rotate(viewMat4, -0.5f, glm::vec3(0, 0, 1));
 
         // 透视投影变换
-        glm::mat4 projectMat4 = glm::perspective(glm::radians(60.0f), 1.0f, 1.0f, 50.0f);
+        glm::mat4 projectMat4 = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 50.0f);
 
         modelMat4 = projectMat4 * viewMat4 * modelMat4; // 最先发生的变换矩阵，往后放
     }
