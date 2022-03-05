@@ -65,8 +65,8 @@ void Shape::drawWrapBox2D() {
     glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[2]); // red texture
     glBindVertexArray(0); // break previous binding
     // 如果只有一个物体，初始化时设置一次即可。如果是多个物体，每次绘制前要设置用哪个顶点数据。
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, wrapBox2DVertices);
-    glDrawArrays(GL_LINE_LOOP, 0, wrapBox2DVerticesSize/3);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, wrapBox2DVertices); // 需要w分量
+    glDrawArrays(GL_LINE_LOOP, 0, wrapBox2DVerticesSize/4);
 }
 
 void Shape::drawWrapBox3D() {
@@ -131,55 +131,60 @@ void Shape::initWrapBox(GLfloat minX, GLfloat minY, GLfloat minZ,
     // 2D包围框，不使用vao、vbo，直接用本地数据渲染
     glBindVertexArray(0); // break previous binding
     glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind previous binding
-    GLfloat wrapBox2DVertices_[] = {
-            minX, minY, 0.0f, // 左下
-            maxX, minY, 0.0f, // 右下
-            maxX, maxY, 0.0f, // 右上
-            minX, maxY, 0.0f  // 左上
+    GLfloat wrapBox2DVertices_[] = { // 需要w分量
+            minX, minY, 0.0f, 1.0f, // 左下
+            maxX, minY, 0.0f, 1.0f, // 右下
+            maxX, maxY, 0.0f, 1.0f, // 右上
+            minX, maxY, 0.0f, 1.0f  // 左上
     };
     memcpy(wrapBox2DVertices, wrapBox2DVertices_, sizeof(wrapBox2DVertices_));
     // 如果只有一个物体，初始化时设置一次即可。如果是多个物体，每次绘制前要设置用哪个顶点数据。
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, wrapBox2DVertices);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, wrapBox2DVertices);// 需要w分量
     glEnableVertexAttribArray(0); // 如果其他地方有关闭操作，则要在每次绘制前开启。
 }
 
 // 仅wrapBox2D在使用
 void Shape::updateWrapBoxTransform() {
-    GLfloat minX = 2.0f, minY = 2.0f, minZ = 2.0f, maxX = -2.0f, maxY = -2.0f, maxZ = -2.0f; // 2.0是为了超出OpenGL屏幕范围，只要大于1即可
-    GLfloat wrapBoxVerticesTmp[wrapBox3DVerticesSize];
+    GLfloat minX = 2.0f, minY = 2.0f, minZ = 2.0f, maxX = -2.0f, maxY = -2.0f, maxZ = -2.0f, w = 0.0f; // 2.0是为了超出OpenGL屏幕范围，只要大于1即可
+    glm::vec4 wrapBoxVerticesTmp(1.0f);
     for (int i = 0; i < wrapBox3DVerticesSize; i+=3) {
-        glm::vec4 wrapBoxVerticesTmpVec4(wrapBox3DVertices[i], wrapBox3DVertices[i+1], wrapBox3DVertices[i+2], 1.0f);
-        wrapBoxVerticesTmpVec4 = modelMat4 * wrapBoxVerticesTmpVec4;
-        wrapBoxVerticesTmp[i] = wrapBoxVerticesTmpVec4[0];
-        wrapBoxVerticesTmp[i+1] = wrapBoxVerticesTmpVec4[1];
-        wrapBoxVerticesTmp[i+2] = wrapBoxVerticesTmpVec4[2];
+        wrapBoxVerticesTmp[0] = wrapBox3DVertices[i];
+        wrapBoxVerticesTmp[1] = wrapBox3DVertices[i+1];
+        wrapBoxVerticesTmp[2] = wrapBox3DVertices[i+2];
+        wrapBoxVerticesTmp[3] = 1;
+//        app_log("vec4 before--------------: %f, %f, %f, %f\n", wrapBoxVerticesTmp[0], wrapBoxVerticesTmp[1], wrapBoxVerticesTmp[2], wrapBoxVerticesTmp[3]);
+        wrapBoxVerticesTmp = modelMat4 * wrapBoxVerticesTmp;
+//        app_log("vec4 after---: %f, %f, %f, %f\n", wrapBoxVerticesTmp[0], wrapBoxVerticesTmp[1], wrapBoxVerticesTmp[2], wrapBoxVerticesTmp[3]);
 
-        if (wrapBoxVerticesTmp[i] < minX) {
-            minX = wrapBoxVerticesTmp[i];
+        if (wrapBoxVerticesTmp[0] < minX) {
+            minX = wrapBoxVerticesTmp[0];
         }
-        if (wrapBoxVerticesTmp[i] > maxX) {
-            maxX = wrapBoxVerticesTmp[i];
+        if (wrapBoxVerticesTmp[0] > maxX) {
+            maxX = wrapBoxVerticesTmp[0];
         }
-        if (wrapBoxVerticesTmp[i+1] < minY) {
-            minY = wrapBoxVerticesTmp[i+1];
+        if (wrapBoxVerticesTmp[1] < minY) {
+            minY = wrapBoxVerticesTmp[1];
         }
-        if (wrapBoxVerticesTmp[i+1] > maxY) {
-            maxY = wrapBoxVerticesTmp[i+1];
+        if (wrapBoxVerticesTmp[1] > maxY) {
+            maxY = wrapBoxVerticesTmp[1];
         }
-        if (wrapBoxVerticesTmp[i+2] < minZ) {
-            minZ = wrapBoxVerticesTmp[i+2];
+        if (wrapBoxVerticesTmp[2] < minZ) {
+            minZ = wrapBoxVerticesTmp[2];
         }
-        if (wrapBoxVerticesTmp[i+2] > maxZ) {
-            maxZ = wrapBoxVerticesTmp[i+2];
+        if (wrapBoxVerticesTmp[2] > maxZ) {
+            maxZ = wrapBoxVerticesTmp[2];
         }
+        w += wrapBoxVerticesTmp[3]; // w取平均值
     }
+    w = w / (wrapBox3DVerticesSize / 3.0f);
 
     GLfloat wrapBox2DVertices_[] = {
-            minX, minY, 0.0f, // 左下
-            maxX, minY, 0.0f, // 右下
-            maxX, maxY, 0.0f, // 右上
-            minX, maxY, 0.0f  // 左上
+            minX, minY, 0.0f, w, // 左下
+            maxX, minY, 0.0f, w, // 右下
+            maxX, maxY, 0.0f, w, // 右上
+            minX, maxY, 0.0f, w  // 左上
     };
+//    app_log("wrapBox2DVertices: minX: %f, minY: %f, minZ: %f, maxX: %f, maxY: %f, maxZ: %f, w: %f\n", minX, minY, minZ, maxX, maxY, maxZ, w);
     memcpy(wrapBox2DVertices, wrapBox2DVertices_, sizeof(wrapBox2DVertices_));
     updateBounds(minX, minY, maxX, maxY);
 }

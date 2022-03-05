@@ -69,8 +69,8 @@ private:
 
     GLuint vao[1];
     GLuint vbo[2];
-    const static GLint wrapBox3DVerticesSize = 24;
-    const static GLint wrapBox2DVerticesSize = 12;
+    const static GLint wrapBox3DVerticesSize = 24; // shader里计算，3分量即可
+    const static GLint wrapBox2DVerticesSize = 16; // 在cpu侧计算，需要w分量
     GLfloat wrapBox3DVertices[wrapBox3DVerticesSize] = {0};
     GLfloat wrapBox2DVertices[wrapBox2DVerticesSize] = {0};
 
