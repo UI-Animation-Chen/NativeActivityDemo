@@ -20,10 +20,10 @@ void printMat(const glm::mat4 &Mat0)
     app_log("\tvec4(%2.9f, %2.9f, %2.9f, %2.9f))\n\n", Mat0[3][0], Mat0[3][1], Mat0[3][2], Mat0[3][3]);
 }
 
-static int perspective = -1; // -1表示开启透视模式
+static bool perspective = true; // -1表示开启透视模式，1表示关闭
 
 void Shape::move(float offsetX, float offsetY, float offsetZ) {
-    if (perspective = -1) {
+    if (perspective) {
         this->_offsetX += offsetX*5; // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
         this->_offsetY += offsetY*5;
     } else {
@@ -145,7 +145,7 @@ void Shape::initWrapBox(GLfloat minX, GLfloat minY, GLfloat minZ,
 
 // 仅wrapBox2D在使用
 void Shape::updateWrapBoxTransform() {
-    GLfloat minX = 2.0f, minY = 2.0f, minZ = 2.0f, maxX = -2.0f, maxY = -2.0f, maxZ = -2.0f, w = 0.0f; // 2.0是为了超出OpenGL屏幕范围，只要大于1即可
+    GLfloat minX = 0.0f, minY = 0.0f, minZ = 0.0f, maxX = 0.0f, maxY = 0.0f, maxZ = 0.0f, w = 0.0f;
     glm::vec4 wrapBoxVerticesTmp(1.0f);
     for (int i = 0; i < wrapBox3DVerticesSize; i+=3) {
         wrapBoxVerticesTmp[0] = wrapBox3DVertices[i];
@@ -156,23 +156,29 @@ void Shape::updateWrapBoxTransform() {
         wrapBoxVerticesTmp = modelMat4 * wrapBoxVerticesTmp;
 //        app_log("vec4 after---: %f, %f, %f, %f\n", wrapBoxVerticesTmp[0], wrapBoxVerticesTmp[1], wrapBoxVerticesTmp[2], wrapBoxVerticesTmp[3]);
 
-        if (wrapBoxVerticesTmp[0] < minX) {
-            minX = wrapBoxVerticesTmp[0];
-        }
-        if (wrapBoxVerticesTmp[0] > maxX) {
-            maxX = wrapBoxVerticesTmp[0];
-        }
-        if (wrapBoxVerticesTmp[1] < minY) {
-            minY = wrapBoxVerticesTmp[1];
-        }
-        if (wrapBoxVerticesTmp[1] > maxY) {
-            maxY = wrapBoxVerticesTmp[1];
-        }
-        if (wrapBoxVerticesTmp[2] < minZ) {
-            minZ = wrapBoxVerticesTmp[2];
-        }
-        if (wrapBoxVerticesTmp[2] > maxZ) {
-            maxZ = wrapBoxVerticesTmp[2];
+        if (i == 0) { // 首次先全部赋值，要在本次循环中的所有值中取出min和max
+            minX = maxX = wrapBoxVerticesTmp[0];
+            minY = maxY = wrapBoxVerticesTmp[1];
+            minZ = maxZ = wrapBoxVerticesTmp[2];
+        } else {
+            if (wrapBoxVerticesTmp[0] < minX) {
+                minX = wrapBoxVerticesTmp[0];
+            }
+            if (wrapBoxVerticesTmp[0] > maxX) {
+                maxX = wrapBoxVerticesTmp[0];
+            }
+            if (wrapBoxVerticesTmp[1] < minY) {
+                minY = wrapBoxVerticesTmp[1];
+            }
+            if (wrapBoxVerticesTmp[1] > maxY) {
+                maxY = wrapBoxVerticesTmp[1];
+            }
+            if (wrapBoxVerticesTmp[2] < minZ) {
+                minZ = wrapBoxVerticesTmp[2];
+            }
+            if (wrapBoxVerticesTmp[2] > maxZ) {
+                maxZ = wrapBoxVerticesTmp[2];
+            }
         }
         w += wrapBoxVerticesTmp[3]; // w取平均值
     }
@@ -207,29 +213,37 @@ const GLfloat *Shape::getScale() {
  * 2、glm::vec4是列向量，应当左边乘以矩阵。但是当右边乘以矩阵时，也能看做行向量。
  * 3、glm::mat4.length() 返回矩阵的列数，glm::mat4[i][j]返回的是第i列第j行的元素。
  * 4、glm::mat3x4表示3列4行的矩阵。注意不是3行4列！
+ *
+ * 关于坐标系：
+ * normalized device coordinates are in a left-handed coordinate system, while by convention,
+ * when we use a projection matrix, we work in a right-handed coordinate system.
+ * x向右，y向上，left-handed的z向屏幕里，right-handed的z向外。
  */
 void Shape::updateModelMat4() {
     // model变换
     modelMat4 = glm::mat4(1);
-    // translate。透视模式下x需反转一下
-    modelMat4 = glm::translate(modelMat4, glm::vec3(perspective * translateXYZ[0], translateXYZ[1], translateXYZ[2]));
+    // translate
+    modelMat4 = glm::translate(modelMat4, glm::vec3(translateXYZ[0], translateXYZ[1], translateXYZ[2]));
     // rotate 注意：x，y，z的先后顺序不同，旋转的效果不同
     modelMat4 = glm::rotate(modelMat4, rotateXYZ[0], glm::vec3(1, 0, 0)); // x轴
-    modelMat4 = glm::rotate(modelMat4, perspective *rotateXYZ[1], glm::vec3(0, 1, 0)); // y轴。透视模式下需反转一下
-    modelMat4 = glm::rotate(modelMat4, perspective * rotateXYZ[2], glm::vec3(0, 0, 1)); // z轴。透视模式下需反转一下
+    modelMat4 = glm::rotate(modelMat4, rotateXYZ[1], glm::vec3(0, 1, 0)); // y轴
+    modelMat4 = glm::rotate(modelMat4, rotateXYZ[2], glm::vec3(0, 0, 1)); // z轴
     // scale
     modelMat4 = glm::scale(modelMat4, glm::vec3(scaleXYZ[0], scaleXYZ[1], scaleXYZ[2]));
 
-    if (perspective == -1) {
-        // view变换
-        glm::mat4 viewMat4 = glm::lookAt(glm::vec3(0, 3, -10), glm::vec3(0), glm::vec3(0, 1, 0));
-//        viewMat4 = glm::translate(viewMat4, glm::vec3(-0.3, 0, 0));
-//        viewMat4 = glm::rotate(viewMat4, glm::radians(30.0f), glm::vec3(1, 0, 0)); // 绕y和z轴都是对的，x轴是反的
-//        viewMat4 = glm::rotate(viewMat4, -0.5f, glm::vec3(0, 0, 1));
-
-        // 透视投影变换
-        glm::mat4 projectMat4 = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 50.0f);
-
-        modelMat4 = projectMat4 * viewMat4 * modelMat4; // 最先发生的变换矩阵，往后放
+    if (!perspective) {
+        return;
     }
+
+    // view变换
+    glm::mat4 viewMat4 = glm::lookAt(glm::vec3(0, 0, -10), glm::vec3(0), glm::vec3(0, 1, 0));
+    viewMat4 = glm::scale(viewMat4, glm::vec3(-1, 1, 1)); // lookAt返回的矩阵，需要x取反一下效果才是对的
+    // 对viewMat4的平移、旋转操作，相当于left-handed，即z正向屏幕里的坐标系，直接操作model的结果。而不是操作的camera。
+//    viewMat4 = glm::translate(viewMat4, glm::vec3(2, 0, 0));
+//    viewMat4 = glm::rotate(viewMat4, glm::radians(30.0f), glm::vec3(0, 0, 1));
+
+    // 透视投影变换
+    glm::mat4 projectMat4 = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 50.0f);
+
+    modelMat4 = projectMat4 * viewMat4 * modelMat4; // 最先发生的变换矩阵，往后放
 }

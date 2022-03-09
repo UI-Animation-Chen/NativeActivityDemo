@@ -21,7 +21,7 @@ Triangles::Triangles(): Shape() {
              0.0f,   0.75f, -0.2f,
             -0.25f,  0.0f,   0.2f,
              0.0f,  -0.75f,  0.2f,
-             0.25f,  0.0f,   0.2f
+             0.5f,  0.0f,   0.2f
     };
     glBufferData(GL_ARRAY_BUFFER, sizeof(triangles), triangles, GL_STATIC_DRAW);
     // glVertexAttribPointer操作的是[当前绑定]到GL_ARRAY_BUFFER上的VBO
@@ -39,7 +39,7 @@ Triangles::Triangles(): Shape() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(1);
 
-    initWrapBox(-0.25f, -0.75f, -0.2f, 0.25f, 0.75f, 0.2f);
+    initWrapBox(-0.25f, -0.75f, -0.2f, 0.5f, 0.75f, 0.2f);
 }
 
 Triangles::~Triangles() {
