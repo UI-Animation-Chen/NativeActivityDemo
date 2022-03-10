@@ -71,38 +71,43 @@ GLubyte TextureUtils::pixelsRed[1 * 4] = {
         255, 0, 0, 255
 };
 
-GLuint TextureUtils::textureIds[3] = {0};
+GLuint TextureUtils::textureIds[2] = {0};
 
-GLuint TextureUtils::loadSimpleTexture(const char *pngFile) {
+void TextureUtils::loadSimpleTexture() {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     glActiveTexture(GL_TEXTURE0); // 激活纹理单元（texure unit），对应frag shader中的sampler2D变量。
 
-    glGenTextures(3, textureIds); // 生成纹理对象id
+    glGenTextures(2, textureIds); // 生成纹理对象id
 
-    glBindTexture(GL_TEXTURE_2D, textureIds[0]); // 对于一个纹理单元只能绑定同一种target类型：GL_TEXTURE_2D, GL_TEXTURE_3D等
+    glBindTexture(GL_TEXTURE_2D, textureIds[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelsGreen);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glBindTexture(GL_TEXTURE_2D, textureIds[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelsRed);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
+void TextureUtils::deleteSimpleTexture() {
+    glDeleteTextures(2, textureIds);
+}
+
+void TextureUtils::loadPNGTexture(const char *pngFile, GLuint *textureId) {
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    glActiveTexture(GL_TEXTURE0); // 激活纹理单元（texure unit），对应frag shader中的sampler2D变量。
+
+    glGenTextures(1, textureId); // 生成纹理对象id
+
+    glBindTexture(GL_TEXTURE_2D, *textureId); // 对于一个纹理单元只能绑定同一种target类型：GL_TEXTURE_2D, GL_TEXTURE_3D等
     uint32_t w, h;
     void *image;
     loadPng(&w, &h, &image, pngFile);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
     free(image);
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 3, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glBindTexture(GL_TEXTURE_2D, textureIds[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelsGreen);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glBindTexture(GL_TEXTURE_2D, textureIds[2]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelsRed);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    return textureIds[0];
-}
-
-void TextureUtils::deleteSimpleTexture() {
-    glDeleteTextures(3, textureIds);
 }

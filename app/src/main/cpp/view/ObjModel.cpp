@@ -13,13 +13,13 @@
 // 1、z forward，y up；这种方式导出后x坐标是反的，ObjHelper.cpp中进行了处理。在视图和透视矩阵加入后，x坐标就不反了。
 // 2、write normals, include uvs, triangulate faces，其他都不要选
 
-ObjModel::ObjModel(): Shape() {
+ObjModel::ObjModel(const char *assetObjName, const char *assetPngName): Shape() {
     // assets目录下，文件后缀是png才能读到，否则会报错: no such file or directory.
     // 原因是：assets目录下的文件会进行压缩，所以读不到。而png会被认为是压缩文件，不会再次压缩。
-    const char *assetName = "blenderObjs/tower.png";
-    int fd = AndroidAssetUtils::openFdFromAsset(assetName);
+//    const char *assetObjName = "blenderObjs/tower.png";
+    int fd = AndroidAssetUtils::openFdFromAsset(assetObjName);
     if (fd <= 0) {
-        app_log("openFdFromAsset \"%s\" failed: err: %s\n", assetName, strerror(errno));
+        app_log("openFdFromAsset \"%s\" failed: err: %s\n", assetObjName, strerror(errno));
         return;
     }
     FILE *file = fdopen(fd, "r");
@@ -30,6 +30,8 @@ ObjModel::ObjModel(): Shape() {
 //        app_log("file is NULL, err: %s\n", strerror(errno));
 //        return;
 //    }
+
+    TextureUtils::loadPNGTexture(assetPngName, &textureId);
 
     auto pObjData = new ObjHelper::ObjData();
     ObjHelper::readObjFile(file, pObjData);
@@ -113,6 +115,7 @@ ObjModel::ObjModel(): Shape() {
 ObjModel::~ObjModel() {
     glDeleteVertexArrays(1, vao);
     glDeleteBuffers(4, buffers);
+    glDeleteTextures(1, &textureId);
 }
 
 void ObjModel::draw() {
@@ -122,7 +125,7 @@ void ObjModel::draw() {
     glUniform1i(transformEnabledLocation, 1); // 开启shader中的transform
     modelColorFactorV4[3] = 1.0f;
     glUniform4fv(modelColorFactorLocation, 1, modelColorFactorV4);
-    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[0]); // img texture
+    glBindTexture(GL_TEXTURE_2D, textureId); // img texture
     glBindVertexArray(vao[0]);
     glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, 0);
 

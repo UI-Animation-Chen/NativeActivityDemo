@@ -139,10 +139,11 @@ int GLESEngine_init(ANativeWindow *window) {
 //        glViewport(0, 0, w, h); // default config set by opengl es engine
 //    }
     // 选取放大后的正方形
+    // 将中心定在偏下的1/3处
     if (w <= h) {
-        glViewport((w-h)/2, 0, h, h); // 指定左下角坐标和宽高
+        glViewport((w-h)/2-h/6, -h*2/6, h*8/6, h*8/6); // 指定左下角坐标和宽高
     } else {
-        glViewport(0, (h-w)/2, w, w);
+        glViewport(-w/6, (h-w)/2-w*2/6, w*8/6, w*8/6);
     }
 
     return 0;

@@ -43,6 +43,12 @@ public:
 
     virtual void scale(float x, float y, float z);
 
+    virtual void worldMove(float offsetX, float offsetY, float offsetZ);
+
+    virtual void worldRotate(float xRadian, float yRadian, float zRadian);
+
+    virtual void worldScale(float x, float y, float z);
+
     void initWrapBox(GLfloat minX, GLfloat minY, GLfloat minZ, GLfloat maxX, GLfloat maxY, GLfloat maxZ);
 
     void drawWrapBox2D();
@@ -76,9 +82,12 @@ private:
 
     float _offsetX = 0;
     float _offsetY = 0;
-    GLfloat translateXYZ[3] = {0};
-    GLfloat scaleXYZ[3] = {1.0f, 1.0f, 1.0f};
-    GLfloat rotateXYZ[3] = {0};
+    GLfloat translateXYZ[3] = {0}; // model
+    GLfloat scaleXYZ[3] = {1.0f, 1.0f, 1.0f}; // model
+    GLfloat rotateXYZ[3] = {0}; // model
+    GLfloat worldTranslateXYZ[3] = {0}; // world
+    GLfloat worldScaleXYZ[3] = {1.0f, 1.0f, 1.0f}; // world
+    GLfloat worldRotateXYZ[3] = {0}; // world
 
     glm::mat4 modelMat4 = glm::mat4(1);
     GLint transformMat4Location;

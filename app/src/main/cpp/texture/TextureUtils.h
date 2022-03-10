@@ -9,7 +9,8 @@
 
 class TextureUtils {
 public:
-    static GLuint loadSimpleTexture(const char *pngFile);
+    static void loadPNGTexture(const char *pngFile, GLuint *textureId);
+    static void loadSimpleTexture();
     static void deleteSimpleTexture();
     static GLuint textureIds[];
 private:

@@ -91,7 +91,7 @@ void Cube::draw() {
     glUniform1i(transformEnabledLocation, 1); // 开启shader中的transform
     modelColorFactorV4[3] = 1.0f;
     glUniform4fv(modelColorFactorLocation, 1, modelColorFactorV4);
-    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[0]); // img texture
+    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[0]); // green texture
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 30, GL_UNSIGNED_SHORT, 0);
 

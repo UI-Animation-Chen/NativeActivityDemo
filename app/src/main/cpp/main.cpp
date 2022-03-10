@@ -26,7 +26,7 @@
 static const float NS_2_S = 1.0f / 1000000000.0f; // 将纳秒转成秒
 static const float DEG_2_RADIAN = (float) M_PI / 180.0f;
 
-static const int shape_len = 2;
+static const int shape_len = 4;
 static Shape *pShape[shape_len] = {0};
 
 static TouchEventHandler *touchEventHandler = NULL;
@@ -128,7 +128,7 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 AndroidAssetUtils::init(app->activity->assetManager);
 
                 BaseShader::getSingletonProgram();
-                TextureUtils::loadSimpleTexture("tower.png");
+                TextureUtils::loadSimpleTexture(); // 加载一些纯色的纹理，当颜色用
 
                 // 深度测试的基准,注意1.0代表从近裁剪面到远裁剪面 这一段范围！！并不是指Z轴的1个单位
                 // 深度，是一个normalized的值，范围是 0-1(不是z轴坐标)，对应Z轴是从近裁剪面到远裁剪面
@@ -140,8 +140,17 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 // blend跟物体渲染顺序有关，需要后渲染半透明物体
 //                pShape[0] = new Cube();
 //                pShape[0] = new Triangles();
-                pShape[0] = new ObjModel();
-//                pShape[1] = new Cube();
+                pShape[0] = new ObjModel("blenderObjs/mountain.png", "mountain.png");
+                pShape[0]->move(0, -300, 20);
+                pShape[0]->scale(5, 0, 5);
+                pShape[1] = new ObjModel("blenderObjs/tower.png", "tower.png");
+                pShape[1]->move(-1500, 0, 30);
+                pShape[2] = new ObjModel("blenderObjs/moon.png", "moon.png");
+                pShape[2]->move(2500, 2000, 30);
+                pShape[3] = new ObjModel("blenderObjs/monkey.png", "brown.png");
+                pShape[3]->move(0, 100, 0);
+                pShape[3]->rotate(0, 3.14, 0);
+                pShape[3]->scale(-0.5, -0.5, -0.5);
                 for (int i = 0; i < shape_len; i++) {
                     if (pShape[i]) {
                         pShape[i]->draw();
@@ -245,24 +254,21 @@ void initTouchEventHandlerCallbacks() {
     });
     touchEventHandler->setOnTouchMove([](float deltaX, float deltaY, float currX, float currY,
                                          float currMillis, int fingers) {
-        float rotateXradian = 0; // 划过屏幕为一个PI
-        float rotateYradian = 0;
-        float transX = 0;
-        float transY = 0;
-        if (fingers == 1) {
-            float distance2radianFactor = M_PI / CoordinatesUtils::screenS; // 划过屏幕短边为一个PI，横竖一致，符合操作常理
-            rotateXradian = (float)(deltaY * distance2radianFactor);
-            rotateYradian = (float)(deltaX * distance2radianFactor);
-        } else {
-            transX = deltaX;
-            transY = deltaY;
-        }
-        for (int i = 0; i < shape_len; i++) {
+        float distance2radianFactor = M_PI / CoordinatesUtils::screenS; // 划过屏幕短边为一个PI，横竖一致，符合操作常理
+        float rotateXradian = (float)(deltaY * distance2radianFactor);
+        float rotateYradian = (float)(deltaX * distance2radianFactor);
+        float transX = deltaX;
+        float transY = deltaY;
+        for (int i = 0; i < shape_len-1; i++) {
             if (pShape[i]) {
                 if (fingers == 1) {
-                    pShape[i]->rotate(-rotateXradian, -rotateYradian, 0); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
+                    pShape[i]->worldMove(transX, 0, -transY);
                 } else {
-                    pShape[i]->move(transX, -transY, 0);
+                    if (abs(deltaX) > abs(deltaY)) {
+                        pShape[i]->worldRotate(0, -rotateYradian, 0); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
+                    } else {
+                        pShape[i]->worldMove(0, -transY, 0);
+                    }
                 }
             }
         }
@@ -275,10 +281,9 @@ void initTouchEventHandlerCallbacks() {
     touchEventHandler->setOnScale(
             [](float scaleX1, float scaleY1, float scaleDistance, float currMillis) {
                 float scale = scaleDistance / CoordinatesUtils::screenS;
-                for (int i = 0; i < shape_len; i++) {
+                for (int i = 0; i < shape_len-1; i++) {
                     if (pShape[i]) {
-                        pShape[i]->scale(scale, scale, scale);
-//                        pShape[i]->move(0, 0, -scale*10); // 放大手势为正值，加负号改为向z轴负方向
+//                        pShape[i]->worldScale(scale, scale, scale);
                     }
                 }
             });
@@ -286,7 +291,7 @@ void initTouchEventHandlerCallbacks() {
         float rotateZradian = rotateDeg * DEG_2_RADIAN;
         for (int i = 0; i < shape_len; i++) {
             if (pShape[i]) {
-                pShape[i]->rotate(0, 0, -rotateZradian); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
+//                pShape[i]->rotate(0, 0, -rotateZradian); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
             }
         }
     });
@@ -349,9 +354,9 @@ void android_main(struct android_app *app) {
                             float rotateXradian = event.data[0] * dT; // gyro返回的值单位是弧度/s
                             float rotateYradian = event.data[1] * dT;
                             float rotateZradian = event.data[2] * dT;
-                            for (int i = 0; i < shape_len; i++) {
+                            for (int i = 0; i < shape_len-1; i++) {
                                 if (pShape[i]) {
-                                    pShape[i]->rotate(rotateXradian, rotateYradian, -rotateZradian);
+                                    pShape[i]->worldRotate(rotateXradian, rotateYradian, -rotateZradian);
                                 }
                             }
                         }

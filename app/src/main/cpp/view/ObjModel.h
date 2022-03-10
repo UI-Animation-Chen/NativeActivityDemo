@@ -11,10 +11,11 @@ class ObjModel: public Shape {
 private:
     GLuint vao[1] = {0}; // vertex array object
     GLuint buffers[4] = {0}; // vertex buffer object
+    GLuint textureId;
     GLuint indexCount = 0;
 
 public:
-    ObjModel();
+    ObjModel(const char *assetObjName, const char *assetPngName);
     virtual ~ObjModel();
     virtual void draw();
 };

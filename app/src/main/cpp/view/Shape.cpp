@@ -20,19 +20,25 @@ void printMat(const glm::mat4 &Mat0)
     app_log("\tvec4(%2.9f, %2.9f, %2.9f, %2.9f))\n\n", Mat0[3][0], Mat0[3][1], Mat0[3][2], Mat0[3][3]);
 }
 
-static bool perspective = true; // -1表示开启透视模式，1表示关闭
-
 void Shape::move(float offsetX, float offsetY, float offsetZ) {
-    if (perspective) {
-        this->_offsetX += offsetX*5; // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
-        this->_offsetY += offsetY*5;
-    } else {
-        this->_offsetX += offsetX;
-        this->_offsetY += offsetY;
-    }
+    this->_offsetX += offsetX*5; // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
+    this->_offsetY += offsetY*5;
     translateXYZ[0] = CoordinatesUtils::android2gles_distance(this->_offsetX);
     translateXYZ[1] = CoordinatesUtils::android2gles_distance(this->_offsetY);
     translateXYZ[2] += offsetZ;
+    updateModelMat4();
+    updateWrapBoxTransform();
+}
+
+void Shape::worldMove(float offsetX, float offsetY, float offsetZ) {
+    offsetX *= 5; // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
+    offsetZ *= 5; // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
+    // 这里worldRotateXYZ[1]的正负号是试出来的，跟viewMat4的rotate里的worldRotateXYZ[1]的正负号配合使用。
+    GLfloat transZ = offsetZ * cos(-worldRotateXYZ[1]) + offsetX * sin(worldRotateXYZ[1]);
+    GLfloat transX = offsetZ * sin(-worldRotateXYZ[1]) + offsetX * cos(worldRotateXYZ[1]);
+    worldTranslateXYZ[0] += CoordinatesUtils::android2gles_distance(transX);
+    worldTranslateXYZ[1] += CoordinatesUtils::android2gles_distance(offsetY*5);
+    worldTranslateXYZ[2] += CoordinatesUtils::android2gles_distance(transZ);
     updateModelMat4();
     updateWrapBoxTransform();
 }
@@ -45,10 +51,26 @@ void Shape::rotate(float xRadian, float yRadian, float zRadian) {
     updateWrapBoxTransform();
 }
 
+void Shape::worldRotate(float xRadian, float yRadian, float zRadian) {
+    worldRotateXYZ[0] += xRadian;
+    worldRotateXYZ[1] += yRadian;
+    worldRotateXYZ[2] += zRadian;
+    updateModelMat4();
+    updateWrapBoxTransform();
+}
+
 void Shape::scale(float x, float y, float z) {
     scaleXYZ[0] += x;
     scaleXYZ[1] += y;
     scaleXYZ[2] += z;
+    updateModelMat4();
+    updateWrapBoxTransform();
+}
+
+void Shape::worldScale(float x, float y, float z) {
+    worldScaleXYZ[0] += x;
+    worldScaleXYZ[1] += y;
+    worldScaleXYZ[2] += z;
     updateModelMat4();
     updateWrapBoxTransform();
 }
@@ -62,7 +84,7 @@ void Shape::drawWrapBox2D() {
     glUniform4fv(modelColorFactorLocation, 1, modelColorFactorV4);
     glUniform1i(transformEnabledLocation, 0); // 关闭shader中的transform
     glLineWidth(5.0f);
-    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[2]); // red texture
+    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[1]); // red texture
     glBindVertexArray(0); // break previous binding
     // 如果只有一个物体，初始化时设置一次即可。如果是多个物体，每次绘制前要设置用哪个顶点数据。
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, wrapBox2DVertices); // 需要w分量
@@ -74,7 +96,7 @@ void Shape::drawWrapBox3D() {
     glUniform4fv(modelColorFactorLocation, 1, modelColorFactorV4);
     glUniform1i(transformEnabledLocation, 1); // 开启shader中的transform
     glLineWidth(5.0f);
-    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[1]); // green texture
+    glBindTexture(GL_TEXTURE_2D, TextureUtils::textureIds[0]); // green texture
     glBindVertexArray(vao[0]);
     glDrawElements(GL_LINE_STRIP, 16, GL_UNSIGNED_SHORT, 0);
 //    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
@@ -220,7 +242,7 @@ const GLfloat *Shape::getScale() {
  * x向右，y向上，left-handed的z向屏幕里，right-handed的z向外。
  */
 void Shape::updateModelMat4() {
-    // model变换
+    // model自身变换
     modelMat4 = glm::mat4(1);
     // translate
     modelMat4 = glm::translate(modelMat4, glm::vec3(translateXYZ[0], translateXYZ[1], translateXYZ[2]));
@@ -231,19 +253,18 @@ void Shape::updateModelMat4() {
     // scale
     modelMat4 = glm::scale(modelMat4, glm::vec3(scaleXYZ[0], scaleXYZ[1], scaleXYZ[2]));
 
-    if (!perspective) {
-        return;
-    }
-
     // view变换
-    glm::mat4 viewMat4 = glm::lookAt(glm::vec3(0, 0, -10), glm::vec3(0), glm::vec3(0, 1, 0));
+    glm::mat4 viewMat4 = glm::lookAt(glm::vec3(0, 3, -10), glm::vec3(0), glm::vec3(0, 1, 0));
     viewMat4 = glm::scale(viewMat4, glm::vec3(-1, 1, 1)); // lookAt返回的矩阵，需要x取反一下效果才是对的
     // 对viewMat4的平移、旋转操作，相当于left-handed，即z正向屏幕里的坐标系，直接操作model的结果。而不是操作的camera。
-//    viewMat4 = glm::translate(viewMat4, glm::vec3(2, 0, 0));
-//    viewMat4 = glm::rotate(viewMat4, glm::radians(30.0f), glm::vec3(0, 0, 1));
+    viewMat4 = glm::scale(viewMat4, glm::vec3(worldScaleXYZ[0], worldScaleXYZ[1], worldScaleXYZ[2]));
+    viewMat4 = glm::rotate(viewMat4, worldRotateXYZ[0], glm::vec3(1, 0, 0));
+    viewMat4 = glm::rotate(viewMat4, worldRotateXYZ[1], glm::vec3(0, 1, 0)); // 这里用负值时，worldMove里的cos和sin就得用正值，两者相反
+    viewMat4 = glm::rotate(viewMat4, worldRotateXYZ[2], glm::vec3(0, 0, 1));
+    viewMat4 = glm::translate(viewMat4, glm::vec3(-worldTranslateXYZ[0], -worldTranslateXYZ[1], -worldTranslateXYZ[2]));
 
     // 透视投影变换
-    glm::mat4 projectMat4 = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 50.0f);
+    glm::mat4 projectMat4 = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 100.0f);
 
     modelMat4 = projectMat4 * viewMat4 * modelMat4; // 最先发生的变换矩阵，往后放
 }
