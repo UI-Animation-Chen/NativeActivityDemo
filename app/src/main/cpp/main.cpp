@@ -12,6 +12,7 @@
 #include <android/sensor.h>
 #include <android_native_app_glue.h>
 #include <GLES3/gl32.h>
+#include <vector>
 
 #include "app_log.h"
 #include "gles/GLESEngine.h"
@@ -26,8 +27,7 @@
 static const float NS_2_S = 1.0f / 1000000000.0f; // 将纳秒转成秒
 static const float DEG_2_RADIAN = (float) M_PI / 180.0f;
 
-static const int shape_len = 4;
-static Shape *pShape[shape_len] = {0};
+static std::vector<Shape *> pShape;
 
 static TouchEventHandler *touchEventHandler = NULL;
 
@@ -140,18 +140,27 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 // blend跟物体渲染顺序有关，需要后渲染半透明物体
 //                pShape[0] = new Cube();
 //                pShape[0] = new Triangles();
-                pShape[0] = new ObjModel("blenderObjs/mountain.png", "mountain.png");
-                pShape[0]->move(0, -300, 20);
-                pShape[0]->scale(5, 0, 5);
-                pShape[1] = new ObjModel("blenderObjs/tower.png", "tower.png");
-                pShape[1]->move(-1500, 0, 30);
-                pShape[2] = new ObjModel("blenderObjs/moon.png", "moon.png");
-                pShape[2]->move(2500, 2000, 30);
-                pShape[3] = new ObjModel("blenderObjs/monkey.png", "brown.png");
-                pShape[3]->move(0, 100, 0);
-                pShape[3]->rotate(0, 3.14, 0);
-                pShape[3]->scale(-0.5, -0.5, -0.5);
-                for (int i = 0; i < shape_len; i++) {
+                auto mountain = new ObjModel("blenderObjs/mountain.png", "mountain.png");
+                mountain->move(0, -300, 20);
+                mountain->scale(5, 0, 5);
+                pShape.push_back(mountain);
+                auto tower = new ObjModel("blenderObjs/tower.png", "tower.png");
+                tower->move(-1500, 0, 30);
+                pShape.push_back(tower);
+                auto moodhouse = new ObjModel("blenderObjs/moodhouse.png", "moodhouse.png");
+                moodhouse->move(800, 0, 30);
+                moodhouse->rotate(0, 0.5, 0);
+                moodhouse->scale(-0.8, -0.8, -0.8);
+                pShape.push_back(moodhouse);
+                auto moon = new ObjModel("blenderObjs/moon.png", "moon.png");
+                moon->move(2500, 2000, 30);
+                pShape.push_back(moon);
+                auto monkey = new ObjModel("blenderObjs/monkey.png", "brown.png");
+                monkey->move(0, 100, 0);
+                monkey->rotate(0, 3.14, 0);
+                monkey->scale(-0.5, -0.5, -0.5);
+                pShape.push_back(monkey);
+                for (int i = 0; i < pShape.size(); i++) {
                     if (pShape[i]) {
                         pShape[i]->draw();
                     }
@@ -165,11 +174,13 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         case APP_CMD_TERM_WINDOW:
             // The window is being hidden or closed, clean it up.
             app_log("cmd -- destroy window\n");
-            for (int i = 0; i < shape_len; i++) {
+            for (int i = 0; i < pShape.size(); i++) {
                 if (pShape[i]) {
                     delete pShape[i];
                 }
             }
+            pShape.clear();
+
             BaseShader::deleteSingletonProgram();
             TextureUtils::deleteSimpleTexture();
             GLESEngine_destroy();
@@ -259,7 +270,7 @@ void initTouchEventHandlerCallbacks() {
         float rotateYradian = (float)(deltaX * distance2radianFactor);
         float transX = deltaX;
         float transY = deltaY;
-        for (int i = 0; i < shape_len-1; i++) {
+        for (int i = 0; i < pShape.size()-1; i++) {
             if (pShape[i]) {
                 if (fingers == 1) {
                     pShape[i]->worldMove(transX, 0, -transY);
@@ -281,7 +292,7 @@ void initTouchEventHandlerCallbacks() {
     touchEventHandler->setOnScale(
             [](float scaleX1, float scaleY1, float scaleDistance, float currMillis) {
                 float scale = scaleDistance / CoordinatesUtils::screenS;
-                for (int i = 0; i < shape_len-1; i++) {
+                for (int i = 0; i < pShape.size()-1; i++) {
                     if (pShape[i]) {
 //                        pShape[i]->worldScale(scale, scale, scale);
                     }
@@ -289,7 +300,7 @@ void initTouchEventHandlerCallbacks() {
             });
     touchEventHandler->setOnRotate([](float rotateDeg, float currMillis) {
         float rotateZradian = rotateDeg * DEG_2_RADIAN;
-        for (int i = 0; i < shape_len; i++) {
+        for (int i = 0; i < pShape.size(); i++) {
             if (pShape[i]) {
 //                pShape[i]->rotate(0, 0, -rotateZradian); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
             }
@@ -354,7 +365,7 @@ void android_main(struct android_app *app) {
                             float rotateXradian = event.data[0] * dT; // gyro返回的值单位是弧度/s
                             float rotateYradian = event.data[1] * dT;
                             float rotateZradian = event.data[2] * dT;
-                            for (int i = 0; i < shape_len-1; i++) {
+                            for (int i = 0; i < pShape.size()-1; i++) {
                                 if (pShape[i]) {
                                     pShape[i]->worldRotate(rotateXradian, rotateYradian, -rotateZradian);
                                 }
@@ -378,7 +389,7 @@ void android_main(struct android_app *app) {
                 glClearDepthf(1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                for (int i = 0; i < shape_len; i++) {
+                for (int i = 0; i < pShape.size(); i++) {
                     if (pShape[i]) {
                         pShape[i]->draw();
                     }
