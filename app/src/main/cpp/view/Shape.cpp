@@ -20,7 +20,7 @@ void printMat(const glm::mat4 &Mat0)
     app_log("\tvec4(%2.9f, %2.9f, %2.9f, %2.9f))\n\n", Mat0[3][0], Mat0[3][1], Mat0[3][2], Mat0[3][3]);
 }
 
-void Shape::move(float offsetX, float offsetY, float offsetZ) {
+void Shape::moveBy(float offsetX, float offsetY, float offsetZ) {
     this->_offsetX += offsetX*5; // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
     this->_offsetY += offsetY*5;
     translateXYZ[0] = CoordinatesUtils::android2gles_distance(this->_offsetX);
@@ -30,7 +30,7 @@ void Shape::move(float offsetX, float offsetY, float offsetZ) {
     updateWrapBoxTransform();
 }
 
-void Shape::worldMove(float offsetX, float offsetY, float offsetZ) {
+void Shape::worldMoveBy(float offsetX, float offsetY, float offsetZ) {
     offsetX *= 5; // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
     offsetZ *= 5; // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
     // 这里worldRotateXYZ[1]的正负号是试出来的，跟viewMat4的rotate里的worldRotateXYZ[1]的正负号配合使用。
@@ -43,7 +43,7 @@ void Shape::worldMove(float offsetX, float offsetY, float offsetZ) {
     updateWrapBoxTransform();
 }
 
-void Shape::rotate(float xRadian, float yRadian, float zRadian) {
+void Shape::rotateBy(float xRadian, float yRadian, float zRadian) {
     rotateXYZ[0] += xRadian;
     rotateXYZ[1] += yRadian;
     rotateXYZ[2] += zRadian;
@@ -51,7 +51,7 @@ void Shape::rotate(float xRadian, float yRadian, float zRadian) {
     updateWrapBoxTransform();
 }
 
-void Shape::worldRotate(float xRadian, float yRadian, float zRadian) {
+void Shape::worldRotateBy(float xRadian, float yRadian, float zRadian) {
     worldRotateXYZ[0] += xRadian;
     worldRotateXYZ[1] += yRadian;
     worldRotateXYZ[2] += zRadian;
@@ -59,7 +59,7 @@ void Shape::worldRotate(float xRadian, float yRadian, float zRadian) {
     updateWrapBoxTransform();
 }
 
-void Shape::scale(float x, float y, float z) {
+void Shape::scaleBy(float x, float y, float z) {
     scaleXYZ[0] += x;
     scaleXYZ[1] += y;
     scaleXYZ[2] += z;
@@ -67,7 +67,7 @@ void Shape::scale(float x, float y, float z) {
     updateWrapBoxTransform();
 }
 
-void Shape::worldScale(float x, float y, float z) {
+void Shape::worldScaleBy(float x, float y, float z) {
     worldScaleXYZ[0] += x;
     worldScaleXYZ[1] += y;
     worldScaleXYZ[2] += z;

@@ -103,7 +103,7 @@ ObjModel::ObjModel(const char *assetObjName, const char *assetPngName): Shape() 
     initWrapBox(minX, minY, minZ, maxX, maxY, maxZ);
 
 //    float scaleDown = (maxY - minY)/2 - 1; // 窗口的归一化宽高是2
-//    scale(-scaleDown, -scaleDown, -scaleDown);
+//    scaleBy(-scaleDown, -scaleDown, -scaleDown);
 
     delete pObjData;
 

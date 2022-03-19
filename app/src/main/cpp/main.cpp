@@ -141,24 +141,24 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
 //                pShape[0] = new Cube();
 //                pShape[0] = new Triangles();
                 auto mountain = new ObjModel("blenderObjs/mountain.png", "mountain.png");
-                mountain->move(0, -300, 20);
-                mountain->scale(5, 0, 5);
+                mountain->moveBy(0, -300, 20);
+                mountain->scaleBy(5, 0, 5);
                 pShape.push_back(mountain);
                 auto tower = new ObjModel("blenderObjs/tower.png", "tower.png");
-                tower->move(-1500, 0, 30);
+                tower->moveBy(-1500, 0, 30);
                 pShape.push_back(tower);
                 auto moodhouse = new ObjModel("blenderObjs/moodhouse.png", "moodhouse.png");
-                moodhouse->move(800, 0, 30);
-                moodhouse->rotate(0, 0.5, 0);
-                moodhouse->scale(-0.8, -0.8, -0.8);
+                moodhouse->moveBy(800, 0, 30);
+                moodhouse->rotateBy(0, 0.5, 0);
+                moodhouse->scaleBy(-0.8, -0.8, -0.8);
                 pShape.push_back(moodhouse);
                 auto moon = new ObjModel("blenderObjs/moon.png", "moon.png");
-                moon->move(2500, 2000, 30);
+                moon->moveBy(2500, 2000, 30);
                 pShape.push_back(moon);
                 auto monkey = new ObjModel("blenderObjs/monkey.png", "brown.png");
-                monkey->move(0, 100, 0);
-                monkey->rotate(0, 3.14, 0);
-                monkey->scale(-0.5, -0.5, -0.5);
+                monkey->moveBy(0, 100, 0);
+                monkey->rotateBy(0, 3.14, 0);
+                monkey->scaleBy(-0.5, -0.5, -0.5);
                 pShape.push_back(monkey);
                 for (int i = 0; i < pShape.size(); i++) {
                     if (pShape[i]) {
@@ -273,12 +273,12 @@ void initTouchEventHandlerCallbacks() {
         for (int i = 0; i < pShape.size()-1; i++) {
             if (pShape[i]) {
                 if (fingers == 1) {
-                    pShape[i]->worldMove(transX, 0, -transY);
+                    pShape[i]->worldMoveBy(transX, 0, -transY);
                 } else {
                     if (abs(deltaX) > abs(deltaY)) {
-                        pShape[i]->worldRotate(0, -rotateYradian, 0); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
+                        pShape[i]->worldRotateBy(0, -rotateYradian, 0); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
                     } else {
-                        pShape[i]->worldMove(0, -transY, 0);
+                        pShape[i]->worldMoveBy(0, -transY, 0);
                     }
                 }
             }
@@ -294,7 +294,7 @@ void initTouchEventHandlerCallbacks() {
                 float scale = scaleDistance / CoordinatesUtils::screenS;
                 for (int i = 0; i < pShape.size()-1; i++) {
                     if (pShape[i]) {
-//                        pShape[i]->worldScale(scale, scale, scale);
+//                        pShape[i]->worldScaleBy(scale, scale, scale);
                     }
                 }
             });
@@ -302,7 +302,7 @@ void initTouchEventHandlerCallbacks() {
         float rotateZradian = rotateDeg * DEG_2_RADIAN;
         for (int i = 0; i < pShape.size(); i++) {
             if (pShape[i]) {
-//                pShape[i]->rotate(0, 0, -rotateZradian); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
+//                pShape[i]->rotateBy(0, 0, -rotateZradian); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
             }
         }
     });
@@ -367,7 +367,7 @@ void android_main(struct android_app *app) {
                             float rotateZradian = event.data[2] * dT;
                             for (int i = 0; i < pShape.size()-1; i++) {
                                 if (pShape[i]) {
-                                    pShape[i]->worldRotate(rotateXradian, rotateYradian, -rotateZradian);
+                                    pShape[i]->worldRotateBy(rotateXradian, rotateYradian, -rotateZradian);
                                 }
                             }
                         }

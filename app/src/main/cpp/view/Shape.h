@@ -37,17 +37,17 @@ public:
 
     virtual void draw();
 
-    virtual void move(float offsetX, float offsetY, float offsetZ);
+    virtual void moveBy(float offsetX, float offsetY, float offsetZ);
 
-    virtual void rotate(float xRadian, float yRadian, float zRadian);
+    virtual void rotateBy(float xRadian, float yRadian, float zRadian);
 
-    virtual void scale(float x, float y, float z);
+    virtual void scaleBy(float x, float y, float z);
 
-    virtual void worldMove(float offsetX, float offsetY, float offsetZ);
+    virtual void worldMoveBy(float offsetX, float offsetY, float offsetZ);
 
-    virtual void worldRotate(float xRadian, float yRadian, float zRadian);
+    virtual void worldRotateBy(float xRadian, float yRadian, float zRadian);
 
-    virtual void worldScale(float x, float y, float z);
+    virtual void worldScaleBy(float x, float y, float z);
 
     void initWrapBox(GLfloat minX, GLfloat minY, GLfloat minZ, GLfloat maxX, GLfloat maxY, GLfloat maxZ);
 
