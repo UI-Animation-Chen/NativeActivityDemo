@@ -30,6 +30,16 @@ void Shape::moveBy(float offsetX, float offsetY, float offsetZ) {
     updateWrapBoxTransform();
 }
 
+void Shape::moveXTo(float x) {
+
+}
+void Shape::moveYTo(float y) {
+
+}
+void Shape::moveZTo(float z) {
+
+}
+
 void Shape::worldMoveBy(float offsetX, float offsetY, float offsetZ) {
     offsetX *= 5; // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
     offsetZ *= 5; // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
@@ -43,10 +53,36 @@ void Shape::worldMoveBy(float offsetX, float offsetY, float offsetZ) {
     updateWrapBoxTransform();
 }
 
+void Shape::worldMoveXTo(float x) {
+
+}
+void Shape::worldMoveYTo(float y) {
+
+}
+void Shape::worldMoveZTo(float z) {
+
+}
+
 void Shape::rotateBy(float xRadian, float yRadian, float zRadian) {
     rotateXYZ[0] += xRadian;
     rotateXYZ[1] += yRadian;
     rotateXYZ[2] += zRadian;
+    updateModelMat4();
+    updateWrapBoxTransform();
+}
+
+void Shape::rotateXTo(float xRadian) {
+    rotateXYZ[0] = xRadian;
+    updateModelMat4();
+    updateWrapBoxTransform();
+}
+void Shape::rotateYTo(float yRadian) {
+    rotateXYZ[1] = yRadian;
+    updateModelMat4();
+    updateWrapBoxTransform();
+}
+void Shape::rotateZTo(float zRadian) {
+    rotateXYZ[2] = zRadian;
     updateModelMat4();
     updateWrapBoxTransform();
 }
@@ -59,6 +95,22 @@ void Shape::worldRotateBy(float xRadian, float yRadian, float zRadian) {
     updateWrapBoxTransform();
 }
 
+void Shape::worldRotateXTo(float xRadian) {
+    worldRotateXYZ[0] = xRadian;
+    updateModelMat4();
+    updateWrapBoxTransform();
+}
+void Shape::worldRotateYTo(float yRadian) {
+    worldRotateXYZ[1] = yRadian;
+    updateModelMat4();
+    updateWrapBoxTransform();
+}
+void Shape::worldRotateZTo(float zRadian) {
+    worldRotateXYZ[2] = zRadian;
+    updateModelMat4();
+    updateWrapBoxTransform();
+}
+
 void Shape::scaleBy(float x, float y, float z) {
     scaleXYZ[0] += x;
     scaleXYZ[1] += y;
@@ -67,10 +119,42 @@ void Shape::scaleBy(float x, float y, float z) {
     updateWrapBoxTransform();
 }
 
+void Shape::scaleXTo(float x) {
+    scaleXYZ[0] = x;
+    updateModelMat4();
+    updateWrapBoxTransform();
+}
+void Shape::scaleYTo(float y) {
+    scaleXYZ[1] = y;
+    updateModelMat4();
+    updateWrapBoxTransform();
+}
+void Shape::scaleZTo(float z) {
+    scaleXYZ[2] = z;
+    updateModelMat4();
+    updateWrapBoxTransform();
+}
+
 void Shape::worldScaleBy(float x, float y, float z) {
     worldScaleXYZ[0] += x;
     worldScaleXYZ[1] += y;
     worldScaleXYZ[2] += z;
+    updateModelMat4();
+    updateWrapBoxTransform();
+}
+
+void Shape::worldScaleXTo(float x) {
+    worldScaleXYZ[0] = x;
+    updateModelMat4();
+    updateWrapBoxTransform();
+}
+void Shape::worldScaleYTo(float y) {
+    worldScaleXYZ[1] = y;
+    updateModelMat4();
+    updateWrapBoxTransform();
+}
+void Shape::worldScaleZTo(float z) {
+    worldScaleXYZ[2] = z;
     updateModelMat4();
     updateWrapBoxTransform();
 }

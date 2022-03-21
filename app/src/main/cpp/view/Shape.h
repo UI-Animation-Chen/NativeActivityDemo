@@ -43,11 +43,35 @@ public:
 
     virtual void scaleBy(float x, float y, float z);
 
+    virtual void moveXTo(float offsetX);
+    virtual void moveYTo(float offsetY);
+    virtual void moveZTo(float offsetZ);
+
+    virtual void rotateXTo(float xRadian);
+    virtual void rotateYTo(float yRadian);
+    virtual void rotateZTo(float zRadian);
+
+    virtual void scaleXTo(float x);
+    virtual void scaleYTo(float y);
+    virtual void scaleZTo(float z);
+
     virtual void worldMoveBy(float offsetX, float offsetY, float offsetZ);
 
     virtual void worldRotateBy(float xRadian, float yRadian, float zRadian);
 
     virtual void worldScaleBy(float x, float y, float z);
+
+    virtual void worldMoveXTo(float offsetX);
+    virtual void worldMoveYTo(float offsetY);
+    virtual void worldMoveZTo(float offsetZ);
+
+    virtual void worldRotateXTo(float xRadian);
+    virtual void worldRotateYTo(float yRadian);
+    virtual void worldRotateZTo(float zRadian);
+
+    virtual void worldScaleXTo(float x);
+    virtual void worldScaleYTo(float y);
+    virtual void worldScaleZTo(float z);
 
     void initWrapBox(GLfloat minX, GLfloat minY, GLfloat minZ, GLfloat maxX, GLfloat maxY, GLfloat maxZ);
 

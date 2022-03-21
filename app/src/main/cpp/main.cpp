@@ -283,6 +283,10 @@ void initTouchEventHandlerCallbacks() {
                 }
             }
         }
+        if (fingers == 1) {
+            float directionYradian = atan2(deltaY, deltaX) - 1.57f;
+            pShape[pShape.size()-1]->rotateYTo(directionYradian);
+        }
     });
     touchEventHandler->setOnTouchCancel([](float cancelX, float cancelY, float cancelMillis) {
         app_log("cancel\n");
