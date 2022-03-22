@@ -11,7 +11,7 @@ class ObjModel: public Shape {
 private:
     GLuint vao[1] = {0}; // vertex array object
     GLuint buffers[4] = {0}; // vertex buffer object
-    GLuint textureId;
+    GLuint textureId = 0;
     GLuint indexCount = 0;
 
 public:

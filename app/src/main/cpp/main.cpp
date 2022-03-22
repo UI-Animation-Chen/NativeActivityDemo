@@ -23,6 +23,7 @@
 #include "utils/TouchEventHandler.h"
 #include "utils/AndroidAssetUtils.h"
 #include "view/ObjModel.h"
+#include "view/SkyBox.h"
 
 static const float NS_2_S = 1.0f / 1000000000.0f; // 将纳秒转成秒
 static const float DEG_2_RADIAN = (float) M_PI / 180.0f;
@@ -155,6 +156,9 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 auto moon = new ObjModel("blenderObjs/moon.png", "moon.png");
                 moon->moveBy(2500, 2000, 30);
                 pShape.push_back(moon);
+                auto skybox = new SkyBox();
+                skybox->scaleBy(50.0f, 50.0f, 50.0f);
+                pShape.push_back(skybox);
                 auto monkey = new ObjModel("blenderObjs/monkey.png", "brown.png");
                 monkey->moveBy(0, 100, 0);
                 monkey->rotateBy(0, 3.14, 0);
@@ -220,7 +224,6 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
  * for Android-N and before, when compiling with NDK-r15
  */
 #include <dlfcn.h>
-#include <EGL/egl.h>
 
 ASensorManager *AcquireASensorManagerInstance(struct android_app *app) {
     if (!app)
@@ -394,6 +397,9 @@ void android_main(struct android_app *app) {
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 for (int i = 0; i < pShape.size(); i++) {
+                    if (i == 3) {
+                        pShape[i]->rotateBy(0.0f, 1.0f/60.0f, 0.0f);
+                    }
                     if (pShape[i]) {
                         pShape[i]->draw();
                     }

@@ -157,7 +157,7 @@ void GLESEngine_refresh() {
         // No display.
         return;
     }
-    eglSwapBuffers(engine.display, engine.surface);
+    eglSwapBuffers(engine.display, engine.surface); // block until vSync is done.
 }
 
 /**

@@ -13,7 +13,7 @@ add_library(native-activity SHARED
 
     texture/TextureUtils.cpp
 
-    view/Triangles.cpp view/Cube.cpp view/Shape.cpp view/ObjModel.cpp
+    view/Triangles.cpp view/Cube.cpp view/Shape.cpp view/ObjModel.cpp view/SkyBox.cpp
 
     utils/AndroidAssetUtils.cpp
     utils/ObjHelper.cpp utils/TouchEventHandler.cpp
