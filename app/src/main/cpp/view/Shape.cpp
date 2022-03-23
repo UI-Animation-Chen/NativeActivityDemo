@@ -21,10 +21,8 @@ void printMat(const glm::mat4 &Mat0)
 }
 
 void Shape::moveBy(float offsetX, float offsetY, float offsetZ) {
-    this->_offsetX += offsetX*5; // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
-    this->_offsetY += offsetY*5;
-    translateXYZ[0] = CoordinatesUtils::android2gles_distance(this->_offsetX);
-    translateXYZ[1] = CoordinatesUtils::android2gles_distance(this->_offsetY);
+    translateXYZ[0] += offsetX;
+    translateXYZ[1] += offsetY;
     translateXYZ[2] += offsetZ;
     updateModelMat4();
     updateWrapBoxTransform();
@@ -41,14 +39,12 @@ void Shape::moveZTo(float z) {
 }
 
 void Shape::worldMoveBy(float offsetX, float offsetY, float offsetZ) {
-    offsetX *= 5; // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
-    offsetZ *= 5; // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
     // 这里worldRotateXYZ[1]的正负号是试出来的，跟viewMat4的rotate里的worldRotateXYZ[1]的正负号配合使用。
     GLfloat transZ = offsetZ * cos(-worldRotateXYZ[1]) + offsetX * sin(worldRotateXYZ[1]);
     GLfloat transX = offsetZ * sin(-worldRotateXYZ[1]) + offsetX * cos(worldRotateXYZ[1]);
-    worldTranslateXYZ[0] += CoordinatesUtils::android2gles_distance(transX);
-    worldTranslateXYZ[1] += CoordinatesUtils::android2gles_distance(offsetY*5);
-    worldTranslateXYZ[2] += CoordinatesUtils::android2gles_distance(transZ);
+    worldTranslateXYZ[0] += transX;
+    worldTranslateXYZ[1] += offsetY;
+    worldTranslateXYZ[2] += transZ;
     updateModelMat4();
     updateWrapBoxTransform();
 }
@@ -309,8 +305,28 @@ void Shape::updateBounds(GLfloat minX, GLfloat minY, GLfloat maxX, GLfloat maxY)
 //    app_log("bounds: l: %d, t: %d, r: %d, b: %d\n", bounds[0], bounds[1], bounds[2], bounds[3]);
 }
 
-const GLfloat *Shape::getScale() {
-    return scaleXYZ;
+void Shape::getScale(GLfloat *scaleXYZarr) {
+    if (scaleXYZarr) {
+        scaleXYZarr[0] = scaleXYZ[0] + worldScaleXYZ[0];
+        scaleXYZarr[1] = scaleXYZ[1] + worldScaleXYZ[1];
+        scaleXYZarr[2] = scaleXYZ[2] + worldScaleXYZ[2];
+    }
+}
+
+void Shape::getTranslate(GLfloat *translateXYZarr) {
+    if (translateXYZarr) {
+        translateXYZarr[0] = translateXYZ[0] + worldTranslateXYZ[0];
+        translateXYZarr[1] = translateXYZ[1] + worldTranslateXYZ[1];
+        translateXYZarr[2] = translateXYZ[2] + worldTranslateXYZ[2];
+    }
+}
+
+void Shape::getRotate(GLfloat *rotateXYZarr) {
+    if (rotateXYZarr) {
+        rotateXYZarr[0] = rotateXYZ[0] + worldRotateXYZ[0];
+        rotateXYZarr[1] = rotateXYZ[1] + worldRotateXYZ[1];
+        rotateXYZarr[2] = rotateXYZ[2] + worldRotateXYZ[2];
+    }
 }
 
 /**

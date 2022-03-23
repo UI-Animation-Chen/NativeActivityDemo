@@ -125,6 +125,7 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 CoordinatesUtils::screenH = context->height;
                 CoordinatesUtils::screenS = context->width > context->height ? context->height : context->width;
                 CoordinatesUtils::screenL = context->width > context->height ? context->width : context->height;
+                CoordinatesUtils::glesViewportSize = GLESEngine_get_viewport_size();
 
                 AndroidAssetUtils::init(app->activity->assetManager);
 
@@ -142,25 +143,25 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
 //                pShape[0] = new Cube();
 //                pShape[0] = new Triangles();
                 auto mountain = new ObjModel("blenderObjs/mountain.png", "mountain.png");
-                mountain->moveBy(0, -300, 20);
-                mountain->scaleBy(5, 0, 5);
+                mountain->moveBy(0, 0.156f, 0); // 模型的-y为-0.156
+                mountain->scaleBy(10, 0, 10);
                 pShape.push_back(mountain);
                 auto tower = new ObjModel("blenderObjs/tower.png", "tower.png");
-                tower->moveBy(-1500, 0, 30);
+                tower->moveBy(-10, 0.8f, 30);
                 pShape.push_back(tower);
                 auto moodhouse = new ObjModel("blenderObjs/moodhouse.png", "moodhouse.png");
-                moodhouse->moveBy(800, 0, 30);
+                moodhouse->moveBy(0, 0.8f, 30);
                 moodhouse->rotateBy(0, 0.5, 0);
                 moodhouse->scaleBy(-0.8, -0.8, -0.8);
                 pShape.push_back(moodhouse);
                 auto moon = new ObjModel("blenderObjs/moon.png", "moon.png");
-                moon->moveBy(2500, 2000, 30);
+                moon->moveBy(12, 12, 30);
                 pShape.push_back(moon);
                 auto skybox = new SkyBox();
-                skybox->scaleBy(50.0f, 50.0f, 50.0f);
+                skybox->scaleBy(40.0f, 40.0f, 40.0f);
                 pShape.push_back(skybox);
                 auto monkey = new ObjModel("blenderObjs/monkey.png", "brown.png");
-                monkey->moveBy(0, 100, 0);
+                monkey->moveBy(0, 0.49, 0); // 模型的-y为-0.98
                 monkey->rotateBy(0, 3.14, 0);
                 monkey->scaleBy(-0.5, -0.5, -0.5);
                 pShape.push_back(monkey);
@@ -271,17 +272,18 @@ void initTouchEventHandlerCallbacks() {
         float distance2radianFactor = M_PI / CoordinatesUtils::screenS; // 划过屏幕短边为一个PI，横竖一致，符合操作常理
         float rotateXradian = (float)(deltaY * distance2radianFactor);
         float rotateYradian = (float)(deltaX * distance2radianFactor);
-        float transX = deltaX;
-        float transY = deltaY;
+        float transX = CoordinatesUtils::android2gles_distance(deltaX);
+        float transY = CoordinatesUtils::android2gles_distance(deltaY);
         for (int i = 0; i < pShape.size()-1; i++) {
             if (pShape[i]) {
                 if (fingers == 1) {
-                    pShape[i]->worldMoveBy(transX, 0, -transY);
+                    // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
+                    pShape[i]->worldMoveBy(transX*5, 0, -transY*5);
                 } else {
                     if (abs(deltaX) > abs(deltaY)) {
                         pShape[i]->worldRotateBy(0, -rotateYradian, 0); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
                     } else {
-                        pShape[i]->worldMoveBy(0, -transY, 0);
+                        pShape[i]->worldMoveBy(0, -transY*5, 0);
                     }
                 }
             }
@@ -289,6 +291,10 @@ void initTouchEventHandlerCallbacks() {
         if (fingers == 1) {
             float directionYradian = atan2(deltaY, deltaX) - 1.57f;
             pShape[pShape.size()-1]->rotateYTo(directionYradian);
+
+            GLfloat transXYZ[3];
+            pShape[0]->getTranslate(transXYZ);
+            app_log("map location: x: %f, z: %f, y: %f\n", transXYZ[0], transXYZ[2], transXYZ[1]);
         }
     });
     touchEventHandler->setOnTouchCancel([](float cancelX, float cancelY, float cancelMillis) {
@@ -397,7 +403,7 @@ void android_main(struct android_app *app) {
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 for (int i = 0; i < pShape.size(); i++) {
-                    if (i == 3) {
+                    if (i == 3 && pShape[i]) { // moon
                         pShape[i]->rotateBy(0.0f, 1.0f/60.0f, 0.0f);
                     }
                     if (pShape[i]) {

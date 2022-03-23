@@ -78,7 +78,9 @@ public:
     void drawWrapBox2D();
     void drawWrapBox3D();
 
-    const GLfloat *getScale();
+    void getScale(GLfloat *scaleXYZarr);
+    void getTranslate(GLfloat *translateXYZarr);
+    void getRotate(GLfloat *rotateXYZarr);
 
     const int *getBounds();
 
@@ -104,8 +106,6 @@ private:
     GLfloat wrapBox3DVertices[wrapBox3DVerticesSize] = {0};
     GLfloat wrapBox2DVertices[wrapBox2DVerticesSize] = {0};
 
-    float _offsetX = 0;
-    float _offsetY = 0;
     GLfloat translateXYZ[3] = {0}; // model
     GLfloat scaleXYZ[3] = {1.0f, 1.0f, 1.0f}; // model
     GLfloat rotateXYZ[3] = {0}; // model

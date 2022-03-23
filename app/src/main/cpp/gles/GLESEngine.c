@@ -22,7 +22,8 @@ struct GLESEngine {
     EGLContext context;
     int32_t width;
     int32_t height;
-} engine = { EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_CONTEXT, 0, 0 };
+    int32_t viewportSize;
+} engine = { EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_CONTEXT, 0, 0, 0 };
 
 /**
  * Initialize an EGL context for the current display.
@@ -133,17 +134,29 @@ int GLESEngine_init(ANativeWindow *window) {
     // 选取缩小后的正方形
 //    if (w < h) {
 //        glViewport(0, (h - w)/2, w, w); // 指定左下角坐标和宽高
+//        engine.viewportSize = w;
 //    } else if (w > h) {
 //        glViewport((w - h)/2, 0, h, h);
+//        engine.viewportSize = h;
 //    } else {
 //        glViewport(0, 0, w, h); // default config set by opengl es engine
+//        engine.viewportSize = w;
 //    }
     // 选取放大后的正方形
-    // 将中心定在偏下的1/3处
+    // 将中心定在偏下的1/3处。高度增加了1/3，即变为之前的4/3。
+    // -----------------
+    // |    |     |    |
+    // |    |     |    |
+    // |    |  ^  |    |
+    // |    -------    |
+    // |               |
+    // -----------------
     if (w <= h) {
-        glViewport((w-h)/2-h/6, -h*2/6, h*8/6, h*8/6); // 指定左下角坐标和宽高
+        glViewport((w-h)/2-h/6, -h*1/3, h*4/3, h*4/3); // 指定左下角坐标和宽高
+        engine.viewportSize = h*4/3;
     } else {
-        glViewport(-w/6, (h-w)/2-w*2/6, w*8/6, w*8/6);
+        glViewport(-w/6, (h-w)/2-w*1/3, w*4/3, w*4/3);
+        engine.viewportSize = w*4/3;
     }
 
     return 0;
@@ -187,4 +200,8 @@ int32_t GLESEngine_get_width() {
 
 int32_t GLESEngine_get_height() {
     return engine.height;
+}
+
+int32_t GLESEngine_get_viewport_size() {
+    return engine.viewportSize;
 }

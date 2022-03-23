@@ -21,6 +21,8 @@ int32_t GLESEngine_get_width();
 
 int32_t GLESEngine_get_height();
 
+int32_t GLESEngine_get_viewport_size();
+
 #ifdef __cplusplus
 }
 #endif

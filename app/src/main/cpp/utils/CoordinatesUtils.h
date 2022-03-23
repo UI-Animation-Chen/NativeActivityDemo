@@ -31,10 +31,13 @@ public:
     static float gles2android_distance(float glesDistance);
     static float android2gles_distance(float androidDistance);
 
-    static float screenW;
-    static float screenH;
-    static float screenL;
-    static float screenS;
+    // 屏幕的尺寸，单位像素
+    static float screenW; // 屏幕宽
+    static float screenH; // 屏幕高
+    static float screenL; // 屏幕长边像素
+    static float screenS; // 屏幕短边像素
+    // OpenGL ES视口的像素数
+    static float glesViewportSize;
 };
 
 #endif //NATIVEACTIVITYDEMO_COORDINATESUTILS_H
