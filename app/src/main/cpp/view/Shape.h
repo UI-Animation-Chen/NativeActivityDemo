@@ -82,7 +82,7 @@ public:
     void getTranslate(GLfloat *translateXYZarr);
     void getRotate(GLfloat *rotateXYZarr);
 
-    const int *getBounds();
+    virtual GLfloat getMapHeight(GLfloat x, GLfloat z);
 
 protected: // 子类可以按需进行修改
     GLint transformEnabledLocation;

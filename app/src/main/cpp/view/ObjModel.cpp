@@ -92,6 +92,8 @@ ObjModel::ObjModel(const char *assetObjName, const char *assetPngName): Shape() 
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(2);
 
+    heightMap = std::move(pObjData->heightMap);
+
     // 包围盒
     GLfloat minX = pObjData->minVertex.at(0);
     GLfloat minY = pObjData->minVertex.at(1);
@@ -99,7 +101,7 @@ ObjModel::ObjModel(const char *assetObjName, const char *assetPngName): Shape() 
     GLfloat maxX = pObjData->maxVertex.at(0);
     GLfloat maxY = pObjData->maxVertex.at(1);
     GLfloat maxZ = pObjData->maxVertex.at(2);
-    app_log("min(x: %f, y: %f, z: %f), max(x: %f, y: %f, z: %f)\n", minX, minY, minZ, maxX, maxY, maxZ);
+    app_log("%s, min(x: %f, y: %f, z: %f), max(x: %f, y: %f, z: %f)\n", assetPngName, minX, minY, minZ, maxX, maxY, maxZ);
     initWrapBox(minX, minY, minZ, maxX, maxY, maxZ);
 
 //    float scaleDown = (maxY - minY)/2 - 1; // 窗口的归一化宽高是2
@@ -134,4 +136,13 @@ void ObjModel::draw() {
 
     // wrapBox2D
     drawWrapBox2D();
+}
+
+GLfloat ObjModel::getMapHeight(GLfloat x, GLfloat z) {
+    GLfloat fixedX = CoordinatesUtils::toFixedFloat(x, 0);
+    GLfloat fixedZ = CoordinatesUtils::toFixedFloat(z, 0);
+    if (heightMap.count(fixedX) != 0 && heightMap[fixedX].count(fixedZ) != 0) {
+        return heightMap[fixedX][fixedZ] + Shape::getMapHeight(fixedX, fixedZ);
+    }
+    return Shape::getMapHeight(fixedX, fixedZ);
 }

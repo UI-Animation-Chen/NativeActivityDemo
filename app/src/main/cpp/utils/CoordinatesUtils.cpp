@@ -3,6 +3,9 @@
 //
 
 #include "CoordinatesUtils.h"
+#include <cstdlib>
+#include <unistd.h>
+#include <cstring>
 
 // error: 'static' can only be specified inside the class definition
 // static float CoordinatesUtils::screenW = 1;
@@ -39,4 +42,16 @@ float CoordinatesUtils::gles2android_distance(float glesDistance) {
 
 float CoordinatesUtils::android2gles_distance(float androidDistance) {
     return androidDistance * 2 / glesViewportSize;
+}
+
+// fixedNum支持0-9
+float CoordinatesUtils::toFixedFloat(float origin, int fixedNum) {
+    char formatStr[4+1] = "%.xf";
+    char fixedNumChar = (char)(fixedNum + 48);
+    memcpy(formatStr+2, &fixedNumChar, 1);
+
+    char fixedFloatStr[10]; // 10 is enough
+    memset(fixedFloatStr, 0, sizeof(fixedFloatStr));
+    sprintf(fixedFloatStr, formatStr, origin);
+    return strtof(fixedFloatStr, nullptr);
 }

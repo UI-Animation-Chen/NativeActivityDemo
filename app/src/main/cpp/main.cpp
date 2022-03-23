@@ -274,11 +274,21 @@ void initTouchEventHandlerCallbacks() {
         float rotateYradian = (float)(deltaX * distance2radianFactor);
         float transX = CoordinatesUtils::android2gles_distance(deltaX);
         float transY = CoordinatesUtils::android2gles_distance(deltaY);
+        GLfloat height = 0;
         for (int i = 0; i < pShape.size()-1; i++) {
             if (pShape[i]) {
                 if (fingers == 1) {
                     // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
                     pShape[i]->worldMoveBy(transX*5, 0, -transY*5);
+
+                    if (height == 0) {
+                        GLfloat transXYZ[3];
+                        pShape[0]->getTranslate(transXYZ);
+                        app_log("map location: x: %f, z: %f, y: %f\n", transXYZ[0], transXYZ[2], transXYZ[1]);
+                        height = pShape[0]->getMapHeight(transXYZ[0]/11, transXYZ[2]/11); // 地图放大了11倍
+                        app_log("map height: %f\n", height);
+                    }
+                    pShape[i]->worldMoveYTo(height);
                 } else {
                     if (abs(deltaX) > abs(deltaY)) {
                         pShape[i]->worldRotateBy(0, -rotateYradian, 0); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
@@ -291,10 +301,6 @@ void initTouchEventHandlerCallbacks() {
         if (fingers == 1) {
             float directionYradian = atan2(deltaY, deltaX) - 1.57f;
             pShape[pShape.size()-1]->rotateYTo(directionYradian);
-
-            GLfloat transXYZ[3];
-            pShape[0]->getTranslate(transXYZ);
-            app_log("map location: x: %f, z: %f, y: %f\n", transXYZ[0], transXYZ[2], transXYZ[1]);
         }
     });
     touchEventHandler->setOnTouchCancel([](float cancelX, float cancelY, float cancelMillis) {

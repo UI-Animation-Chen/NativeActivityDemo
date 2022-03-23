@@ -23,6 +23,9 @@
 //
 class CoordinatesUtils {
 public:
+    // fixedNum支持0-9
+    static float toFixedFloat(float origin, int fixedNum);
+
     static float android2gles_x(float x);
     static float android2gles_y(float y);
     static float gles2android_x(float x);

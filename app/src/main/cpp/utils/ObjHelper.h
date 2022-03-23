@@ -7,6 +7,7 @@
 
 #include <cstdio>
 #include <vector>
+#include <map>
 #include <GLES3/gl32.h>
 
 class ObjHelper {
@@ -20,6 +21,8 @@ public:
         std::vector<GLfloat> normals; // 3个为一组
         std::vector<GLfloat> texCoords; // 2个为一组
         std::vector<std::vector<GLushort>> indeces; // v vt vn的索引
+
+        std::map<GLfloat, std::map<GLfloat, GLfloat>> heightMap;
         ObjData() {
             vertices.push_back(0); // obj文件中，索引是从1开始的，这里先存入索引0的无用数据。
             vertices.push_back(0);

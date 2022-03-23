@@ -53,7 +53,9 @@ void Shape::worldMoveXTo(float x) {
 
 }
 void Shape::worldMoveYTo(float y) {
-
+    worldTranslateXYZ[1] = y;
+    updateModelMat4();
+    updateWrapBoxTransform();
 }
 void Shape::worldMoveZTo(float z) {
 
@@ -297,38 +299,6 @@ void Shape::updateWrapBoxTransform() {
     updateBounds(minX, minY, maxX, maxY);
 }
 
-void Shape::updateBounds(GLfloat minX, GLfloat minY, GLfloat maxX, GLfloat maxY) {
-    bounds[0] = lround(CoordinatesUtils::gles2android_x(minX));
-    bounds[1] = lround(CoordinatesUtils::gles2android_y(maxY));
-    bounds[2] = lround(CoordinatesUtils::gles2android_x(maxX));
-    bounds[3] = lround(CoordinatesUtils::gles2android_y(minY));
-//    app_log("bounds: l: %d, t: %d, r: %d, b: %d\n", bounds[0], bounds[1], bounds[2], bounds[3]);
-}
-
-void Shape::getScale(GLfloat *scaleXYZarr) {
-    if (scaleXYZarr) {
-        scaleXYZarr[0] = scaleXYZ[0] + worldScaleXYZ[0];
-        scaleXYZarr[1] = scaleXYZ[1] + worldScaleXYZ[1];
-        scaleXYZarr[2] = scaleXYZ[2] + worldScaleXYZ[2];
-    }
-}
-
-void Shape::getTranslate(GLfloat *translateXYZarr) {
-    if (translateXYZarr) {
-        translateXYZarr[0] = translateXYZ[0] + worldTranslateXYZ[0];
-        translateXYZarr[1] = translateXYZ[1] + worldTranslateXYZ[1];
-        translateXYZarr[2] = translateXYZ[2] + worldTranslateXYZ[2];
-    }
-}
-
-void Shape::getRotate(GLfloat *rotateXYZarr) {
-    if (rotateXYZarr) {
-        rotateXYZarr[0] = rotateXYZ[0] + worldRotateXYZ[0];
-        rotateXYZarr[1] = rotateXYZ[1] + worldRotateXYZ[1];
-        rotateXYZarr[2] = rotateXYZ[2] + worldRotateXYZ[2];
-    }
-}
-
 /**
  * GLM是基于（GLSL）规范的图形软件的仅头文件C++数学库。该库可与OpenGL完美配合。
  * 1、glm::mat4在内存中存储是列优先的。
@@ -367,4 +337,40 @@ void Shape::updateModelMat4() {
     glm::mat4 projectMat4 = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 100.0f);
 
     modelMat4 = projectMat4 * viewMat4 * modelMat4; // 最先发生的变换矩阵，往后放
+}
+
+void Shape::updateBounds(GLfloat minX, GLfloat minY, GLfloat maxX, GLfloat maxY) {
+    bounds[0] = lround(CoordinatesUtils::gles2android_x(minX));
+    bounds[1] = lround(CoordinatesUtils::gles2android_y(maxY));
+    bounds[2] = lround(CoordinatesUtils::gles2android_x(maxX));
+    bounds[3] = lround(CoordinatesUtils::gles2android_y(minY));
+//    app_log("bounds: l: %d, t: %d, r: %d, b: %d\n", bounds[0], bounds[1], bounds[2], bounds[3]);
+}
+
+void Shape::getScale(GLfloat *scaleXYZarr) {
+    if (scaleXYZarr) {
+        scaleXYZarr[0] = scaleXYZ[0] + worldScaleXYZ[0];
+        scaleXYZarr[1] = scaleXYZ[1] + worldScaleXYZ[1];
+        scaleXYZarr[2] = scaleXYZ[2] + worldScaleXYZ[2];
+    }
+}
+
+void Shape::getTranslate(GLfloat *translateXYZarr) {
+    if (translateXYZarr) {
+        translateXYZarr[0] = translateXYZ[0] + worldTranslateXYZ[0];
+        translateXYZarr[1] = translateXYZ[1] + worldTranslateXYZ[1];
+        translateXYZarr[2] = translateXYZ[2] + worldTranslateXYZ[2];
+    }
+}
+
+void Shape::getRotate(GLfloat *rotateXYZarr) {
+    if (rotateXYZarr) {
+        rotateXYZarr[0] = rotateXYZ[0] + worldRotateXYZ[0];
+        rotateXYZarr[1] = rotateXYZ[1] + worldRotateXYZ[1];
+        rotateXYZarr[2] = rotateXYZ[2] + worldRotateXYZ[2];
+    }
+}
+
+GLfloat Shape::getMapHeight(GLfloat x, GLfloat z) {
+    return translateXYZ[1];
 }

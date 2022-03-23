@@ -49,6 +49,27 @@ static void readVertices(FILE *file, ObjHelper::ObjData *pObjData) {
     pObjData->vertices.push_back(z);
 
     findMinMaxVertex(-x, y, z, pObjData); // obj文件(导出设置z forward，y up)的x坐标是反的。
+
+    // 构建高度数据，用于地图使用。x和z采用小数点后0位的精度当一个区间
+    float fixedX = CoordinatesUtils::toFixedFloat(-x, 0);
+    float fixedZ = CoordinatesUtils::toFixedFloat(z, 0);
+    if (pObjData->heightMap.count(fixedX) == 0) { // 不存在该元素
+        std::map<GLfloat, GLfloat> z2y;
+        z2y[fixedZ] = y;
+        pObjData->heightMap[fixedX] = z2y;
+//        app_log("不存在该元素-x: x:%f, z:%f, y:%f\n", fixedX, fixedZ, y);
+    } else {
+        if (pObjData->heightMap[fixedX].count(fixedZ) == 0) {
+            pObjData->heightMap[fixedX][fixedZ] = y;
+//            app_log("不存在该元素-z: x:%f, z:%f, y:%f\n", fixedX, fixedZ, y);
+        } else {
+            GLfloat currValue = pObjData->heightMap[fixedX][fixedZ];
+            if (y > currValue) {
+                pObjData->heightMap[fixedX][fixedZ] = y;
+//                app_log("替换元素-y: x:%f, z:%f, y:%f\n", fixedX, fixedZ, y);
+            }
+        }
+    }
 }
 
 // obj文件中每个顶点的法向量，其实是构成一个三角面片的面法向量，这三个顶点的法向量都相同。
