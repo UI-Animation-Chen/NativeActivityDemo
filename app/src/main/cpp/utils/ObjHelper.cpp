@@ -41,7 +41,30 @@ static void findMinMaxVertex(GLfloat x, GLfloat y, GLfloat z, ObjHelper::ObjData
     }
 }
 
-static void readVertices(FILE *file, ObjHelper::ObjData *pObjData) {
+// 构建高度数据，用于地图使用。x和z采用小数点后1位的精度当一个区间
+static void genHeightMap(ObjHelper::ObjData *pObjData, GLfloat x, GLfloat y, GLfloat z) {
+    int fixedX = (int)(x * 10);
+    int fixedZ = (int)(z * 10);
+    if (pObjData->heightMap.count(fixedX) == 0) { // 不存在该元素
+        std::map<int, GLfloat> z2y;
+        z2y[fixedZ] = y;
+        pObjData->heightMap[fixedX] = z2y;
+//        app_log("不存在该元素-x: x:%d, z:%d, y:%f\n", fixedX, fixedZ, y);
+    } else {
+        if (pObjData->heightMap[fixedX].count(fixedZ) == 0) {
+            pObjData->heightMap[fixedX][fixedZ] = y;
+//            app_log("不存在该元素-z: x:%d, z:%d, y:%f\n", fixedX, fixedZ, y);
+        } else {
+            GLfloat currValue = pObjData->heightMap[fixedX][fixedZ];
+            if (y > currValue) {
+                pObjData->heightMap[fixedX][fixedZ] = y;
+//                app_log("替换元素-y: x:%d, z:%d, y:%f\n", fixedX, fixedZ, y);
+            }
+        }
+    }
+}
+
+static void readVertices(FILE *file, ObjHelper::ObjData *pObjData, int needGenHeightMap) {
     GLfloat x, y, z;
     fscanf(file, "%f %f %f\n", &x, &y, &z);
     pObjData->vertices.push_back(-x); // obj文件(导出设置z forward，y up)的x坐标是反的。
@@ -50,25 +73,9 @@ static void readVertices(FILE *file, ObjHelper::ObjData *pObjData) {
 
     findMinMaxVertex(-x, y, z, pObjData); // obj文件(导出设置z forward，y up)的x坐标是反的。
 
-    // 构建高度数据，用于地图使用。x和z采用小数点后0位的精度当一个区间
-    float fixedX = CoordinatesUtils::toFixedFloat(-x, 0);
-    float fixedZ = CoordinatesUtils::toFixedFloat(z, 0);
-    if (pObjData->heightMap.count(fixedX) == 0) { // 不存在该元素
-        std::map<GLfloat, GLfloat> z2y;
-        z2y[fixedZ] = y;
-        pObjData->heightMap[fixedX] = z2y;
-//        app_log("不存在该元素-x: x:%f, z:%f, y:%f\n", fixedX, fixedZ, y);
-    } else {
-        if (pObjData->heightMap[fixedX].count(fixedZ) == 0) {
-            pObjData->heightMap[fixedX][fixedZ] = y;
-//            app_log("不存在该元素-z: x:%f, z:%f, y:%f\n", fixedX, fixedZ, y);
-        } else {
-            GLfloat currValue = pObjData->heightMap[fixedX][fixedZ];
-            if (y > currValue) {
-                pObjData->heightMap[fixedX][fixedZ] = y;
-//                app_log("替换元素-y: x:%f, z:%f, y:%f\n", fixedX, fixedZ, y);
-            }
-        }
+    // 构建高度数据，用于地图使用。x和z采用小数点后1位的精度当一个区间
+    if (needGenHeightMap == 1) {
+        genHeightMap(pObjData, -x, y, z);
     }
 }
 
@@ -184,8 +191,9 @@ static void rearrangeVVtVns(ObjHelper::ObjData *pObjData) {
     pObjData->normals = vns;
 }
 
-void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjData *pObjData) {
-    if (file == NULL) return;
+void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjData *pObjData, int needGenHeightMap) {
+    if (file == nullptr) return;
+
     bool shouldQuit = false;
     int c;
     while ((c = fgetc(file)) != EOF && !shouldQuit) {
@@ -200,7 +208,7 @@ void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjData *pObjData) {
                 c = fgetc(file);
                 switch (c) {
                     case ' ':
-                        readVertices(file, pObjData);
+                        readVertices(file, pObjData, needGenHeightMap);
                         break;
                     case 'n':
                         readNormals(file, pObjData);

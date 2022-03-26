@@ -5,6 +5,9 @@
 #ifndef NATIVEACTIVITYDEMO_COORDINATESUTILS_H
 #define NATIVEACTIVITYDEMO_COORDINATESUTILS_H
 
+#include <GLES3/gl32.h>
+#include <map>
+
 // 安卓坐标系和OpenGL ES坐标系的转换。
 //
 // 安卓，左上角是原点，x正轴向右，y正轴向下。x和y的取值范围是[0,屏幕的尺寸]
@@ -25,6 +28,7 @@ class CoordinatesUtils {
 public:
     // fixedNum支持0-9
     static float toFixedFloat(float origin, int fixedNum);
+    static void insertLinearValue(std::map<int, std::map<int, GLfloat>> &data, int minX, int minZ, int maxX, int maxZ);
 
     static float android2gles_x(float x);
     static float android2gles_y(float y);

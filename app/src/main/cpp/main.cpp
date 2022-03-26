@@ -3,11 +3,11 @@
  */
 
 #include <memory.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 #include <jni.h>
-#include <errno.h>
-#include <assert.h>
+#include <cerrno>
+#include <cassert>
 
 #include <android/sensor.h>
 #include <android_native_app_glue.h>
@@ -143,14 +143,13 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
 //                pShape[0] = new Cube();
 //                pShape[0] = new Triangles();
                 auto mountain = new ObjModel("blenderObjs/mountain.png", "mountain.png");
-                mountain->moveBy(0, 0.156f, 0); // 模型的-y为-0.156
-                mountain->scaleBy(10, 0, 10);
+                mountain->scaleBy(9, 1.5, 9); // 长宽放大10倍
                 pShape.push_back(mountain);
                 auto tower = new ObjModel("blenderObjs/tower.png", "tower.png");
-                tower->moveBy(-10, 0.8f, 30);
+                tower->moveBy(5.66, 3.51, -17.21);
                 pShape.push_back(tower);
                 auto moodhouse = new ObjModel("blenderObjs/moodhouse.png", "moodhouse.png");
-                moodhouse->moveBy(0, 0.8f, 30);
+                moodhouse->moveBy(0, mountain->getMapHeight(0, 18), 18);
                 moodhouse->rotateBy(0, 0.5, 0);
                 moodhouse->scaleBy(-0.8, -0.8, -0.8);
                 pShape.push_back(moodhouse);
@@ -161,12 +160,22 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 skybox->scaleBy(40.0f, 40.0f, 40.0f);
                 pShape.push_back(skybox);
                 auto monkey = new ObjModel("blenderObjs/monkey.png", "brown.png");
-                monkey->moveBy(0, 0.49, 0); // 模型的-y为-0.98
-                monkey->rotateBy(0, 3.14, 0);
-                monkey->scaleBy(-0.5, -0.5, -0.5);
+                monkey->moveBy(0, 0.294f, 0); // 模型的-y为-0.98
+                monkey->rotateBy(0, 3.14f, 0);
+                monkey->scaleBy(-0.7f, -0.7f, -0.7f); // 缩小为原来的3/10
                 pShape.push_back(monkey);
+                // 测试高度准确性
+//                auto cocacola = new ObjModel("blenderObjs/cocacola.png", "cocacola.png");
+//                cocacola->moveBy(0, 0.24656f, 0); // 模型的-y为-1.232813
+//                cocacola->scaleBy(-0.95f, -0.8f, -0.95f); // 高缩小为原来的2/10
+//                pShape.push_back(cocacola);
+
+                GLfloat initHeight = mountain->getMapHeight(0, 0);
                 for (int i = 0; i < pShape.size(); i++) {
                     if (pShape[i]) {
+                        if (i < pShape.size() - 1) {
+                            pShape[i]->worldMoveYTo(initHeight);
+                        }
                         pShape[i]->draw();
                     }
                 }
@@ -284,9 +293,8 @@ void initTouchEventHandlerCallbacks() {
                     if (height == 0) {
                         GLfloat transXYZ[3];
                         pShape[0]->getTranslate(transXYZ);
-                        app_log("map location: x: %f, z: %f, y: %f\n", transXYZ[0], transXYZ[2], transXYZ[1]);
-                        height = pShape[0]->getMapHeight(transXYZ[0]/11, transXYZ[2]/11); // 地图放大了11倍
-                        app_log("map height: %f\n", height);
+                        height = pShape[0]->getMapHeight(transXYZ[0], transXYZ[2]);
+//                        app_log("map location: x: %f, z: %f, y: %f, height: %f\n", transXYZ[0], transXYZ[2], transXYZ[1], height);
                     }
                     pShape[i]->worldMoveYTo(height);
                 } else {

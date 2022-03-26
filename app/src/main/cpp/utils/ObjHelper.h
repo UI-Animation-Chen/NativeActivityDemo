@@ -22,7 +22,7 @@ public:
         std::vector<GLfloat> texCoords; // 2个为一组
         std::vector<std::vector<GLushort>> indeces; // v vt vn的索引
 
-        std::map<GLfloat, std::map<GLfloat, GLfloat>> heightMap;
+        std::map<int, std::map<int, GLfloat>> heightMap;
         ObjData() {
             vertices.push_back(0); // obj文件中，索引是从1开始的，这里先存入索引0的无用数据。
             vertices.push_back(0);
@@ -36,7 +36,7 @@ public:
             texCoords.push_back(0);
         }
     };
-    static void readObjFile(FILE *file, ObjData *pObjData);
+    static void readObjFile(FILE *file, ObjData *pObjData, int needGenHeightMap);
 };
 
 #endif //NATIVEACTIVITYDEMO_OBJHELPER_H

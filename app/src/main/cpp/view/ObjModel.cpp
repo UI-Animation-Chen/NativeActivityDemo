@@ -33,8 +33,12 @@ ObjModel::ObjModel(const char *assetObjName, const char *assetPngName): Shape() 
 
     TextureUtils::loadPNGTexture(assetPngName, &textureId);
 
+    int needGenHeightMap = 0;
+    if (strcmp("mountain.png", assetPngName) == 0) {
+        needGenHeightMap = 1;
+    }
     auto pObjData = new ObjHelper::ObjData();
-    ObjHelper::readObjFile(file, pObjData);
+    ObjHelper::readObjFile(file, pObjData, needGenHeightMap);
     fclose(file);
 
     glGenVertexArrays(1, vao);
@@ -104,8 +108,9 @@ ObjModel::ObjModel(const char *assetObjName, const char *assetPngName): Shape() 
     app_log("%s, min(x: %f, y: %f, z: %f), max(x: %f, y: %f, z: %f)\n", assetPngName, minX, minY, minZ, maxX, maxY, maxZ);
     initWrapBox(minX, minY, minZ, maxX, maxY, maxZ);
 
-//    float scaleDown = (maxY - minY)/2 - 1; // 窗口的归一化宽高是2
-//    scaleBy(-scaleDown, -scaleDown, -scaleDown);
+    if (needGenHeightMap) {
+        CoordinatesUtils::insertLinearValue(heightMap, (int)(minX * 10), (int)(minZ * 10), (int)(maxX * 10), (int)(maxZ * 10));
+    }
 
     delete pObjData;
 
@@ -139,10 +144,19 @@ void ObjModel::draw() {
 }
 
 GLfloat ObjModel::getMapHeight(GLfloat x, GLfloat z) {
-    GLfloat fixedX = CoordinatesUtils::toFixedFloat(x, 0);
-    GLfloat fixedZ = CoordinatesUtils::toFixedFloat(z, 0);
-    if (heightMap.count(fixedX) != 0 && heightMap[fixedX].count(fixedZ) != 0) {
-        return heightMap[fixedX][fixedZ] + Shape::getMapHeight(fixedX, fixedZ);
+    GLfloat scale[3] = {1.0f, 1.0f, 1.0f};
+    getScale(scale);
+    if (scale[0] == 0.0f) { // 防止除0异常
+        scale[0] = 1.0f / 1000000.0f; // 随便给一个接近0的值，此时已经没意义了
     }
-    return Shape::getMapHeight(fixedX, fixedZ);
+    if (scale[2] == 0.0f) { // 防止除0异常
+        scale[2] = 1.0f / 1000000.0f;
+    }
+//    app_log("scale x: %f, z: %f, y: %f\n", scale[0], scale[2], scale[1]);
+    int fixedX = (int)(x / scale[0] * 10.0f);
+    int fixedZ = (int)(z / scale[2] * 10.0f);
+    if (heightMap.count(fixedX) != 0 && heightMap[fixedX].count(fixedZ) != 0) {
+        return heightMap[fixedX][fixedZ] * scale[1];
+    }
+    return Shape::getMapHeight(fixedX, fixedZ); // alawys 0
 }

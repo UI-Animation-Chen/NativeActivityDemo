@@ -104,8 +104,11 @@ void TextureUtils::loadPNGTexture(const char *pngFile, GLuint *textureId) {
 
     glBindTexture(GL_TEXTURE_2D, *textureId); // 对于一个纹理单元只能绑定同一种target类型：GL_TEXTURE_2D, GL_TEXTURE_3D等
     uint32_t w, h;
-    void *image;
+    void *image = nullptr;
     loadPng(&w, &h, &image, pngFile);
+    if (image == nullptr) {
+        return;
+    }
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
     free(image);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

@@ -349,9 +349,9 @@ void Shape::updateBounds(GLfloat minX, GLfloat minY, GLfloat maxX, GLfloat maxY)
 
 void Shape::getScale(GLfloat *scaleXYZarr) {
     if (scaleXYZarr) {
-        scaleXYZarr[0] = scaleXYZ[0] + worldScaleXYZ[0];
-        scaleXYZarr[1] = scaleXYZ[1] + worldScaleXYZ[1];
-        scaleXYZarr[2] = scaleXYZ[2] + worldScaleXYZ[2];
+        scaleXYZarr[0] = scaleXYZ[0] * worldScaleXYZ[0];
+        scaleXYZarr[1] = scaleXYZ[1] * worldScaleXYZ[1];
+        scaleXYZarr[2] = scaleXYZ[2] * worldScaleXYZ[2];
     }
 }
 
@@ -372,5 +372,5 @@ void Shape::getRotate(GLfloat *rotateXYZarr) {
 }
 
 GLfloat Shape::getMapHeight(GLfloat x, GLfloat z) {
-    return translateXYZ[1];
+    return 0.0f;
 }

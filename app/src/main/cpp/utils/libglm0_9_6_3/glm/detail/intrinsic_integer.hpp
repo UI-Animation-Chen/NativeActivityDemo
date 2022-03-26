@@ -28,7 +28,7 @@
 
 #pragma once
 
-#include "glm/glm.hpp"
+//#include "glm/glm.hpp" // x86模拟器上会报错找不到该头文件，因此注掉
 
 #if(!(GLM_ARCH & GLM_ARCH_SSE2))
 #	error "SSE2 instructions not supported or enabled"

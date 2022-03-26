@@ -14,7 +14,7 @@ private:
     GLuint buffers[4] = {0}; // vertex buffer object
     GLuint textureId = 0;
     GLuint indexCount = 0;
-    std::map<GLfloat, std::map<GLfloat, GLfloat>> heightMap;
+    std::map<int, std::map<int, GLfloat>> heightMap;
 
 public:
     ObjModel(const char *assetObjName, const char *assetPngName);
