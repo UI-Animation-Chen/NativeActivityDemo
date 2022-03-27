@@ -9,9 +9,6 @@
 #include <string>
 #include "Utils.h"
 
-#define SMOOTH_LIGHT
-//#define NO_TEX_COOR
-
 float ObjHelper::heightMapSampleFactor = 100.0f; // 表示取浮点数小数部分的位数，10表示1位，100表示两位等等。注意只能是整数。
 
 static void findMinMaxVertex(GLfloat x, GLfloat y, GLfloat z, ObjHelper::ObjData *pObjData) {
@@ -66,7 +63,7 @@ static void genHeightMap(ObjHelper::ObjData *pObjData, GLfloat x, GLfloat y, GLf
     }
 }
 
-static void readVertices(FILE *file, ObjHelper::ObjData *pObjData, int needGenHeightMap) {
+static void readVertices(FILE *file, ObjHelper::ObjData *pObjData, bool needGenHeightMap) {
     GLfloat x, y, z;
     fscanf(file, "%f %f %f\n", &x, &y, &z);
     pObjData->vertices.push_back(-x); // obj文件(导出设置z forward，y up)的x坐标是反的。
@@ -76,7 +73,7 @@ static void readVertices(FILE *file, ObjHelper::ObjData *pObjData, int needGenHe
     findMinMaxVertex(-x, y, z, pObjData); // obj文件(导出设置z forward，y up)的x坐标是反的。
 
     // 构建高度数据，用于地图使用。x和z采用小数点后1位的精度当一个区间
-    if (needGenHeightMap == 1) {
+    if (needGenHeightMap) {
         genHeightMap(pObjData, -x, y, z);
     }
 }
@@ -98,30 +95,27 @@ static void readTexCoords(FILE *file, ObjHelper::ObjData *pObjData) {
     pObjData->texCoords.push_back(v);
 }
 
-static void readIndexInfo(FILE *file, ObjHelper::ObjData *pObjData) {
+static void readIndexInfo(FILE *file, ObjHelper::ObjData *pObjData, bool hasTexCoords) {
     GLushort v1, v2, v3, t1, t2, t3, n1, n2, n3;
-    // %hd 短整型
-#ifdef NO_TEX_COOR
-    fscanf(file, " %hd//%hd %hd//%hd %hd//%hd\n", &v1, &n1, &v2, &n2, &v3, &n3);
-#else
-    fscanf(file, " %hd/%hd/%hd %hd/%hd/%hd %hd/%hd/%hd\n",
-                   &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3);
-#endif
-#ifdef NO_TEX_COOR
-    pObjData->indeces.push_back({v1, 1, n1});
-    pObjData->indeces.push_back({v2, 1, n2});
-    pObjData->indeces.push_back({v3, 1, n3});
-#else
-    pObjData->indeces.push_back({v1, t1, n1});
-    pObjData->indeces.push_back({v2, t2, n2});
-    pObjData->indeces.push_back({v3, t3, n3});
-#endif
+    if (!hasTexCoords) {
+        // %hd 短整型
+        fscanf(file, " %hd//%hd %hd//%hd %hd//%hd\n", &v1, &n1, &v2, &n2, &v3, &n3);
+        pObjData->indeces.push_back({v1, 1, n1});
+        pObjData->indeces.push_back({v2, 1, n2});
+        pObjData->indeces.push_back({v3, 1, n3});
+    } else {
+        fscanf(file, " %hd/%hd/%hd %hd/%hd/%hd %hd/%hd/%hd\n",
+                       &v1, &t1, &n1, &v2, &t2, &n2, &v3, &t3, &n3);
+        pObjData->indeces.push_back({v1, t1, n1});
+        pObjData->indeces.push_back({v2, t2, n2});
+        pObjData->indeces.push_back({v3, t3, n3});
+    }
 }
 
 // 按照obj文件格式读出来后，顶点，纹理和法向量坐标都有各自的索引数组。
 // 现在新建一套匹配的顶点，纹理和法向量坐标，由同一个索引数组控制。
 // 这可能会导致各坐标数组变大，包含重复的坐标数据，这是统一索引的代价。
-static void rearrangeVVtVns(ObjHelper::ObjData *pObjData) {
+static void rearrangeVVtVns(ObjHelper::ObjData *pObjData, bool isSmoothLight) {
     using namespace std;
     vector<GLfloat> vs;
     vector<GLfloat> vts;
@@ -131,9 +125,7 @@ static void rearrangeVVtVns(ObjHelper::ObjData *pObjData) {
     GLuint texCoordsIndex;
     GLuint nomalIndex;
 
-#ifdef SMOOTH_LIGHT
-    unordered_map<string, vector<GLuint>> vert2indecesMap; // 一个顶点被几个索引用过。
-#endif
+    unordered_map<string, vector<GLuint>> vert2indecesMap; // 一个顶点被几个索引用过。光滑着色的本质就是让多面共享的顶点使用同一个法向量。
 
     for (GLuint i = 0; i < pObjData->indeces.size(); i++) {
         // vertices。后面乘3的逻辑是：vertices中三个元素为一组顶点，并且是从索引3开始，前三个元素是无用的。下面tex和normal同理。
@@ -142,13 +134,15 @@ static void rearrangeVVtVns(ObjHelper::ObjData *pObjData) {
         vs.push_back(pObjData->vertices.at(vertIndex));
         vs.push_back(pObjData->vertices.at(vertIndex + 1));
         vs.push_back(pObjData->vertices.at(vertIndex + 2));
-#ifdef SMOOTH_LIGHT
-        GLuint vsIndex = i * 3;
-        string vertKey = to_string(vs.at(vsIndex)) +
-                         to_string(vs.at(vsIndex + 1)) +
-                         to_string(vs.at(vsIndex + 2)); // 将顶点的三个坐标拼接，生成一个顶点的标识
-        vert2indecesMap[vertKey].push_back(i); // 在push_back之前，map会先创建该key下的一个vector
-#endif
+
+        if (isSmoothLight) {
+            GLuint vsIndex = i * 3;
+            string vertKey = to_string(vs.at(vsIndex)) +
+                             to_string(vs.at(vsIndex + 1)) +
+                             to_string(vs.at(vsIndex + 2)); // 将顶点的三个坐标拼接，生成一个顶点的标识
+            vert2indecesMap[vertKey].push_back(i); // 在push_back之前，map会先创建该key下的一个vector
+        }
+
         // texCoords
         texCoordsIndex = pObjData->indeces.at(i).at(1) * (GLuint)2;
         vts.push_back(pObjData->texCoords.at(texCoordsIndex));
@@ -161,40 +155,43 @@ static void rearrangeVVtVns(ObjHelper::ObjData *pObjData) {
         // indeces
         pObjData->indeces.at(i).at(0) = (GLushort)i; // 索引就是0,1,2... 每个索引都对应一个坐标(xyz)。
     }
-#ifdef SMOOTH_LIGHT
-    for (auto const &entry: vert2indecesMap) {
-        GLfloat nx = 0, ny = 0, nz = 0; // 将该顶点对应的所有面的法向量相加，在shader里进行归一化。
-        unordered_map<string, vector<GLfloat>> uniqueVnMap; // 该顶点相同的法向量去重，只保留不同的
-        for (GLuint i = 0; i < entry.second.size(); i++) {
-            GLuint vnsIndex = entry.second.at(i) * 3;
-            string vnKey = to_string(vns.at(vnsIndex)) +
-                           to_string(vns.at(vnsIndex + 1)) +
-                           to_string(vns.at(vnsIndex + 2));
-            if (uniqueVnMap.count(vnKey) == 0) {
-                uniqueVnMap[vnKey].push_back(vns.at(vnsIndex));
-                uniqueVnMap[vnKey].push_back(vns.at(vnsIndex + 1));
-                uniqueVnMap[vnKey].push_back(vns.at(vnsIndex + 2));
+
+    if (isSmoothLight) {
+        for (auto const &entry: vert2indecesMap) {
+            GLfloat nx = 0, ny = 0, nz = 0; // 将该顶点对应的所有面的法向量相加，在shader里进行归一化。
+            unordered_map<string, vector<GLfloat>> uniqueVnMap; // 该顶点相同的法向量去重，只保留不同的
+            for (GLuint i = 0; i < entry.second.size(); i++) {
+                GLuint vnsIndex = entry.second.at(i) * 3;
+                string vnKey = to_string(vns.at(vnsIndex)) +
+                               to_string(vns.at(vnsIndex + 1)) +
+                               to_string(vns.at(vnsIndex + 2));
+                if (uniqueVnMap.count(vnKey) == 0) {
+                    uniqueVnMap[vnKey].push_back(vns.at(vnsIndex));
+                    uniqueVnMap[vnKey].push_back(vns.at(vnsIndex + 1));
+                    uniqueVnMap[vnKey].push_back(vns.at(vnsIndex + 2));
+                }
+            }
+            for (auto const &vnEntry: uniqueVnMap) {
+                nx += vnEntry.second.at(0);
+                ny += vnEntry.second.at(1);
+                nz += vnEntry.second.at(2);
+            }
+            for (GLuint i = 0; i < entry.second.size(); i++) { // 这些索引下的顶点，都变成同一个法向量
+                GLuint vnsIndex = entry.second.at(i) * 3;
+                vns.at(vnsIndex) = nx;
+                vns.at(vnsIndex + 1) = ny;
+                vns.at(vnsIndex + 2) = nz;
             }
         }
-        for (auto const &vnEntry: uniqueVnMap) {
-            nx += vnEntry.second.at(0);
-            ny += vnEntry.second.at(1);
-            nz += vnEntry.second.at(2);
-        }
-        for (GLuint i = 0; i < entry.second.size(); i++) { // 这些索引下的顶点，都变成同一个法向量
-            GLuint vnsIndex = entry.second.at(i) * 3;
-            vns.at(vnsIndex) = nx;
-            vns.at(vnsIndex + 1) = ny;
-            vns.at(vnsIndex + 2) = nz;
-        }
     }
-#endif
+
     pObjData->vertices = move(vs);
     pObjData->texCoords = move(vts);
     pObjData->normals = move(vns);
 }
 
-void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjData *pObjData, int needGenHeightMap) {
+void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjData *pObjData, bool needGenHeightMap,
+                            bool hasTexCoords, bool isSmoothLight) {
     if (file == nullptr) return;
 
     long time0 = Utils::getCurrTimeUS();
@@ -227,7 +224,7 @@ void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjData *pObjData, int needGe
                 }
                 break;
             case 'f': // face, index info
-                readIndexInfo(file, pObjData);
+                readIndexInfo(file, pObjData, hasTexCoords);
                 break;
             default:
                 shouldQuit = true;
@@ -235,11 +232,11 @@ void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjData *pObjData, int needGe
                 break;
         }
     }
-#ifdef NO_TEX_COOR
-    pObjData->texCoords.push_back(0.5f); // 如果没有生成纹理坐标，就创建一个坐标，使用纹理的中心点颜色
-    pObjData->texCoords.push_back(0.5f);
-#endif
+    if (!hasTexCoords) {
+        pObjData->texCoords.push_back(0.5f); // 如果没有生成纹理坐标，就创建一个坐标，使用纹理的中心点颜色
+        pObjData->texCoords.push_back(0.5f);
+    }
     long time1 = Utils::getCurrTimeUS();
-    rearrangeVVtVns(pObjData);
+    rearrangeVVtVns(pObjData, isSmoothLight);
     app_log("parseTime: %ld(us), rearrangeTime: %ld(us)\n", time1 - time0, Utils::getCurrTimeUS() - time1);
 }

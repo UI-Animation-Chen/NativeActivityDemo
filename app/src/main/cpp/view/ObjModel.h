@@ -17,7 +17,8 @@ private:
     std::unordered_map<int, std::unordered_map<int, GLfloat>> heightMap;
 
 public:
-    ObjModel(const char *assetObjName, const char *assetPngName);
+    ObjModel(const char *assetObjName, const char *assetPngName, bool needGenHeightMap,
+             bool hasTexCoords, bool isSmoothLight);
     virtual ~ObjModel();
 
     void draw();

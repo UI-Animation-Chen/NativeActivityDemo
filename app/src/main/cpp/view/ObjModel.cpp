@@ -13,7 +13,8 @@
 // 1、z forward，y up；这种方式导出后x坐标是反的，ObjHelper.cpp中进行了处理。在视图和透视矩阵加入后，x坐标就不反了。
 // 2、write normals, include uvs, triangulate faces，其他都不要选
 
-ObjModel::ObjModel(const char *assetObjName, const char *assetPngName): Shape() {
+ObjModel::ObjModel(const char *assetObjName, const char *assetPngName, bool needGenHeightMap,
+                   bool hasTexCoords, bool isSmoothLight): Shape() {
     // assets目录下，文件后缀是png才能读到，否则会报错: no such file or directory.
     // 原因是：assets目录下的文件会进行压缩，所以读不到。而png会被认为是压缩文件，不会再次压缩。
 //    const char *assetObjName = "blenderObjs/tower.png";
@@ -33,12 +34,8 @@ ObjModel::ObjModel(const char *assetObjName, const char *assetPngName): Shape() 
 
     TextureUtils::loadPNGTexture(assetPngName, &textureId);
 
-    int needGenHeightMap = 0;
-    if (strcmp("mountain.png", assetPngName) == 0) {
-        needGenHeightMap = 1;
-    }
     auto pObjData = new ObjHelper::ObjData();
-    ObjHelper::readObjFile(file, pObjData, needGenHeightMap);
+    ObjHelper::readObjFile(file, pObjData, needGenHeightMap, hasTexCoords, isSmoothLight);
     fclose(file);
 
     glGenVertexArrays(1, vao);

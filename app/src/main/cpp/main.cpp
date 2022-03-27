@@ -142,30 +142,30 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 // blend跟物体渲染顺序有关，需要后渲染半透明物体
 //                pShape[0] = new Cube();
 //                pShape[0] = new Triangles();
-                auto mountain = new ObjModel("blenderObjs/mountain.png", "mountain.png");
+                auto mountain = new ObjModel("blenderObjs/mountain.png", "mountain.png", true, true, false);
                 mountain->scaleBy(9, 1.5, 9); // 长宽放大10倍
                 pShape.push_back(mountain);
-                auto tower = new ObjModel("blenderObjs/tower.png", "tower.png");
+                auto tower = new ObjModel("blenderObjs/tower.png", "tower.png", false, true, false);
                 tower->moveBy(5.66, 3.51, -17.21);
                 pShape.push_back(tower);
-                auto moodhouse = new ObjModel("blenderObjs/moodhouse.png", "moodhouse.png");
+                auto moodhouse = new ObjModel("blenderObjs/moodhouse.png", "moodhouse.png", false, true, false);
                 moodhouse->moveBy(0, mountain->getMapHeight(0, 18), 18);
                 moodhouse->rotateBy(0, 0.5, 0);
                 moodhouse->scaleBy(-0.8, -0.8, -0.8);
                 pShape.push_back(moodhouse);
-                auto moon = new ObjModel("blenderObjs/moon.png", "moon.png");
+                auto moon = new ObjModel("blenderObjs/moon.png", "moon.png", false, true, false);
                 moon->moveBy(12, 12, 30);
                 pShape.push_back(moon);
                 auto skybox = new SkyBox();
                 skybox->scaleBy(40.0f, 40.0f, 40.0f);
                 pShape.push_back(skybox);
-                auto monkey = new ObjModel("blenderObjs/monkey.png", "brown.png");
+                auto monkey = new ObjModel("blenderObjs/monkey.png", "brown.png", false, true, false);
                 monkey->moveBy(0, 0.294f, 0); // 模型的-y为-0.98
                 monkey->rotateBy(0, 3.14f, 0);
                 monkey->scaleBy(-0.7f, -0.7f, -0.7f); // 缩小为原来的3/10
                 pShape.push_back(monkey);
                 // 测试高度准确性
-//                auto cocacola = new ObjModel("blenderObjs/cocacola.png", "cocacola.png");
+//                auto cocacola = new ObjModel("blenderObjs/cocacola.png", "cocacola.png", false, true, false);
 //                cocacola->moveBy(0, 0.24656f, 0); // 模型的-y为-1.232813
 //                cocacola->scaleBy(-0.95f, -0.8f, -0.95f); // 高缩小为原来的2/10
 //                pShape.push_back(cocacola);
