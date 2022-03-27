@@ -6,7 +6,7 @@
 #define NATIVEACTIVITYDEMO_COORDINATESUTILS_H
 
 #include <GLES3/gl32.h>
-#include <map>
+#include <unordered_map>
 
 // 安卓坐标系和OpenGL ES坐标系的转换。
 //
@@ -26,9 +26,8 @@
 //
 class CoordinatesUtils {
 public:
-    // fixedNum支持0-9
-    static float toFixedFloat(float origin, int fixedNum);
-    static void insertLinearValue(std::map<int, std::map<int, GLfloat>> &data, int minX, int minZ, int maxX, int maxZ);
+    static void insertLinearValue(std::unordered_map<int, std::unordered_map<int, GLfloat>> &data,
+                                  int minX, int minZ, int maxX, int maxZ);
 
     static float android2gles_x(float x);
     static float android2gles_y(float y);

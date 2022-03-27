@@ -3,10 +3,8 @@
 //
 
 #include "CoordinatesUtils.h"
-#include <cstdlib>
-#include <unistd.h>
-#include <cstring>
 #include "../app_log.h"
+#include "Utils.h"
 
 // error: 'static' can only be specified inside the class definition
 // static float CoordinatesUtils::screenW = 1;
@@ -45,19 +43,7 @@ float CoordinatesUtils::android2gles_distance(float androidDistance) {
     return androidDistance * 2 / glesViewportSize;
 }
 
-// fixedNum支持0-9
-float CoordinatesUtils::toFixedFloat(float origin, int fixedNum) {
-    char formatStr[4+1] = "%.xf";
-    char fixedNumChar = (char)(fixedNum + 48);
-    memcpy(formatStr+2, &fixedNumChar, 1);
-
-    char fixedFloatStr[10]; // 10 is enough
-    memset(fixedFloatStr, 0, sizeof(fixedFloatStr));
-    sprintf(fixedFloatStr, formatStr, origin);
-    return strtof(fixedFloatStr, nullptr);
-}
-
-static int findExistIndex(std::map<int, GLfloat> &ztoy, int start, int end) {
+static int findExistIndex(std::unordered_map<int, GLfloat> &ztoy, int start, int end) {
     for (int i = start; i <= end; i++) {
         if (ztoy.count(i)) {
             return i;
@@ -66,7 +52,7 @@ static int findExistIndex(std::map<int, GLfloat> &ztoy, int start, int end) {
     return start;
 }
 
-static int findExistIndex2(std::map<int, std::map<int, GLfloat>> &data, int start, int end, int z) {
+static int findExistIndex2(std::unordered_map<int, std::unordered_map<int, GLfloat>> &data, int start, int end, int z) {
     for (int i = start; i <= end; i++) {
         if (data.count(i) && data[i].count(z)) {
             return i;
@@ -90,12 +76,13 @@ static int findMiddleSmallerInt(int small, int large) {
 }
 
 // 对二维map数据，按行和列分别进行插值。依次找两个存在的值，这两个值之间有空隙则插入线性值。如果找不到这样的两个值则跳过。
-static void insertLinearValueInner(std::map<int, std::map<int, GLfloat>> &data, int minX, int minZ, int maxX, int maxZ) {
+static void insertLinearValueInner(std::unordered_map<int, std::unordered_map<int, GLfloat>> &data,
+                                   int minX, int minZ, int maxX, int maxZ) {
     // x方向过一遍
     for (int x = minX; x <= maxX; x++) {
 //        app_log("inser linear value: x: %d\n", x);
         if (data.count(x)) {
-            std::map<int, GLfloat> &ztoy = data[x]; // 注意得是引用
+            std::unordered_map<int, GLfloat> &ztoy = data[x]; // 注意得是引用
             for (int z = minZ; z < maxZ; z++) { // 不需要<=maxZ，下面find中有+1
                 int z1 = findExistIndex(ztoy, z, maxZ);
                 int z2 = findExistIndex(ztoy, z1 + 1, maxZ);
@@ -124,7 +111,7 @@ static void insertLinearValueInner(std::map<int, std::map<int, GLfloat>> &data, 
             if (x2 - x1 > 1) {
                 int x_in = findMiddleSmallerInt(x1, x2);
                 if (data.count(x_in) == 0) { // x_in位置可能不存在
-                    data[x_in] = std::map<int, GLfloat>();
+                    data[x_in] = std::unordered_map<int, GLfloat>();
                 }
                 GLfloat y1 = data[x1][z];
                 GLfloat y2 = data[x2][z];
@@ -140,13 +127,15 @@ static void insertLinearValueInner(std::map<int, std::map<int, GLfloat>> &data, 
 }
 
 // 进行线性插值算法
-void CoordinatesUtils::insertLinearValue(std::map<int, std::map<int, GLfloat>> &data, int minX, int minZ, int maxX, int maxZ) {
+void CoordinatesUtils::insertLinearValue(std::unordered_map<int, std::unordered_map<int, GLfloat>> &data,
+                                         int minX, int minZ, int maxX, int maxZ) {
+    long time0 = Utils::getCurrTimeUS();
     // 先将空隙按线性算法补上
     insertLinearValueInner(data, minX, minZ, maxX, maxZ);
     // 在补完之后，边缘仍然有空隙，则将四个边缘的空隙补为0
     for (int x = minX; x <= maxX; x++) {
         if (data.count(x) == 0) {
-            data[x] = std::map<int, GLfloat>();
+            data[x] = std::unordered_map<int, GLfloat>();
         }
         if (x == minX || x == maxX) {
             for (int z = minZ; z <= maxZ; z++) {
@@ -168,4 +157,5 @@ void CoordinatesUtils::insertLinearValue(std::map<int, std::map<int, GLfloat>> &
     }
     // 再进行一遍空隙补偿
     insertLinearValueInner(data, minX, minZ, maxX, maxZ);
+    app_log("linear interpolateTime: %ld(us)\n", Utils::getCurrTimeUS() - time0);
 }

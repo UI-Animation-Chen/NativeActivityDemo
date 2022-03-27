@@ -15,7 +15,7 @@ add_library(native-activity SHARED
 
     view/Triangles.cpp view/Cube.cpp view/Shape.cpp view/ObjModel.cpp view/SkyBox.cpp
 
-    utils/AndroidAssetUtils.cpp
+    utils/AndroidAssetUtils.cpp utils/Utils.cpp
     utils/ObjHelper.cpp utils/TouchEventHandler.cpp
     utils/ShaderUtils.c utils/CoordinatesUtils.cpp
     utils/cjson/cJSON.c utils/cjson/cJSON_Utils.c)

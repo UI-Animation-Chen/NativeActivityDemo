@@ -5,7 +5,7 @@
 #ifndef NATIVEACTIVITYDEMO_OBJMODEL_H
 #define NATIVEACTIVITYDEMO_OBJMODEL_H
 
-#include <map>
+#include <unordered_map>
 #include "Shape.h"
 
 class ObjModel: public Shape {
@@ -14,7 +14,7 @@ private:
     GLuint buffers[4] = {0}; // vertex buffer object
     GLuint textureId = 0;
     GLuint indexCount = 0;
-    std::map<int, std::map<int, GLfloat>> heightMap;
+    std::unordered_map<int, std::unordered_map<int, GLfloat>> heightMap;
 
 public:
     ObjModel(const char *assetObjName, const char *assetPngName);
