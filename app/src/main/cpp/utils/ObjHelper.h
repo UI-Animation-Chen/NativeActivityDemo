@@ -36,6 +36,7 @@ public:
             texCoords.push_back(0);
         }
     };
+    static float heightMapSampleFactor; // 表示取浮点数小数部分的位数，10表示1位，100表示两位等等。注意只能是整数。
     static void readObjFile(FILE *file, ObjData *pObjData, int needGenHeightMap);
 };
 

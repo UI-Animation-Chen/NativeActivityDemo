@@ -109,7 +109,11 @@ ObjModel::ObjModel(const char *assetObjName, const char *assetPngName): Shape() 
     initWrapBox(minX, minY, minZ, maxX, maxY, maxZ);
 
     if (needGenHeightMap) {
-        CoordinatesUtils::insertLinearValue(heightMap, (int)(minX * 10), (int)(minZ * 10), (int)(maxX * 10), (int)(maxZ * 10));
+        CoordinatesUtils::insertLinearValue(heightMap,
+                                            (int)(minX * ObjHelper::heightMapSampleFactor),
+                                            (int)(minZ * ObjHelper::heightMapSampleFactor),
+                                            (int)(maxX * ObjHelper::heightMapSampleFactor),
+                                            (int)(maxZ * ObjHelper::heightMapSampleFactor));
     }
 
     delete pObjData;
@@ -153,8 +157,8 @@ GLfloat ObjModel::getMapHeight(GLfloat x, GLfloat z) {
         scale[2] = 1.0f / 1000000.0f;
     }
 //    app_log("scale x: %f, z: %f, y: %f\n", scale[0], scale[2], scale[1]);
-    int fixedX = (int)(x / scale[0] * 10.0f);
-    int fixedZ = (int)(z / scale[2] * 10.0f);
+    int fixedX = (int)(x / scale[0] * ObjHelper::heightMapSampleFactor);
+    int fixedZ = (int)(z / scale[2] * ObjHelper::heightMapSampleFactor);
     if (heightMap.count(fixedX) != 0 && heightMap[fixedX].count(fixedZ) != 0) {
         return heightMap[fixedX][fixedZ] * scale[1];
     }

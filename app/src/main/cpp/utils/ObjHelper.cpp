@@ -11,6 +11,8 @@
 #define SMOOTH_LIGHT
 //#define NO_TEX_COOR
 
+float ObjHelper::heightMapSampleFactor = 10.0f; // 表示取浮点数小数部分的位数，10表示1位，100表示两位等等。注意只能是整数。
+
 static void findMinMaxVertex(GLfloat x, GLfloat y, GLfloat z, ObjHelper::ObjData *pObjData) {
     if (x <= 0) {
         if (x < pObjData->minVertex.at(0)) {
@@ -41,10 +43,10 @@ static void findMinMaxVertex(GLfloat x, GLfloat y, GLfloat z, ObjHelper::ObjData
     }
 }
 
-// 构建高度数据，用于地图使用。x和z采用小数点后1位的精度当一个区间
+// 构建高度数据，用于地图使用。heightMapSampleFactor表示取浮点数小数部分的位数，10表示1位，100表示两位等等。
 static void genHeightMap(ObjHelper::ObjData *pObjData, GLfloat x, GLfloat y, GLfloat z) {
-    int fixedX = (int)(x * 10);
-    int fixedZ = (int)(z * 10);
+    int fixedX = (int)(x * ObjHelper::heightMapSampleFactor);
+    int fixedZ = (int)(z * ObjHelper::heightMapSampleFactor);
     if (pObjData->heightMap.count(fixedX) == 0) { // 不存在该元素
         std::map<int, GLfloat> z2y;
         z2y[fixedZ] = y;
