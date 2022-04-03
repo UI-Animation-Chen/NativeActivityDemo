@@ -156,6 +156,11 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 auto moon = new ObjModel("blenderObjs/moon.png", "moon.png", false, true, false);
                 moon->moveBy(12, 12, 30);
                 pShape.push_back(moon);
+                auto oldHouse = new ObjModel("blenderObjs/oldhouse2.png", "oldhouse2.png", false, true, false);
+                oldHouse->moveBy(10.11f, 3.78f, 7.25f);
+                oldHouse->rotateBy(0, -0.3f, 0);
+                oldHouse->scaleBy(1.2f, 1.2f, 1.2f);
+                pShape.push_back(oldHouse);
                 auto skybox = new SkyBox();
                 skybox->scaleBy(40.0f, 40.0f, 40.0f);
                 pShape.push_back(skybox);
@@ -294,6 +299,12 @@ void initTouchEventHandlerCallbacks() {
                         GLfloat transXYZ[3];
                         pShape[0]->getTranslate(transXYZ);
                         height = pShape[0]->getMapHeight(transXYZ[0], transXYZ[2]);
+                        if (transXYZ[0] >= 3.5f && transXYZ[0] <= 7.7f && transXYZ[2] >= -19.3f && transXYZ[2] <= -15.1f) {
+                            height = 3.51f + 7.648166f; // tower的区域和高度
+                        }
+                        if (transXYZ[0] >= 12.0f-1.723f && transXYZ[0] <= 12.0f+1.723f && transXYZ[2] >= 30.0f-1.723f && transXYZ[2] <= 30.0f+1.723f) {
+                            height = 12.0f + 1.721207f; // moon的区域和高度
+                        }
 //                        app_log("map location: x: %f, z: %f, y: %f, height: %f\n", transXYZ[0], transXYZ[2], transXYZ[1], height);
                     }
                     pShape[i]->worldMoveYTo(height);
