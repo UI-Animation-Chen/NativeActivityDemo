@@ -7,6 +7,7 @@
 
 #include <GLES3/gl32.h>
 #include <unordered_map>
+#include "../entity/MapLocInfo.h"
 
 // 安卓坐标系和OpenGL ES坐标系的转换。
 //
@@ -26,7 +27,7 @@
 //
 class CoordinatesUtils {
 public:
-    static void insertLinearValue(std::unordered_map<int, std::unordered_map<int, GLfloat>> &data,
+    static void insertLinearValue(std::unordered_map<int, std::unordered_map<int, std::unique_ptr<MapLocInfo>>> &data,
                                   int minX, int minZ, int maxX, int maxZ);
 
     static float android2gles_x(float x);

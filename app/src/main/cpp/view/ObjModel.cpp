@@ -93,7 +93,7 @@ ObjModel::ObjModel(const char *assetObjName, const char *assetPngName, bool need
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(2);
 
-    heightMap = std::move(pObjData->heightMap);
+    mapLocInfos = std::move(pObjData->mapLocInfos);
 
     // 包围盒
     GLfloat minX = pObjData->minVertex.at(0);
@@ -106,7 +106,7 @@ ObjModel::ObjModel(const char *assetObjName, const char *assetPngName, bool need
     initWrapBox(minX, minY, minZ, maxX, maxY, maxZ);
 
     if (needGenHeightMap) {
-        CoordinatesUtils::insertLinearValue(heightMap,
+        CoordinatesUtils::insertLinearValue(mapLocInfos,
                                             (int)(minX * ObjHelper::heightMapSampleFactor),
                                             (int)(minZ * ObjHelper::heightMapSampleFactor),
                                             (int)(maxX * ObjHelper::heightMapSampleFactor),
@@ -156,8 +156,8 @@ GLfloat ObjModel::getMapHeight(GLfloat x, GLfloat z) {
 //    app_log("scale x: %f, z: %f, y: %f\n", scale[0], scale[2], scale[1]);
     int fixedX = (int)(x / scale[0] * ObjHelper::heightMapSampleFactor);
     int fixedZ = (int)(z / scale[2] * ObjHelper::heightMapSampleFactor);
-    if (heightMap.count(fixedX) != 0 && heightMap[fixedX].count(fixedZ) != 0) {
-        return heightMap[fixedX][fixedZ] * scale[1];
+    if (mapLocInfos.count(fixedX) != 0 && mapLocInfos[fixedX].count(fixedZ) != 0) {
+        return mapLocInfos[fixedX][fixedZ]->height * scale[1];
     }
     return Shape::getMapHeight(fixedX, fixedZ); // alawys 0
 }

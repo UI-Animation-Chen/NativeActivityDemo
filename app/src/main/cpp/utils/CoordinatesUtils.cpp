@@ -5,6 +5,7 @@
 #include "CoordinatesUtils.h"
 #include "../app_log.h"
 #include "Utils.h"
+#include "../entity/MapLocInfo.h"
 
 // error: 'static' can only be specified inside the class definition
 // static float CoordinatesUtils::screenW = 1;
@@ -43,7 +44,7 @@ float CoordinatesUtils::android2gles_distance(float androidDistance) {
     return androidDistance * 2 / glesViewportSize;
 }
 
-static int findExistIndex(std::unordered_map<int, GLfloat> &ztoy, int start, int end) {
+static int findExistIndex(std::unordered_map<int, std::unique_ptr<MapLocInfo>> &ztoy, int start, int end) {
     for (int i = start; i <= end; i++) {
         if (ztoy.count(i)) {
             return i;
@@ -52,7 +53,7 @@ static int findExistIndex(std::unordered_map<int, GLfloat> &ztoy, int start, int
     return start;
 }
 
-static int findExistIndex2(std::unordered_map<int, std::unordered_map<int, GLfloat>> &data, int start, int end, int z) {
+static int findExistIndex2(std::unordered_map<int, std::unordered_map<int, std::unique_ptr<MapLocInfo>>> &data, int start, int end, int z) {
     for (int i = start; i <= end; i++) {
         if (data.count(i) && data[i].count(z)) {
             return i;
@@ -76,22 +77,23 @@ static int findMiddleSmallerInt(int small, int large) {
 }
 
 // 对二维map数据，按行和列分别进行插值。依次找两个存在的值，这两个值之间有空隙则插入线性值。如果找不到这样的两个值则跳过。
-static void insertLinearValueInner(std::unordered_map<int, std::unordered_map<int, GLfloat>> &data,
+static void insertLinearValueInner(std::unordered_map<int, std::unordered_map<int, std::unique_ptr<MapLocInfo>>> &data,
                                    int minX, int minZ, int maxX, int maxZ) {
     // x方向过一遍
     for (int x = minX; x <= maxX; x++) {
 //        app_log("inser linear value: x: %d\n", x);
         if (data.count(x)) {
-            std::unordered_map<int, GLfloat> &ztoy = data[x]; // 注意得是引用
+            std::unordered_map<int, std::unique_ptr<MapLocInfo>> &ztoy = data[x]; // 注意得是引用
             for (int z = minZ; z < maxZ; z++) { // 不需要<=maxZ，下面find中有+1
                 int z1 = findExistIndex(ztoy, z, maxZ);
                 int z2 = findExistIndex(ztoy, z1 + 1, maxZ);
 //                app_log("find: z1: %d, z2: %d\n", z1, z2);
                 if (z2 - z1 > 1) {
                     int z_in = findMiddleSmallerInt(z1, z2);
-                    GLfloat y1 = ztoy[z1];
-                    GLfloat y2 = ztoy[z2];
-                    ztoy[z_in] = ((z_in-z2)*y1+(z1-z_in)*y2)/(z1-z2);
+                    GLfloat y1 = ztoy[z1]->height;
+                    GLfloat y2 = ztoy[z2]->height;
+                    ztoy[z_in] = std::make_unique<MapLocInfo>();
+                    ztoy[z_in]->height = ((z_in-z2)*y1+(z1-z_in)*y2)/(z1-z2);
 //                    app_log("insert: x: %d, z: %d, y: %f\n", x, z_in, ztoy[z_in]);
                     if (z2 - z1 > 3) {
                         z--; // 间隔大于2个时，还需要再走一遍当前值。
@@ -111,11 +113,12 @@ static void insertLinearValueInner(std::unordered_map<int, std::unordered_map<in
             if (x2 - x1 > 1) {
                 int x_in = findMiddleSmallerInt(x1, x2);
                 if (data.count(x_in) == 0) { // x_in位置可能不存在
-                    data[x_in] = std::unordered_map<int, GLfloat>();
+                    data[x_in] = std::unordered_map<int, std::unique_ptr<MapLocInfo>>();
                 }
-                GLfloat y1 = data[x1][z];
-                GLfloat y2 = data[x2][z];
-                data[x_in][z] = ((x_in-x2)*y1+(x1-x_in)*y2)/(x1-x2);
+                GLfloat y1 = data[x1][z]->height;
+                GLfloat y2 = data[x2][z]->height;
+                data[x_in][z] = std::make_unique<MapLocInfo>();
+                data[x_in][z]->height = ((x_in-x2)*y1+(x1-x_in)*y2)/(x1-x2);
 //                app_log("insert: x: %d, z: %d, y: %f\n", x_in, z, data[x_in][z]);
                 if (x2 - x1 > 3) {
                     x--;
@@ -127,7 +130,7 @@ static void insertLinearValueInner(std::unordered_map<int, std::unordered_map<in
 }
 
 // 进行线性插值算法
-void CoordinatesUtils::insertLinearValue(std::unordered_map<int, std::unordered_map<int, GLfloat>> &data,
+void CoordinatesUtils::insertLinearValue(std::unordered_map<int, std::unordered_map<int, std::unique_ptr<MapLocInfo>>> &data,
                                          int minX, int minZ, int maxX, int maxZ) {
     long time0 = Utils::getCurrTimeUS();
     // 先将空隙按线性算法补上
@@ -135,22 +138,25 @@ void CoordinatesUtils::insertLinearValue(std::unordered_map<int, std::unordered_
     // 在补完之后，边缘仍然有空隙，则将四个边缘的空隙补为0
     for (int x = minX; x <= maxX; x++) {
         if (data.count(x) == 0) {
-            data[x] = std::unordered_map<int, GLfloat>();
+            data[x] = std::unordered_map<int, std::unique_ptr<MapLocInfo>>();
         }
         if (x == minX || x == maxX) {
             for (int z = minZ; z <= maxZ; z++) {
                 if (data[x].count(z) == 0) {
-                    data[x][z] = 0.0f;
+                    data[x][z] = std::make_unique<MapLocInfo>();
+                    data[x][z]->height = 0.0f;
 //                    app_log("边缘空隙补充0: x: %d, z: %d\n", x, z);
                 }
             }
         } else {
             if (data[x].count(minZ) == 0) {
-                data[x][minZ] = 0.0f;
+                data[x][minZ] = std::make_unique<MapLocInfo>();
+                data[x][minZ]->height = 0.0f;
 //                app_log("边缘空隙补充0: x: %d, minZ: %d\n", x, minZ);
             }
             if (data[x].count(maxZ) == 0) {
-                data[x][maxZ] = 0.0f;
+                data[x][maxZ] = std::make_unique<MapLocInfo>();
+                data[x][maxZ]->height = 0.0f;
 //                app_log("边缘空隙补充0: x: %d, maxZ: %d\n", x, maxZ);
             }
         }

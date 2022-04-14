@@ -7,6 +7,7 @@
 
 #include <unordered_map>
 #include "Shape.h"
+#include "../entity/MapLocInfo.h"
 
 class ObjModel: public Shape {
 private:
@@ -14,7 +15,7 @@ private:
     GLuint buffers[4] = {0}; // vertex buffer object
     GLuint textureId = 0;
     GLuint indexCount = 0;
-    std::unordered_map<int, std::unordered_map<int, GLfloat>> heightMap;
+    std::unordered_map<int, std::unordered_map<int, std::unique_ptr<MapLocInfo>>> mapLocInfos;
 
 public:
     ObjModel(const char *assetObjName, const char *assetPngName, bool needGenHeightMap,

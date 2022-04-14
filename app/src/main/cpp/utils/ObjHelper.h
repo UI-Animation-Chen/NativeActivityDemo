@@ -9,6 +9,7 @@
 #include <vector>
 #include <unordered_map>
 #include <GLES3/gl32.h>
+#include "../entity/MapLocInfo.h"
 
 class ObjHelper {
 public:
@@ -22,7 +23,7 @@ public:
         std::vector<GLfloat> texCoords; // 2个为一组
         std::vector<std::vector<GLushort>> indeces; // v vt vn的索引
 
-        std::unordered_map<int, std::unordered_map<int, GLfloat>> heightMap;
+        std::unordered_map<int, std::unordered_map<int, std::unique_ptr<MapLocInfo>>> mapLocInfos;
         ObjData() {
             vertices.push_back(0); // obj文件中，索引是从1开始的，这里先存入索引0的无用数据。
             vertices.push_back(0);
@@ -37,7 +38,7 @@ public:
         }
     };
     static float heightMapSampleFactor; // 表示取浮点数小数部分的位数，10表示1位，100表示两位等等。注意只能是整数。
-    static void readObjFile(FILE *file, ObjData *pObjData, bool needGenHeightMap, bool hasTexCoords, bool isSmoothLight);
+    static void readObjFile(FILE *file, ObjData *pObjData, bool needGenMapInfo, bool hasTexCoords, bool isSmoothLight);
 };
 
 #endif //NATIVEACTIVITYDEMO_OBJHELPER_H
