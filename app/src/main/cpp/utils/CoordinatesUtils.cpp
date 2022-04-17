@@ -6,6 +6,7 @@
 #include "../app_log.h"
 #include "Utils.h"
 #include "../entity/MapLocInfo.h"
+#include "./libglm0_9_6_3/glm/glm.hpp"
 
 // error: 'static' can only be specified inside the class definition
 // static float CoordinatesUtils::screenW = 1;
@@ -76,6 +77,13 @@ static int findMiddleSmallerInt(int small, int large) {
     }
 }
 
+static void getMiddleNormal(glm::vec3 &outVec3, std::vector<GLfloat> &vec1, std::vector<GLfloat> &vec2) {
+    outVec3[0] = vec1[0] + vec2[0];
+    outVec3[1] = vec1[1] + vec2[1];
+    outVec3[2] = vec1[2] + vec2[2];
+    outVec3 = glm::normalize(outVec3);
+}
+
 // 对二维map数据，按行和列分别进行插值。依次找两个存在的值，这两个值之间有空隙则插入线性值。如果找不到这样的两个值则跳过。
 static void insertLinearValueInner(std::unordered_map<int, std::unordered_map<int, std::unique_ptr<MapLocInfo>>> &data,
                                    int minX, int minZ, int maxX, int maxZ) {
@@ -95,6 +103,12 @@ static void insertLinearValueInner(std::unordered_map<int, std::unordered_map<in
                     ztoy[z_in] = std::make_unique<MapLocInfo>();
                     ztoy[z_in]->height = ((z_in-z2)*y1+(z1-z_in)*y2)/(z1-z2);
 //                    app_log("insert: x: %d, z: %d, y: %f\n", x, z_in, ztoy[z_in]);
+                    glm::vec3 normal;
+                    getMiddleNormal(normal, ztoy[z1]->normal, ztoy[z2]->normal);
+                    ztoy[z_in]->normal[0] = normal[0];
+                    ztoy[z_in]->normal[1] = normal[1];
+                    ztoy[z_in]->normal[2] = normal[2];
+                    app_log("insert normal x { %f, %f, %f }\n", normal[0], normal[1], normal[2]);
                     if (z2 - z1 > 3) {
                         z--; // 间隔大于2个时，还需要再走一遍当前值。
 //                        app_log("间隔大于3，再走一遍\n");
@@ -120,6 +134,12 @@ static void insertLinearValueInner(std::unordered_map<int, std::unordered_map<in
                 data[x_in][z] = std::make_unique<MapLocInfo>();
                 data[x_in][z]->height = ((x_in-x2)*y1+(x1-x_in)*y2)/(x1-x2);
 //                app_log("insert: x: %d, z: %d, y: %f\n", x_in, z, data[x_in][z]);
+                glm::vec3 normal;
+                getMiddleNormal(normal, data[x1][z]->normal, data[x2][z]->normal);
+                data[x_in][z]->normal[0] = normal[0];
+                data[x_in][z]->normal[1] = normal[1];
+                data[x_in][z]->normal[2] = normal[2];
+                app_log("insert normal z { %f, %f, %f }\n", normal[0], normal[1], normal[2]);
                 if (x2 - x1 > 3) {
                     x--;
 //                    app_log("间隔大于3，再走一遍\n");

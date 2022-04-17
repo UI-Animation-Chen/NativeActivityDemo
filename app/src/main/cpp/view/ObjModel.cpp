@@ -8,6 +8,7 @@
 #include "../utils/CoordinatesUtils.h"
 #include <cstring>
 #include <cerrno>
+#include "../utils/libglm0_9_6_3/glm/ext.hpp"
 
 // 从free3d.com中下载.blender文件素材，导入blender后再导出为obj，导出设置：
 // 1、z forward，y up；这种方式导出后x坐标是反的，ObjHelper.cpp中进行了处理。在视图和透视矩阵加入后，x坐标就不反了。
@@ -160,4 +161,28 @@ GLfloat ObjModel::getMapHeight(GLfloat x, GLfloat z) {
         return mapLocInfos[fixedX][fixedZ]->height * scale[1];
     }
     return Shape::getMapHeight(fixedX, fixedZ); // alawys 0
+}
+
+void ObjModel::getMapNormal(GLfloat x, GLfloat z, glm::vec3 &outVec3) {
+    GLfloat scale[3] = {1.0f, 1.0f, 1.0f};
+    getScale(scale);
+    if (scale[0] == 0.0f) { // 防止除0异常
+        scale[0] = 1.0f / 1000000.0f; // 随便给一个接近0的值，此时已经没意义了
+    }
+    if (scale[2] == 0.0f) { // 防止除0异常
+        scale[2] = 1.0f / 1000000.0f;
+    }
+    int fixedX = (int)(x / scale[0] * ObjHelper::heightMapSampleFactor);
+    int fixedZ = (int)(z / scale[2] * ObjHelper::heightMapSampleFactor);
+    if (mapLocInfos.count(fixedX) != 0 && mapLocInfos[fixedX].count(fixedZ) != 0) {
+        outVec3[0] = mapLocInfos[fixedX][fixedZ]->normal[0] / scale[0]; // 该方向放大的倍数越大，法向量分量越小
+        outVec3[1] = mapLocInfos[fixedX][fixedZ]->normal[1] / scale[1];
+        outVec3[2] = mapLocInfos[fixedX][fixedZ]->normal[2] / scale[2];
+
+        GLfloat rotate[3] = {0};
+        getRotate(rotate);
+        outVec3 = glm::rotate(outVec3, rotate[0], glm::vec3(1.0f, 0, 0)); // x
+        outVec3 = glm::rotate(outVec3, rotate[1], glm::vec3(0, 1.0f, 0)); // y
+        outVec3 = glm::rotate(outVec3, rotate[2], glm::vec3(0, 0, 1.0f)); // z
+    }
 }

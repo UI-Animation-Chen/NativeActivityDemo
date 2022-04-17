@@ -10,7 +10,7 @@
 
 struct MapLocInfo {
     GLfloat height;
-    std::vector<GLfloat> normal;
+    std::vector<GLfloat> normal = std::vector<GLfloat>(3);
 };
 
 #endif //NATIVEACTIVITYDEMO_MAPLOCINFO_H

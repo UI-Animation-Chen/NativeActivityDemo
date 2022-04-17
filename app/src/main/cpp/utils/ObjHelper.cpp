@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <string>
 #include "Utils.h"
+#include "./libglm0_9_6_3/glm/glm.hpp"
 
 float ObjHelper::heightMapSampleFactor = 100.0f; // 表示取浮点数小数部分的位数，10表示1位，100表示两位等等。注意只能是整数。
 
@@ -65,6 +66,29 @@ static void genMapInfoHeight(ObjHelper::ObjData *pObjData, GLfloat x, GLfloat y,
     }
 }
 
+static void genMapInfoNormal(ObjHelper::ObjData *pObjData, GLfloat vx, GLfloat vy, GLfloat vz,
+                             GLfloat nx, GLfloat ny, GLfloat nz) {
+    int fixedX = (int)(vx * ObjHelper::heightMapSampleFactor);
+    int fixedZ = (int)(vz * ObjHelper::heightMapSampleFactor);
+    if (pObjData->mapLocInfos.count(fixedX) == 0) { // 不存在该元素
+        app_log("normal 不存在该元素，fixedX: %d\n", fixedX);
+    } else {
+        if (pObjData->mapLocInfos[fixedX].count(fixedZ) == 0) {
+            app_log("normal 不存在该元素，fixedX: %d, fixedZ: %d\n", fixedX, fixedZ);
+        } else {
+            std::vector<GLfloat> &normal = pObjData->mapLocInfos[fixedX][fixedZ]->normal;
+            normal[0] += nx;
+            normal[1] += ny;
+            normal[2] += nz;
+            glm::vec3 vec3 = glm::normalize(glm::vec3(normal[0], normal[1], normal[2]));
+            normal[0] = vec3[0];
+            normal[1] = vec3[1];
+            normal[2] = vec3[2];
+            app_log("gen normal { %f, %f, %f }\n", normal[0], normal[1], normal[2]);
+        }
+    }
+}
+
 static void readVertices(FILE *file, ObjHelper::ObjData *pObjData, bool needGenMapInfo) {
     GLfloat x, y, z;
     fscanf(file, "%f %f %f\n", &x, &y, &z);
@@ -117,7 +141,7 @@ static void readIndexInfo(FILE *file, ObjHelper::ObjData *pObjData, bool hasTexC
 // 按照obj文件格式读出来后，顶点，纹理和法向量坐标都有各自的索引数组。
 // 现在新建一套匹配的顶点，纹理和法向量坐标，由同一个索引数组控制。
 // 这可能会导致各坐标数组变大，包含重复的坐标数据，这是统一索引的代价。
-static void rearrangeVVtVns(ObjHelper::ObjData *pObjData, bool isSmoothLight) {
+static void rearrangeVVtVns(ObjHelper::ObjData *pObjData, bool isSmoothLight, bool needGenMapInfo) {
     using namespace std;
     vector<GLfloat> vs;
     vector<GLfloat> vts;
@@ -133,9 +157,12 @@ static void rearrangeVVtVns(ObjHelper::ObjData *pObjData, bool isSmoothLight) {
         // vertices。后面乘3的逻辑是：vertices中三个元素为一组顶点，并且是从索引3开始，前三个元素是无用的。下面tex和normal同理。
         // 例如，从indeces中取出的索引是1时，实际要从vertices的3开始
         vertIndex = pObjData->indeces.at(i).at(0) * (GLuint)3; // 乘法左边是GLushort，会自动提为int
-        vs.push_back(pObjData->vertices.at(vertIndex));
-        vs.push_back(pObjData->vertices.at(vertIndex + 1));
-        vs.push_back(pObjData->vertices.at(vertIndex + 2));
+        GLfloat vx = pObjData->vertices.at(vertIndex);
+        GLfloat vy = pObjData->vertices.at(vertIndex + 1);
+        GLfloat vz = pObjData->vertices.at(vertIndex + 2);
+        vs.push_back(vx);
+        vs.push_back(vy);
+        vs.push_back(vz);
 
         if (isSmoothLight) {
             GLuint vsIndex = i * 3;
@@ -151,9 +178,15 @@ static void rearrangeVVtVns(ObjHelper::ObjData *pObjData, bool isSmoothLight) {
         vts.push_back(pObjData->texCoords.at(texCoordsIndex + 1));
         // normals
         nomalIndex = pObjData->indeces.at(i).at(2) * (GLuint)3;
-        vns.push_back(pObjData->normals.at(nomalIndex));
-        vns.push_back(pObjData->normals.at(nomalIndex + 1));
-        vns.push_back(pObjData->normals.at(nomalIndex + 2));
+        GLfloat nx = pObjData->normals.at(nomalIndex);
+        GLfloat ny = pObjData->normals.at(nomalIndex + 1);
+        GLfloat nz = pObjData->normals.at(nomalIndex + 2);
+        vns.push_back(nx);
+        vns.push_back(ny);
+        vns.push_back(nz);
+        if (needGenMapInfo) { // 采集法线数据
+            genMapInfoNormal(pObjData, vx, vy, vz, nx, ny, nz);
+        }
         // indeces
         pObjData->indeces.at(i).at(0) = (GLushort)i; // 索引就是0,1,2... 每个索引都对应一个坐标(xyz)。
     }
@@ -239,6 +272,6 @@ void ObjHelper::readObjFile(FILE *file, ObjHelper::ObjData *pObjData, bool needG
         pObjData->texCoords.push_back(0.5f);
     }
     long time1 = Utils::getCurrTimeUS();
-    rearrangeVVtVns(pObjData, isSmoothLight);
+    rearrangeVVtVns(pObjData, isSmoothLight, needGenMapInfo);
     app_log("parseTime: %ld(us), rearrangeTime: %ld(us)\n", time1 - time0, Utils::getCurrTimeUS() - time1);
 }

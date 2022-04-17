@@ -83,6 +83,7 @@ public:
     void getRotate(GLfloat *rotateXYZarr);
 
     virtual GLfloat getMapHeight(GLfloat x, GLfloat z);
+    virtual void getMapNormal(GLfloat x, GLfloat z, glm::vec3 &outVec3);
 
 protected: // 子类可以按需进行修改
     GLint transformEnabledLocation;

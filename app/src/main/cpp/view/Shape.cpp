@@ -318,8 +318,8 @@ void Shape::updateModelMat4() {
     modelMat4 = glm::translate(modelMat4, glm::vec3(translateXYZ[0], translateXYZ[1], translateXYZ[2]));
     // rotate 注意：x，y，z的先后顺序不同，旋转的效果不同
     modelMat4 = glm::rotate(modelMat4, rotateXYZ[0], glm::vec3(1, 0, 0)); // x轴
-    modelMat4 = glm::rotate(modelMat4, rotateXYZ[1], glm::vec3(0, 1, 0)); // y轴
     modelMat4 = glm::rotate(modelMat4, rotateXYZ[2], glm::vec3(0, 0, 1)); // z轴
+    modelMat4 = glm::rotate(modelMat4, rotateXYZ[1], glm::vec3(0, 1, 0)); // y轴
     // scale
     modelMat4 = glm::scale(modelMat4, glm::vec3(scaleXYZ[0], scaleXYZ[1], scaleXYZ[2]));
 
@@ -373,4 +373,8 @@ void Shape::getRotate(GLfloat *rotateXYZarr) {
 
 GLfloat Shape::getMapHeight(GLfloat x, GLfloat z) {
     return 0.0f;
+}
+
+void Shape::getMapNormal(GLfloat x, GLfloat z, glm::vec3 &outVec3) {
+
 }

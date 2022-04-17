@@ -24,6 +24,7 @@ public:
 
     void draw();
     GLfloat getMapHeight(GLfloat x, GLfloat z);
+    void getMapNormal(GLfloat x, GLfloat z, glm::vec3 &outVec3);
 };
 
 #endif //NATIVEACTIVITYDEMO_OBJMODEL_H

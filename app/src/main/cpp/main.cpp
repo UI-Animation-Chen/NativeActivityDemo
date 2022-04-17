@@ -288,25 +288,27 @@ void initTouchEventHandlerCallbacks() {
         float rotateYradian = (float)(deltaX * distance2radianFactor);
         float transX = CoordinatesUtils::android2gles_distance(deltaX);
         float transY = CoordinatesUtils::android2gles_distance(deltaY);
+
+        // 获取该位置的高度和法向量
         GLfloat height = 0;
+        glm::vec3 normal(0, 1.0f, 0);
+        GLfloat transXYZ[3];
+        pShape[0]->getTranslate(transXYZ);
+        height = pShape[0]->getMapHeight(transXYZ[0], transXYZ[2]);
+        if (transXYZ[0] >= 3.5f && transXYZ[0] <= 7.7f && transXYZ[2] >= -19.3f && transXYZ[2] <= -15.1f) {
+            height = 3.51f + 7.648166f; // tower的区域和高度
+        }
+        if (transXYZ[0] >= 12.0f-1.723f && transXYZ[0] <= 12.0f+1.723f && transXYZ[2] >= 30.0f-1.723f && transXYZ[2] <= 30.0f+1.723f) {
+            height = 12.0f + 1.721207f; // moon的区域和高度
+        }
+//        app_log("map location: x: %f, z: %f, y: %f, height: %f\n", transXYZ[0], transXYZ[2], transXYZ[1], height);
+        pShape[0]->getMapNormal(transXYZ[0], transXYZ[2], normal);
+
         for (int i = 0; i < pShape.size()-1; i++) {
             if (pShape[i]) {
                 if (fingers == 1) {
                     // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
                     pShape[i]->worldMoveBy(transX*5, 0, -transY*5);
-
-                    if (height == 0) {
-                        GLfloat transXYZ[3];
-                        pShape[0]->getTranslate(transXYZ);
-                        height = pShape[0]->getMapHeight(transXYZ[0], transXYZ[2]);
-                        if (transXYZ[0] >= 3.5f && transXYZ[0] <= 7.7f && transXYZ[2] >= -19.3f && transXYZ[2] <= -15.1f) {
-                            height = 3.51f + 7.648166f; // tower的区域和高度
-                        }
-                        if (transXYZ[0] >= 12.0f-1.723f && transXYZ[0] <= 12.0f+1.723f && transXYZ[2] >= 30.0f-1.723f && transXYZ[2] <= 30.0f+1.723f) {
-                            height = 12.0f + 1.721207f; // moon的区域和高度
-                        }
-//                        app_log("map location: x: %f, z: %f, y: %f, height: %f\n", transXYZ[0], transXYZ[2], transXYZ[1], height);
-                    }
                     pShape[i]->worldMoveYTo(height);
                 } else {
                     if (abs(deltaX) > abs(deltaY)) {
@@ -317,10 +319,14 @@ void initTouchEventHandlerCallbacks() {
                 }
             }
         }
-        if (fingers == 1) {
-            float directionYradian = atan2(deltaY, deltaX) - 1.57f;
-            pShape[pShape.size()-1]->rotateYTo(directionYradian);
-        }
+        // 设置角色的朝向和倾斜度
+        float directionYradian = atan2(deltaY, deltaX) - 1.57f;
+        pShape[pShape.size()-1]->rotateYTo(directionYradian);
+
+        float rotateX = atan2(normal[2], normal[1]);
+        pShape[pShape.size()-1]->rotateXTo(rotateX);
+        float rotateZ = atan2(normal[0], normal[1]);
+        pShape[pShape.size()-1]->rotateZTo(-rotateZ);
     });
     touchEventHandler->setOnTouchCancel([](float cancelX, float cancelY, float cancelMillis) {
         app_log("cancel\n");
