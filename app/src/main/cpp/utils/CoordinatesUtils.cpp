@@ -108,7 +108,7 @@ static void insertLinearValueInner(std::unordered_map<int, std::unordered_map<in
                     ztoy[z_in]->normal[0] = normal[0];
                     ztoy[z_in]->normal[1] = normal[1];
                     ztoy[z_in]->normal[2] = normal[2];
-                    app_log("insert normal x { %f, %f, %f }\n", normal[0], normal[1], normal[2]);
+//                    app_log("insert normal x { %f, %f, %f }\n", normal[0], normal[1], normal[2]);
                     if (z2 - z1 > 3) {
                         z--; // 间隔大于2个时，还需要再走一遍当前值。
 //                        app_log("间隔大于3，再走一遍\n");
@@ -139,7 +139,7 @@ static void insertLinearValueInner(std::unordered_map<int, std::unordered_map<in
                 data[x_in][z]->normal[0] = normal[0];
                 data[x_in][z]->normal[1] = normal[1];
                 data[x_in][z]->normal[2] = normal[2];
-                app_log("insert normal z { %f, %f, %f }\n", normal[0], normal[1], normal[2]);
+//                app_log("insert normal z { %f, %f, %f }\n", normal[0], normal[1], normal[2]);
                 if (x2 - x1 > 3) {
                     x--;
 //                    app_log("间隔大于3，再走一遍\n");

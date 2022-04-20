@@ -5,6 +5,7 @@
 #include "SkyBox.h"
 
 SkyBox::SkyBox(): Shape() {
+    app_log("SkyBox constructor\n");
     TextureUtils::loadPNGTexture("skybox.png", &textureId);
 
     glGenVertexArrays(1, &vao);
@@ -91,6 +92,7 @@ SkyBox::~SkyBox() {
     glDeleteBuffers(3, buffers);
     glDeleteVertexArrays(1, &vao);
     glDeleteTextures(1, &textureId);
+    app_log("SkyBox destructor~~~\n");
 }
 
 void SkyBox::draw() {

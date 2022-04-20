@@ -8,6 +8,7 @@
 #include "../utils/CoordinatesUtils.h"
 
 Cube::Cube(): Shape() {
+    app_log("Cube constructor\n");
     glGenVertexArrays(1, &vao);
     glGenBuffers(3, buffers);
 
@@ -83,6 +84,7 @@ Cube::Cube(): Shape() {
 Cube::~Cube() {
     glDeleteBuffers(3, buffers);
     glDeleteVertexArrays(1, &vao);
+    app_log("Cube destructor~~~\n");
 }
 
 void Cube::draw() {

@@ -125,6 +125,7 @@ ObjModel::~ObjModel() {
     glDeleteVertexArrays(1, vao);
     glDeleteBuffers(4, buffers);
     glDeleteTextures(1, &textureId);
+    app_log("ObjModel destructor~~~\n");
 }
 
 void ObjModel::draw() {

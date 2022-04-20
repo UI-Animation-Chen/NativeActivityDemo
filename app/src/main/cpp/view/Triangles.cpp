@@ -8,6 +8,7 @@
 // 子类必须调用父类构造函数，不写的话系统会默认调用，如果没有默认就会报错。
 // 析构函数一定会调用父类的，编译器强制。
 Triangles::Triangles(): Shape() {
+    app_log("Triangles constructor\n");
     glGenVertexArrays(1, &vao);
     glGenBuffers(2, buffers);
 
@@ -45,6 +46,7 @@ Triangles::Triangles(): Shape() {
 Triangles::~Triangles() {
     glDeleteBuffers(2, buffers);
     glDeleteVertexArrays(1, &vao);
+    app_log("Triangles destructor~~~\n");
 }
 
 void Triangles::draw() {

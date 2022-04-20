@@ -71,10 +71,10 @@ static void genMapInfoNormal(ObjHelper::ObjData *pObjData, GLfloat vx, GLfloat v
     int fixedX = (int)(vx * ObjHelper::heightMapSampleFactor);
     int fixedZ = (int)(vz * ObjHelper::heightMapSampleFactor);
     if (pObjData->mapLocInfos.count(fixedX) == 0) { // 不存在该元素
-        app_log("normal 不存在该元素，fixedX: %d\n", fixedX);
+//        app_log("normal 不存在该元素，fixedX: %d\n", fixedX);
     } else {
         if (pObjData->mapLocInfos[fixedX].count(fixedZ) == 0) {
-            app_log("normal 不存在该元素，fixedX: %d, fixedZ: %d\n", fixedX, fixedZ);
+//            app_log("normal 不存在该元素，fixedX: %d, fixedZ: %d\n", fixedX, fixedZ);
         } else {
             std::vector<GLfloat> &normal = pObjData->mapLocInfos[fixedX][fixedZ]->normal;
             normal[0] += nx;
@@ -84,7 +84,7 @@ static void genMapInfoNormal(ObjHelper::ObjData *pObjData, GLfloat vx, GLfloat v
             normal[0] = vec3[0];
             normal[1] = vec3[1];
             normal[2] = vec3[2];
-            app_log("gen normal { %f, %f, %f }\n", normal[0], normal[1], normal[2]);
+//            app_log("gen normal { %f, %f, %f }\n", normal[0], normal[1], normal[2]);
         }
     }
 }

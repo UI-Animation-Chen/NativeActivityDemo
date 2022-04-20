@@ -28,7 +28,7 @@
 static const float NS_2_S = 1.0f / 1000000000.0f; // 将纳秒转成秒
 static const float DEG_2_RADIAN = (float) M_PI / 180.0f;
 
-static std::vector<Shape *> pShape;
+static std::vector<std::shared_ptr<Shape>> shapes;
 
 static TouchEventHandler *touchEventHandler = NULL;
 
@@ -104,6 +104,7 @@ static void renderByANativeWindowAPI(ANativeWindow *window) {
  * Process the next main command.
  */
 static void on_handle_cmd(struct android_app *app, int32_t cmd) {
+    using namespace std;
     struct context *context = (struct context *) app->userData;
     switch (cmd) {
         case APP_CMD_SAVE_STATE:
@@ -140,48 +141,61 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 // blend跟物体渲染顺序有关，需要后渲染半透明物体
-//                pShape[0] = new Cube();
-//                pShape[0] = new Triangles();
-                auto mountain = new ObjModel("blenderObjs/mountain.png", "mountain.png", true, true, false);
+//                shapes[0] = new Cube();
+//                shapes[0] = new Triangles();
+                shared_ptr<Shape> mountain = make_shared<ObjModel>("blenderObjs/mountain.png",
+                                                                   "mountain.png", true, true, false);
                 mountain->scaleBy(9, 1.5, 9); // 长宽放大10倍
-                pShape.push_back(mountain);
-                auto tower = new ObjModel("blenderObjs/tower.png", "tower.png", false, true, false);
+                shapes.push_back(mountain);
+
+                shared_ptr<Shape> tower = make_shared<ObjModel>("blenderObjs/tower.png",
+                                                                "tower.png", false, true, false);
                 tower->moveBy(5.66, 3.51, -17.21);
-                pShape.push_back(tower);
-                auto moodhouse = new ObjModel("blenderObjs/moodhouse.png", "moodhouse.png", false, true, false);
+                shapes.push_back(tower);
+
+                shared_ptr<Shape> moodhouse = make_shared<ObjModel>("blenderObjs/moodhouse.png",
+                                                                    "moodhouse.png", false, true, false);
                 moodhouse->moveBy(0, mountain->getMapHeight(0, 18), 18);
                 moodhouse->rotateBy(0, 0.5, 0);
                 moodhouse->scaleBy(-0.8, -0.8, -0.8);
-                pShape.push_back(moodhouse);
-                auto moon = new ObjModel("blenderObjs/moon.png", "moon.png", false, true, false);
+                shapes.push_back(moodhouse);
+
+                shared_ptr<Shape> moon = make_shared<ObjModel>("blenderObjs/moon.png",
+                                                               "moon.png", false, true, false);
                 moon->moveBy(12, 12, 30);
-                pShape.push_back(moon);
-                auto oldHouse = new ObjModel("blenderObjs/oldhouse2.png", "oldhouse2.png", false, true, false);
+                shapes.push_back(moon);
+
+                shared_ptr<Shape> oldHouse = make_shared<ObjModel>("blenderObjs/oldhouse2.png",
+                                                                   "oldhouse2.png", false, true, false);
                 oldHouse->moveBy(10.11f, 3.78f, 7.25f);
                 oldHouse->rotateBy(0, -0.3f, 0);
                 oldHouse->scaleBy(1.2f, 1.2f, 1.2f);
-                pShape.push_back(oldHouse);
-                auto skybox = new SkyBox();
+                shapes.push_back(oldHouse);
+
+                shared_ptr<Shape> skybox = make_shared<SkyBox>();
                 skybox->scaleBy(40.0f, 40.0f, 40.0f);
-                pShape.push_back(skybox);
-                auto monkey = new ObjModel("blenderObjs/monkey.png", "brown.png", false, true, false);
+                shapes.push_back(skybox);
+
+                shared_ptr<Shape> monkey = make_shared<ObjModel>("blenderObjs/monkey.png",
+                                                                 "brown.png", false, true, false);
                 monkey->moveBy(0, 0.294f, 0); // 模型的-y为-0.98
                 monkey->rotateBy(0, 3.14f, 0);
                 monkey->scaleBy(-0.7f, -0.7f, -0.7f); // 缩小为原来的3/10
-                pShape.push_back(monkey);
+                shapes.push_back(monkey);
                 // 测试高度准确性
-//                auto cocacola = new ObjModel("blenderObjs/cocacola.png", "cocacola.png", false, true, false);
+//                shared_ptr<Shape> cocacola = make_shared<ObjModel>("blenderObjs/cocacola.png",
+//                                                                   "cocacola.png", false, true, false);
 //                cocacola->moveBy(0, 0.24656f, 0); // 模型的-y为-1.232813
 //                cocacola->scaleBy(-0.95f, -0.8f, -0.95f); // 高缩小为原来的2/10
-//                pShape.push_back(cocacola);
+//                shapes.push_back(cocacola);
 
                 GLfloat initHeight = mountain->getMapHeight(0, 0);
-                for (int i = 0; i < pShape.size(); i++) {
-                    if (pShape[i]) {
-                        if (i < pShape.size() - 1) {
-                            pShape[i]->worldMoveYTo(initHeight);
+                for (int i = 0; i < shapes.size(); i++) {
+                    if (shapes[i]) {
+                        if (i < shapes.size() - 1) {
+                            shapes[i]->worldMoveYTo(initHeight);
                         }
-                        pShape[i]->draw();
+                        shapes[i]->draw();
                     }
                 }
 
@@ -193,12 +207,7 @@ static void on_handle_cmd(struct android_app *app, int32_t cmd) {
         case APP_CMD_TERM_WINDOW:
             // The window is being hidden or closed, clean it up.
             app_log("cmd -- destroy window\n");
-            for (int i = 0; i < pShape.size(); i++) {
-                if (pShape[i]) {
-                    delete pShape[i];
-                }
-            }
-            pShape.clear();
+            shapes.clear();
 
             BaseShader::deleteSingletonProgram();
             TextureUtils::deleteSimpleTexture();
@@ -293,8 +302,8 @@ void initTouchEventHandlerCallbacks() {
         GLfloat height = 0;
         glm::vec3 normal(0, 1.0f, 0);
         GLfloat transXYZ[3];
-        pShape[0]->getTranslate(transXYZ);
-        height = pShape[0]->getMapHeight(transXYZ[0], transXYZ[2]);
+        shapes[0]->getTranslate(transXYZ);
+        height = shapes[0]->getMapHeight(transXYZ[0], transXYZ[2]);
         if (transXYZ[0] >= 3.5f && transXYZ[0] <= 7.7f && transXYZ[2] >= -19.3f && transXYZ[2] <= -15.1f) {
             height = 3.51f + 7.648166f; // tower的区域和高度
         }
@@ -302,31 +311,31 @@ void initTouchEventHandlerCallbacks() {
             height = 12.0f + 1.721207f; // moon的区域和高度
         }
 //        app_log("map location: x: %f, z: %f, y: %f, height: %f\n", transXYZ[0], transXYZ[2], transXYZ[1], height);
-        pShape[0]->getMapNormal(transXYZ[0], transXYZ[2], normal);
+        shapes[0]->getMapNormal(transXYZ[0], transXYZ[2], normal);
 
-        for (int i = 0; i < pShape.size()-1; i++) {
-            if (pShape[i]) {
+        for (int i = 0; i < shapes.size() - 1; i++) {
+            if (shapes[i]) {
                 if (fingers == 1) {
                     // 透视模式下乘5，视角是60度，观察者距离是10，感觉是10的一半
-                    pShape[i]->worldMoveBy(transX*5, 0, -transY*5);
-                    pShape[i]->worldMoveYTo(height);
+                    shapes[i]->worldMoveBy(transX * 5, 0, -transY * 5);
+                    shapes[i]->worldMoveYTo(height);
                 } else {
                     if (abs(deltaX) > abs(deltaY)) {
-                        pShape[i]->worldRotateBy(0, -rotateYradian, 0); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
+                        shapes[i]->worldRotateBy(0, -rotateYradian, 0); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
                     } else {
-                        pShape[i]->worldMoveBy(0, -transY*5, 0);
+                        shapes[i]->worldMoveBy(0, -transY * 5, 0);
                     }
                 }
             }
         }
         // 设置角色的朝向和倾斜度
         float directionYradian = atan2(deltaY, deltaX) - 1.57f;
-        pShape[pShape.size()-1]->rotateYTo(directionYradian);
+        shapes[shapes.size() - 1]->rotateYTo(directionYradian);
 
         float rotateX = atan2(normal[2], normal[1]);
-        pShape[pShape.size()-1]->rotateXTo(rotateX);
+        shapes[shapes.size() - 1]->rotateXTo(rotateX);
         float rotateZ = atan2(normal[0], normal[1]);
-        pShape[pShape.size()-1]->rotateZTo(-rotateZ);
+        shapes[shapes.size() - 1]->rotateZTo(-rotateZ);
     });
     touchEventHandler->setOnTouchCancel([](float cancelX, float cancelY, float cancelMillis) {
         app_log("cancel\n");
@@ -336,17 +345,17 @@ void initTouchEventHandlerCallbacks() {
     touchEventHandler->setOnScale(
             [](float scaleX1, float scaleY1, float scaleDistance, float currMillis) {
                 float scale = scaleDistance / CoordinatesUtils::screenS;
-                for (int i = 0; i < pShape.size()-1; i++) {
-                    if (pShape[i]) {
-//                        pShape[i]->worldScaleBy(scale, scale, scale);
+                for (int i = 0; i < shapes.size() - 1; i++) {
+                    if (shapes[i]) {
+//                        shapes[i]->worldScaleBy(scale, scale, scale);
                     }
                 }
             });
     touchEventHandler->setOnRotate([](float rotateDeg, float currMillis) {
         float rotateZradian = rotateDeg * DEG_2_RADIAN;
-        for (int i = 0; i < pShape.size(); i++) {
-            if (pShape[i]) {
-//                pShape[i]->rotateBy(0, 0, -rotateZradian); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
+        for (int i = 0; i < shapes.size(); i++) {
+            if (shapes[i]) {
+//                shapes[i]->rotateBy(0, 0, -rotateZradian); // 对于矩阵变换来说，轴正向朝向自己，顺时针转为正
             }
         }
     });
@@ -409,9 +418,9 @@ void android_main(struct android_app *app) {
                             float rotateXradian = event.data[0] * dT; // gyro返回的值单位是弧度/s
                             float rotateYradian = event.data[1] * dT;
                             float rotateZradian = event.data[2] * dT;
-                            for (int i = 0; i < pShape.size()-1; i++) {
-                                if (pShape[i]) {
-                                    pShape[i]->worldRotateBy(rotateXradian, rotateYradian, -rotateZradian);
+                            for (int i = 0; i < shapes.size() - 1; i++) {
+                                if (shapes[i]) {
+                                    shapes[i]->worldRotateBy(rotateXradian, rotateYradian, -rotateZradian);
                                 }
                             }
                         }
@@ -433,12 +442,12 @@ void android_main(struct android_app *app) {
                 glClearDepthf(1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                for (int i = 0; i < pShape.size(); i++) {
-                    if (i == 3 && pShape[i]) { // moon
-                        pShape[i]->rotateBy(0.0f, 1.0f/60.0f, 0.0f);
+                for (int i = 0; i < shapes.size(); i++) {
+                    if (i == 3 && shapes[i]) { // moon
+                        shapes[i]->rotateBy(0.0f, 1.0f / 60.0f, 0.0f);
                     }
-                    if (pShape[i]) {
-                        pShape[i]->draw();
+                    if (shapes[i]) {
+                        shapes[i]->draw();
                     }
                 }
 
